@@ -8,6 +8,7 @@ package ec.gob.firmadigital.firmador;
 import ec.gob.firmadigital.cliente.pdf.FirmaDigitalODF;
 import ec.gob.firmadigital.cliente.pdf.FirmaDigitalOOXML;
 import ec.gob.firmadigital.cliente.pdf.FirmaDigitalPdf;
+import ec.gob.firmadigital.utils.FileUtils;
 import java.util.List;
 import javax.swing.JFileChooser;
 import java.io.File;
@@ -198,7 +199,7 @@ public class Main extends javax.swing.JFrame {
         }
 
         // Vemos los procesos por documento
-        String extDocumento = getFileExtension(documento);
+        String extDocumento = FileUtils.getFileExtension(documento);
 
         // TODO arreglar manejo de errores
         switch (extDocumento) {
@@ -239,7 +240,7 @@ public class Main extends javax.swing.JFrame {
 
     // Se podria verificar el mimetype
     private boolean tipoDeDocumentPermitido(File documento) {
-        String extDocumento = getFileExtension(documento);
+        String extDocumento = FileUtils.getFileExtension(documento);
         return extensionesPermitidas.stream().anyMatch((extension) -> (extension.equals(extDocumento)));
     }
 
@@ -254,7 +255,7 @@ public class Main extends javax.swing.JFrame {
         }
 
         // Vemos los procesos por documento
-        String extDocumento = getFileExtension(documento);
+        String extDocumento = FileUtils.getFileExtension(documento);
 
         // TODO arreglar manejo de errores
         switch (extDocumento) {
@@ -432,22 +433,16 @@ public class Main extends javax.swing.JFrame {
         
         String nombre = nombreCompleto.replaceFirst("[.][^.]+$", "");
 
-        String extension = getFileExtension(documento);
+        //String extension = getFileExtension(documento);
+        String extension =  FileUtils.getFileExtension(documento);
+        
         System.out.println(nombre + "-signed." + extension);
         return nombre + "-signed." + extension;
         //String ruta = documento.getParent();
         //return ruta + nombre + "-signed." + extension;
     }
     
-    // TODO mover un clase y paquete UTILS !!!!!
-    private String getFileExtension(File file) {
-        String name = file.getName();
-        try {
-            return name.substring(name.lastIndexOf(".") + 1);
-        } catch (Exception e) {
-            return "";
-        }
-    }
+    
 
 
 
