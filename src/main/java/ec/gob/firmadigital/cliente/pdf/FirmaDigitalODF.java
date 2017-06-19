@@ -26,6 +26,7 @@ import java.util.List;
 import rubrica.keystore.Alias;
 import rubrica.keystore.KeyStoreUtilities;
 import rubrica.sign.Signer;
+import rubrica.sign.odf.ODFSigner;
 import rubrica.sign.pdf.PDFSigner;
 import rubrica.util.BouncyCastleUtils;
 
@@ -35,7 +36,7 @@ import rubrica.util.BouncyCastleUtils;
  * 
  * @author Ricardo Arguello <ricardo.arguello@soportelibre.com>
  */
-public class FirmaDigitalPdf {
+public class FirmaDigitalODF {
 
     static {
         BouncyCastleUtils.initializeBouncyCastle();
@@ -54,17 +55,17 @@ public class FirmaDigitalPdf {
         char[] password = (clave != null) ? clave.toCharArray() : null;
         List<Alias> signingAliases = KeyStoreUtilities.getSigningAliases(keyStore);
 
-        byte[] signedPdf = null;
+        byte[] signedOdf = null;
         
         for (Alias alias : signingAliases) {
                         PrivateKey pk = (PrivateKey) keyStore.getKey(alias.getAlias(), password);
             Certificate[] chain = keyStore.getCertificateChain(alias.getAlias());
             // (byte[] data, String algorithm, PrivateKey key, Certificate[] certChain, Properties xParams)
-            Signer PDFSigner = new PDFSigner();
-            signedPdf = PDFSigner.sign(documento,null , pk, chain, null);  //(documento, pk, chain, null);
+            Signer oDFSigner = new ODFSigner();
+            signedOdf = oDFSigner.sign(documento,null , pk, chain, null);  //(documento, pk, chain, null);
             
         }
-        return signedPdf;
+        return signedOdf;
     }
     
     /**
@@ -80,17 +81,17 @@ public class FirmaDigitalPdf {
     
         List<Alias> signingAliases = KeyStoreUtilities.getSigningAliases(keyStore);
 
-        byte[] signedPdf = null;
+        byte[] signedOdf = null;
         
         for (Alias alias : signingAliases) {
  
             PrivateKey pk = (PrivateKey) keyStore.getKey(alias.getAlias(), clave);
             Certificate[] chain = keyStore.getCertificateChain(alias.getAlias());
             // (byte[] data, String algorithm, PrivateKey key, Certificate[] certChain, Properties xParams)
-            Signer PDFSigner = new PDFSigner();
-            signedPdf = PDFSigner.sign(documento,null , pk, chain, null);  //(documento, pk, chain, null);
+            Signer oDFSigner = new ODFSigner();
+            signedOdf = oDFSigner.sign(documento,null , pk, chain, null);  //(documento, pk, chain, null);
             
         }
-        return signedPdf;
+        return signedOdf;
     }
 }

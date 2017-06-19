@@ -5,6 +5,8 @@
  */
 package ec.gob.firmadigital.firmador;
 
+import ec.gob.firmadigital.cliente.pdf.FirmaDigitalODF;
+import ec.gob.firmadigital.cliente.pdf.FirmaDigitalOOXML;
 import ec.gob.firmadigital.cliente.pdf.FirmaDigitalPdf;
 import java.util.List;
 import javax.swing.JFileChooser;
@@ -115,6 +117,7 @@ public class Main extends javax.swing.JFrame {
         this.llave = null;
         this.rutaLlaveTXT.setEnabled(false);
         this.rutaLlaveTXT.setText("");
+        this.documentoFirmadoTXT.setText("");
         //this.certificadosJTR.getModel().
 
     }
@@ -271,9 +274,8 @@ public class Main extends javax.swing.JFrame {
 
     }
 
-    private boolean firmarPDF(File documento) {
-        // TODO conectar a rubica, recibir informacion
-        System.out.println("Firmar PDF");
+     private boolean validarFirma(){
+        System.out.println("Validar Firma");
         if (this.firmarTokenRBTN.isSelected()) {
             ks = KeyStoreProviderList.getKeyStore(claveTXT.getPassword().toString());
             if (ks == null) {
@@ -292,20 +294,45 @@ public class Main extends javax.swing.JFrame {
                 return false;
             }
         }
-
-        // FIRMAR!
-        iniciarProcesoFirma(claveTXT.getPassword().toString());
-
         return true;
     }
+     
+    private boolean firmarPDF(File documento) {
+        // TODO conectar a rubica, recibir informacion
+        System.out.println("Firmar PDF");
+        if(!validarFirma())
+            return false;
+        // FIRMAR!
+        String documentoFirmado = iniciarProcesoFirmaPDF(claveTXT.getPassword());
+        
+        this.documentoFirmadoTXT.setText(documentoFirmado);
+        
+        return true;
+    }
+    
+   
 
     private boolean firmarMSOffice(File documento) {
-        // TODO conectar a rubica, recibir informacion
+        System.out.println("Firmar Ooxml");
+        if(!validarFirma())
+            return false;
+        // FIRMAR!
+        String documentoFirmado = iniciarProcesoMSOffice(claveTXT.getPassword());
+        
+        this.documentoFirmadoTXT.setText(documentoFirmado);
+        
         return true;
     }
 
     private boolean firmarLibreOffice(File documento) {
-        // TODO conectar a rubica, recibir informacion
+        System.out.println("Firmar Ooxml");
+        if(!validarFirma())
+            return false;
+        // FIRMAR!
+        String documentoFirmado = iniciarProcesoLibreOffice(claveTXT.getPassword());
+        
+        this.documentoFirmadoTXT.setText(documentoFirmado);
+        
         return true;
     }
 
@@ -314,7 +341,7 @@ public class Main extends javax.swing.JFrame {
      *
      * @param clave para la firma digital.
      */
-    private void iniciarProcesoFirma(String clave) {
+    private String iniciarProcesoFirmaPDF(char[] clave) {
         try {
             System.out.println("Iniciar el Proceso de Firma");
             // Firmar el documento
@@ -322,23 +349,75 @@ public class Main extends javax.swing.JFrame {
             Path documentoPath = Paths.get(documento.getAbsolutePath());
             byte[] dataDocumento = Files.readAllBytes(documentoPath);
             
-            System.out.println("Proceso de Firma2");
             byte[] firmado = firmador.firmar(ks, dataDocumento, clave);
-            System.out.println("Proceso de Firma2.1");
+
             String rutaFirmado = crearNombreFirmado(documento);
-            System.out.println("Proceso de Firma3");
+
             grabarByteArrayDisco(firmado, rutaFirmado);
-            System.out.println("Proceso de Firma4");
-            
+            return rutaFirmado;
 
         } catch (Exception e) {
             //mostrarMensaje("ERROR: " + e.getMessage());
+            System.err.println("ERROR: " + e.getMessage());
         }
+        return null;
+    }
+    /**
+     * Trae el documento, lo firma y lo actualiza nuevamente.
+     *
+     * @param clave para la firma digital.
+     */
+    private String iniciarProcesoMSOffice(char[] clave) {
+        try {
+            System.out.println("Iniciar el Proceso de Firma");
+            // Firmar el documento
+            FirmaDigitalOOXML firmador = new FirmaDigitalOOXML();
+            Path documentoPath = Paths.get(documento.getAbsolutePath());
+            byte[] dataDocumento = Files.readAllBytes(documentoPath);
+            
+            byte[] firmado = firmador.firmar(ks, dataDocumento, clave);
+
+            String rutaFirmado = crearNombreFirmado(documento);
+
+            grabarByteArrayDisco(firmado, rutaFirmado);
+            return rutaFirmado;
+
+        } catch (Exception e) {
+            //mostrarMensaje("ERROR: " + e.getMessage());
+            System.err.println("ERROR: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * Trae el documento, lo firma y lo actualiza nuevamente.
+     *
+     * @param clave para la firma digital.
+     */
+    private String iniciarProcesoLibreOffice(char[] clave) {
+        try {
+            System.out.println("Iniciar el Proceso de Firma");
+            // Firmar el documento
+            FirmaDigitalODF firmador = new FirmaDigitalODF();
+            Path documentoPath = Paths.get(documento.getAbsolutePath());
+            byte[] dataDocumento = Files.readAllBytes(documentoPath);
+            
+            byte[] firmado = firmador.firmar(ks, dataDocumento, clave);
+
+            String rutaFirmado = crearNombreFirmado(documento);
+
+            grabarByteArrayDisco(firmado, rutaFirmado);
+            return rutaFirmado;
+
+        } catch (Exception e) {
+            //mostrarMensaje("ERROR: " + e.getMessage());
+            System.err.println("ERROR: " + e.getMessage());
+        }
+        return null;
     }
     
     private void grabarByteArrayDisco(byte[] archivo,String rutaNombre) throws FileNotFoundException, IOException {
         // TODO validar si hay otro archivo de momento lo sobre escribe
-        System.out.println("Escribir en " +rutaNombre);
         FileOutputStream fos = new FileOutputStream(rutaNombre);
         fos.write(archivo);
         fos.close();
@@ -399,6 +478,8 @@ public class Main extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         verificadoPorSPL = new javax.swing.JScrollPane();
         certificadosJTR = new javax.swing.JTree();
+        jLabel5 = new javax.swing.JLabel();
+        documentoFirmadoTXT = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Verificador - Firmador");
@@ -509,6 +590,16 @@ public class Main extends javax.swing.JFrame {
         certificadosJTR.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         verificadoPorSPL.setViewportView(certificadosJTR);
 
+        jLabel5.setText("Doc. Firmado");
+
+        documentoFirmadoTXT.setEditable(false);
+        documentoFirmadoTXT.setEnabled(false);
+        documentoFirmadoTXT.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                documentoFirmadoTXTActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -526,7 +617,8 @@ public class Main extends javax.swing.JFrame {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel2)
                                     .addComponent(jLabel3)
-                                    .addComponent(jLabel4))
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel5))
                                 .addGap(39, 39, 39)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(rutaLlaveTXT)
@@ -534,7 +626,8 @@ public class Main extends javax.swing.JFrame {
                                     .addComponent(verificadoPorSPL)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(54, 54, 54)
-                                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(documentoFirmadoTXT))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(abrirArchivoBtn)
@@ -571,11 +664,15 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(claveTXT, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
-                .addGap(32, 32, 32)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addComponent(verificadoPorSPL, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(7, 7, 7)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(documentoFirmadoTXT, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(verificadoPorSPL, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(29, Short.MAX_VALUE))
         );
@@ -634,6 +731,10 @@ public class Main extends javax.swing.JFrame {
         this.firmarDocumento();
     }//GEN-LAST:event_firmarBTNActionPerformed
 
+    private void documentoFirmadoTXTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_documentoFirmadoTXTActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_documentoFirmadoTXTActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -674,6 +775,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JButton abrirArchivoPSKBtn;
     private javax.swing.JTree certificadosJTR;
     private javax.swing.JPasswordField claveTXT;
+    private javax.swing.JTextField documentoFirmadoTXT;
     private javax.swing.JButton firmarBTN;
     private javax.swing.JRadioButton firmarLlaveRBTN;
     private javax.swing.JRadioButton firmarTokenRBTN;
@@ -681,6 +783,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField rutaDocumentoTXT;
     private javax.swing.JTextField rutaLlaveTXT;

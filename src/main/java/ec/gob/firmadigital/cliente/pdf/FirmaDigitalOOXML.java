@@ -25,17 +25,19 @@ import java.util.List;
 
 import rubrica.keystore.Alias;
 import rubrica.keystore.KeyStoreUtilities;
+import rubrica.sign.SignConstants;
 import rubrica.sign.Signer;
+import rubrica.sign.ooxml.OOXMLSigner;
 import rubrica.sign.pdf.PDFSigner;
 import rubrica.util.BouncyCastleUtils;
 
 /**
- * Clase utilitaria para firmar digitalmente un PDF mediante la libreria
+ * Clase utilitaria para firmar digitalmente un MSOffice mediante la libreria
  * Rubrica.
  * 
  * @author Ricardo Arguello <ricardo.arguello@soportelibre.com>
  */
-public class FirmaDigitalPdf {
+public class FirmaDigitalOOXML {
 
     static {
         BouncyCastleUtils.initializeBouncyCastle();
@@ -54,17 +56,17 @@ public class FirmaDigitalPdf {
         char[] password = (clave != null) ? clave.toCharArray() : null;
         List<Alias> signingAliases = KeyStoreUtilities.getSigningAliases(keyStore);
 
-        byte[] signedPdf = null;
+        byte[] signedMSOffice = null;
         
         for (Alias alias : signingAliases) {
-                        PrivateKey pk = (PrivateKey) keyStore.getKey(alias.getAlias(), password);
+            PrivateKey pk = (PrivateKey) keyStore.getKey(alias.getAlias(), password);
             Certificate[] chain = keyStore.getCertificateChain(alias.getAlias());
             // (byte[] data, String algorithm, PrivateKey key, Certificate[] certChain, Properties xParams)
-            Signer PDFSigner = new PDFSigner();
-            signedPdf = PDFSigner.sign(documento,null , pk, chain, null);  //(documento, pk, chain, null);
+            Signer oOXMLSigner = new OOXMLSigner();
+            signedMSOffice = oOXMLSigner.sign(documento,SignConstants.SIGN_ALGORITHM_SHA1WITHRSA , pk, chain, null);  //(documento, pk, chain, null);
             
         }
-        return signedPdf;
+        return signedMSOffice;
     }
     
     /**
@@ -76,21 +78,21 @@ public class FirmaDigitalPdf {
      * @throws Exception
      */
     public byte[] firmar(KeyStore keyStore, byte[] documento, char[] clave) throws Exception {
-        System.out.println("Firmando ");
+        System.out.println("Firmando OOXML");
     
         List<Alias> signingAliases = KeyStoreUtilities.getSigningAliases(keyStore);
 
-        byte[] signedPdf = null;
+        byte[] signedMSOffice = null;
         
         for (Alias alias : signingAliases) {
  
             PrivateKey pk = (PrivateKey) keyStore.getKey(alias.getAlias(), clave);
             Certificate[] chain = keyStore.getCertificateChain(alias.getAlias());
             // (byte[] data, String algorithm, PrivateKey key, Certificate[] certChain, Properties xParams)
-            Signer PDFSigner = new PDFSigner();
-            signedPdf = PDFSigner.sign(documento,null , pk, chain, null);  //(documento, pk, chain, null);
+            Signer oOXMLSigner = new OOXMLSigner();
+            signedMSOffice = oOXMLSigner.sign(documento,SignConstants.SIGN_ALGORITHM_SHA1WITHRSA , pk, chain, null);  //(documento, pk, chain, null);
             
         }
-        return signedPdf;
+        return signedMSOffice;
     }
 }
