@@ -6,7 +6,9 @@
 package ec.gob.firmadigital.firmador;
 
 import ec.gob.firmadigital.cliente.pdf.FirmaDigital;
+import ec.gob.firmadigital.cliente.pdf.VerificadorDigital;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
+import java.awt.Component;
 import java.util.List;
 import javax.swing.JFileChooser;
 import java.io.File;
@@ -15,9 +17,14 @@ import java.security.KeyStoreException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import rubrica.keystore.FileKeyStoreProvider;
 import rubrica.keystore.KeyStoreProvider;
 import rubrica.keystore.KeyStoreProviderList;
@@ -184,6 +191,7 @@ public class Main extends javax.swing.JFrame {
      */
     private boolean verificarDocumento() {
         // Vemos si existe
+        System.out.println("Verificando Docs");
         if (documento == null || !documento.exists()) {
             return false;
         }
@@ -192,52 +200,50 @@ public class Main extends javax.swing.JFrame {
             return false;
         }
 
-        // Vemos los procesos por documento
-        String extDocumento = FirmadorFileUtils.getFileExtension(documento);
-
-        // TODO arreglar manejo de errores
-        switch (extDocumento) {
-            case "pdf":
-                return verificarPDF(documento);
-            case "docx":
-            case "xlsx":
-            case "pptx":
-                return verificarMSOffice(documento);
-            case "odt":
-            case "ods":
-            case "odp":
-                return verificarLibreOffice(documento);
-            default:
-                return false;
+        VerificadorDigital verificadorDigital = new VerificadorDigital();
+        
+        List<Certificado> certs = verificadorDigital.verificar(documento);
+        
+        DefaultTreeModel model = (DefaultTreeModel) certificadosJTR.getModel();
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+        
+        //Borramos los viejos nodos
+        root.removeAllChildren(); //this removes all nodes
+        model.reload();
+        
+        int cont = 0;
+        
+        
+        for(Certificado cert: certs){
+   
+            DefaultMutableTreeNode curCert = new DefaultMutableTreeNode("Certificado " + ++cont);
+            
+ 
+            root.add(curCert);
+            
+            curCert.add(new DefaultMutableTreeNode("Issued To: " + cert.getIssuedTo()));
+            curCert.add(new DefaultMutableTreeNode("Issued By: " + cert.getIssuedBy()));
+            curCert.add(new DefaultMutableTreeNode("Válido desde: " + cert.getValidFrom()));
+            curCert.add(new DefaultMutableTreeNode("Válido hasta: " + cert.getValidTo()));
+            curCert.add(new DefaultMutableTreeNode("Fecha utilizado: " + cert.getGenerated()));
+            curCert.add(new DefaultMutableTreeNode("Validado: " + cert.getValidated()));
         }
-
+        
+        DefaultTreeModel treeModel = new DefaultTreeModel(root);
+        certificadosJTR.setModel(treeModel);
+        //model.insertNodeInto(new DefaultMutableTreeNode("another_child"), root, root.getChildCount());
+        
+        return false;
     }
 
-    private boolean verificarPDF(File documento) {
-        // TODO conectar a rubica, recibir informacion
-        System.out.println("Verificar PDF");
-        for (int i = 0; i < 10; i++) {
-
-        }
-        return true;
-    }
-
-    private boolean verificarMSOffice(File documento) {
-        // TODO conectar a rubica, recibir informacion
-        return true;
-    }
-
-    private boolean verificarLibreOffice(File documento) {
-        // TODO conectar a rubica, recibir informacion
-        return true;
-    }
-
+    
     // Se podria verificar el mimetype
     private boolean tipoDeDocumentPermitido(File documento) {
         String extDocumento = FirmadorFileUtils.getFileExtension(documento);
         return extensionesPermitidas.stream().anyMatch((extension) -> (extension.equals(extDocumento)));
     }
 
+    //TODO botar exceptions en vez de return false
     private boolean firmarDocumento() throws Exception {
         // Vemos si existe
         if (documento == null || !documento.exists()) {
@@ -251,8 +257,6 @@ public class Main extends javax.swing.JFrame {
         if(!validarFirma())
             return false;
 
-        // Vemos los procesos por documento
-        String extDocumento = FirmadorFileUtils.getFileExtension(documento);
         FirmaDigital firmaDigital = new FirmaDigital();
         
         byte[] docSigned = firmaDigital.firmar(ks, documento, claveTXT.getPassword());
@@ -261,9 +265,9 @@ public class Main extends javax.swing.JFrame {
         FirmadorFileUtils.saveByteArrayToDisc(docSigned, nombreDocFirmado);
 
        return false;
-
     }
 
+    // TODO botar esto a una clase talvez FirmaDigital y botar exceptions
      private boolean validarFirma(){
         System.out.println("Validar Firma");
         if (this.firmarTokenRBTN.isSelected()) {
