@@ -5,22 +5,16 @@
  */
 package ec.gob.firmadigital.firmador;
 
-import ec.gob.firmadigital.cliente.pdf.FirmaDigitalODF;
-import ec.gob.firmadigital.cliente.pdf.FirmaDigitalOOXML;
-import ec.gob.firmadigital.cliente.pdf.FirmaDigitalPdf;
-import ec.gob.firmadigital.utils.FileUtils;
+import ec.gob.firmadigital.cliente.pdf.FirmaDigital;
+import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import java.util.List;
 import javax.swing.JFileChooser;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -84,7 +78,7 @@ public class Main extends javax.swing.JFrame {
             if (archivo.exists()) {
                 System.out.println("existe");
             }
-            System.out.println("entro");
+   
             ultimaCarpeta = fileChooser.getCurrentDirectory();
             return archivo;
         }
@@ -199,7 +193,7 @@ public class Main extends javax.swing.JFrame {
         }
 
         // Vemos los procesos por documento
-        String extDocumento = FileUtils.getFileExtension(documento);
+        String extDocumento = FirmadorFileUtils.getFileExtension(documento);
 
         // TODO arreglar manejo de errores
         switch (extDocumento) {
@@ -240,11 +234,11 @@ public class Main extends javax.swing.JFrame {
 
     // Se podria verificar el mimetype
     private boolean tipoDeDocumentPermitido(File documento) {
-        String extDocumento = FileUtils.getFileExtension(documento);
+        String extDocumento = FirmadorFileUtils.getFileExtension(documento);
         return extensionesPermitidas.stream().anyMatch((extension) -> (extension.equals(extDocumento)));
     }
 
-    private boolean firmarDocumento() {
+    private boolean firmarDocumento() throws Exception {
         // Vemos si existe
         if (documento == null || !documento.exists()) {
             return false;
@@ -253,25 +247,20 @@ public class Main extends javax.swing.JFrame {
         if (!validacionPreFirmar()) {
             return false;
         }
+        
+        if(!validarFirma())
+            return false;
 
         // Vemos los procesos por documento
-        String extDocumento = FileUtils.getFileExtension(documento);
+        String extDocumento = FirmadorFileUtils.getFileExtension(documento);
+        FirmaDigital firmaDigital = new FirmaDigital();
+        
+        byte[] docSigned = firmaDigital.firmar(ks, documento, claveTXT.getPassword());
+        String nombreDocFirmado = crearNombreFirmado(documento);
+        
+        FirmadorFileUtils.saveByteArrayToDisc(docSigned, nombreDocFirmado);
 
-        // TODO arreglar manejo de errores
-        switch (extDocumento) {
-            case "pdf":
-                return firmarPDF(documento);
-            case "docx":
-            case "xlsx":
-            case "pptx":
-                return firmarMSOffice(documento);
-            case "odt":
-            case "ods":
-            case "odp":
-                return firmarLibreOffice(documento);
-            default:
-                return false;
-        }
+       return false;
 
     }
 
@@ -297,132 +286,6 @@ public class Main extends javax.swing.JFrame {
         }
         return true;
     }
-     
-    private boolean firmarPDF(File documento) {
-        // TODO conectar a rubica, recibir informacion
-        System.out.println("Firmar PDF");
-        if(!validarFirma())
-            return false;
-        // FIRMAR!
-        String documentoFirmado = iniciarProcesoFirmaPDF(claveTXT.getPassword());
-        
-        this.documentoFirmadoTXT.setText(documentoFirmado);
-        
-        return true;
-    }
-    
-   
-
-    private boolean firmarMSOffice(File documento) {
-        System.out.println("Firmar Ooxml");
-        if(!validarFirma())
-            return false;
-        // FIRMAR!
-        String documentoFirmado = iniciarProcesoMSOffice(claveTXT.getPassword());
-        
-        this.documentoFirmadoTXT.setText(documentoFirmado);
-        
-        return true;
-    }
-
-    private boolean firmarLibreOffice(File documento) {
-        System.out.println("Firmar Ooxml");
-        if(!validarFirma())
-            return false;
-        // FIRMAR!
-        String documentoFirmado = iniciarProcesoLibreOffice(claveTXT.getPassword());
-        
-        this.documentoFirmadoTXT.setText(documentoFirmado);
-        
-        return true;
-    }
-
-    /**
-     * Trae el documento, lo firma y lo actualiza nuevamente.
-     *
-     * @param clave para la firma digital.
-     */
-    private String iniciarProcesoFirmaPDF(char[] clave) {
-        try {
-            System.out.println("Iniciar el Proceso de Firma");
-            // Firmar el documento
-            FirmaDigitalPdf firmador = new FirmaDigitalPdf();
-            Path documentoPath = Paths.get(documento.getAbsolutePath());
-            byte[] dataDocumento = Files.readAllBytes(documentoPath);
-            
-            byte[] firmado = firmador.firmar(ks, dataDocumento, clave);
-
-            String rutaFirmado = crearNombreFirmado(documento);
-
-            grabarByteArrayDisco(firmado, rutaFirmado);
-            return rutaFirmado;
-
-        } catch (Exception e) {
-            //mostrarMensaje("ERROR: " + e.getMessage());
-            System.err.println("ERROR: " + e.getMessage());
-        }
-        return null;
-    }
-    /**
-     * Trae el documento, lo firma y lo actualiza nuevamente.
-     *
-     * @param clave para la firma digital.
-     */
-    private String iniciarProcesoMSOffice(char[] clave) {
-        try {
-            System.out.println("Iniciar el Proceso de Firma");
-            // Firmar el documento
-            FirmaDigitalOOXML firmador = new FirmaDigitalOOXML();
-            Path documentoPath = Paths.get(documento.getAbsolutePath());
-            byte[] dataDocumento = Files.readAllBytes(documentoPath);
-            
-            byte[] firmado = firmador.firmar(ks, dataDocumento, clave);
-
-            String rutaFirmado = crearNombreFirmado(documento);
-
-            grabarByteArrayDisco(firmado, rutaFirmado);
-            return rutaFirmado;
-
-        } catch (Exception e) {
-            //mostrarMensaje("ERROR: " + e.getMessage());
-            System.err.println("ERROR: " + e.getMessage());
-        }
-        return null;
-    }
-    
-    /**
-     * Trae el documento, lo firma y lo actualiza nuevamente.
-     *
-     * @param clave para la firma digital.
-     */
-    private String iniciarProcesoLibreOffice(char[] clave) {
-        try {
-            System.out.println("Iniciar el Proceso de Firma");
-            // Firmar el documento
-            FirmaDigitalODF firmador = new FirmaDigitalODF();
-            Path documentoPath = Paths.get(documento.getAbsolutePath());
-            byte[] dataDocumento = Files.readAllBytes(documentoPath);
-            
-            byte[] firmado = firmador.firmar(ks, dataDocumento, clave);
-
-            String rutaFirmado = crearNombreFirmado(documento);
-
-            grabarByteArrayDisco(firmado, rutaFirmado);
-            return rutaFirmado;
-
-        } catch (Exception e) {
-            //mostrarMensaje("ERROR: " + e.getMessage());
-            System.err.println("ERROR: " + e.getMessage());
-        }
-        return null;
-    }
-    
-    private void grabarByteArrayDisco(byte[] archivo,String rutaNombre) throws FileNotFoundException, IOException {
-        // TODO validar si hay otro archivo de momento lo sobre escribe
-        FileOutputStream fos = new FileOutputStream(rutaNombre);
-        fos.write(archivo);
-        fos.close();
-    }
     
     // TODO Crear clase para manejar esto
     private String crearNombreFirmado(File documento){
@@ -434,17 +297,11 @@ public class Main extends javax.swing.JFrame {
         String nombre = nombreCompleto.replaceFirst("[.][^.]+$", "");
 
         //String extension = getFileExtension(documento);
-        String extension =  FileUtils.getFileExtension(documento);
+        String extension =  FirmadorFileUtils.getFileExtension(documento);
         
         System.out.println(nombre + "-signed." + extension);
         return nombre + "-signed." + extension;
-        //String ruta = documento.getParent();
-        //return ruta + nombre + "-signed." + extension;
     }
-    
-    
-
-
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -723,7 +580,12 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_verificarBTN1ActionPerformed
 
     private void firmarBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firmarBTNActionPerformed
-        this.firmarDocumento();
+        try {
+            this.firmarDocumento();
+        } catch (Exception ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error no se pudo firmar ");
+        }
     }//GEN-LAST:event_firmarBTNActionPerformed
 
     private void documentoFirmadoTXTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_documentoFirmadoTXTActionPerformed
@@ -758,10 +620,8 @@ public class Main extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Main().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new Main().setVisible(true);
         });
     }
 

@@ -13,7 +13,6 @@ import java.security.KeyStore.PrivateKeyEntry;
 import org.junit.Assert;
 import org.junit.Test;
 
-import ec.gob.firmadigital.cliente.pdf.FirmaDigitalPdf;
 import rubrica.sign.Signer;
 import rubrica.sign.pdf.PDFSigner;
 
