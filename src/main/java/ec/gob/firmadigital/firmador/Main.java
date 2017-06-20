@@ -7,6 +7,10 @@ package ec.gob.firmadigital.firmador;
 
 import ec.gob.firmadigital.cliente.pdf.FirmaDigital;
 import ec.gob.firmadigital.cliente.pdf.VerificadorDigital;
+import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
+import ec.gob.firmadigital.exceptions.DocumentoNoPermitido;
+import ec.gob.firmadigital.exceptions.TokenNoConectadoException;
+import ec.gob.firmadigital.exceptions.TokenNoEncontrado;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import java.awt.Component;
 import java.util.List;
@@ -19,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -108,6 +113,13 @@ public class Main extends javax.swing.JFrame {
     }
 
     private void resetForm() {
+        DefaultTreeModel model = (DefaultTreeModel) certificadosJTR.getModel();
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+        
+        //Borramos los viejos nodos
+        root.removeAllChildren(); //this removes all nodes
+        model.reload();
+        
         this.documento = null;
         this.tipoFirmaBtnGRP.clearSelection();
         this.firmarBTN.setEnabled(false);
@@ -150,24 +162,24 @@ public class Main extends javax.swing.JFrame {
     /*
     Valida que esten los campos necesarios para firmar
      */
-    private boolean validacionPreFirmar() {
+    private void validacionPreFirmar() throws Exception{
         //Revisamos si existe el documento a firmar
         // TODO no hacer un return directamente, se podria validar todos los parametros e ir aumentando los errores
-        if (!documento.exists()) {
-            this.mensajeError = "El documento no existe en la ruta";
-            return false;
-        }
+        if (documento ==null )
+            throw new DocumentoNoExistenteException("Documento "+this.rutaDocumentoTXT.getText() + " no existe");
+
+        if(!documento.exists()) 
+            throw new DocumentoNoExistenteException("Documento "+documento.getAbsolutePath() + " no existe");
+        
+            
         if (firmarLlaveRBTN.isSelected() && !llave.exists()) {
-            this.mensajeError = "La llave no existe en la ruta";
-            return false;
+            throw new DocumentoNoExistenteException("La llave "+llave.getAbsolutePath() + " no existe");
         }
         // Si firma con token debe
         if (firmarTokenRBTN.isSelected() && !hayToken()) {
-            this.mensajeError = "No hay token conectado";
-            return false;
+            throw new TokenNoConectadoException("Token no está conectado");
         }
-        return tipoDeDocumentPermitido(documento);
-
+        tipoDeDocumentPermitido(documento);
     }
 
     // Si existe el archivo
@@ -189,17 +201,15 @@ public class Main extends javax.swing.JFrame {
     /*
     verificar documento
      */
-    private boolean verificarDocumento() {
+    private boolean verificarDocumento() throws DocumentoNoPermitido {
         // Vemos si existe
         System.out.println("Verificando Docs");
         if (documento == null || !documento.exists()) {
             return false;
         }
         // Vemos si es un documento permitido primero
-        if (!tipoDeDocumentPermitido(documento)) {
-            return false;
-        }
-
+        tipoDeDocumentPermitido(documento);
+        
         VerificadorDigital verificadorDigital = new VerificadorDigital();
         
         List<Certificado> certs = verificadorDigital.verificar(documento);
@@ -216,8 +226,7 @@ public class Main extends javax.swing.JFrame {
         
         for(Certificado cert: certs){
    
-            DefaultMutableTreeNode curCert = new DefaultMutableTreeNode("Certificado " + ++cont);
-            
+            DefaultMutableTreeNode curCert = new DefaultMutableTreeNode("Certificado " + ++cont);    
  
             root.add(curCert);
             
@@ -238,24 +247,19 @@ public class Main extends javax.swing.JFrame {
 
     
     // Se podria verificar el mimetype
-    private boolean tipoDeDocumentPermitido(File documento) {
+    // Talvez eliminar el if
+    private void tipoDeDocumentPermitido(File documento) throws DocumentoNoPermitido {
         String extDocumento = FirmadorFileUtils.getFileExtension(documento);
-        return extensionesPermitidas.stream().anyMatch((extension) -> (extension.equals(extDocumento)));
+        if(!extensionesPermitidas.stream().anyMatch((extension) -> (extension.equals(extDocumento))))
+            throw new DocumentoNoPermitido("Extensión ." + extDocumento + " no permitida");
     }
 
     //TODO botar exceptions en vez de return false
     private boolean firmarDocumento() throws Exception {
-        // Vemos si existe
-        if (documento == null || !documento.exists()) {
-            return false;
-        }
         // Vemos si es un documento permitido primero
-        if (!validacionPreFirmar()) {
-            return false;
-        }
-        
-        if(!validarFirma())
-            return false;
+        validacionPreFirmar();
+
+        validarFirma();
 
         FirmaDigital firmaDigital = new FirmaDigital();
         
@@ -264,31 +268,24 @@ public class Main extends javax.swing.JFrame {
         
         FirmadorFileUtils.saveByteArrayToDisc(docSigned, nombreDocFirmado);
 
-       return false;
+        return false;
     }
 
     // TODO botar esto a una clase talvez FirmaDigital y botar exceptions
-     private boolean validarFirma(){
+     private void validarFirma() throws Exception  {
         System.out.println("Validar Firma");
         if (this.firmarTokenRBTN.isSelected()) {
             ks = KeyStoreProviderList.getKeyStore(claveTXT.getPassword().toString());
             if (ks == null) {
                 //JOptionPane.showMessageDialog(frame, "No se encontro un token!");
-                System.err.println("No se encontro token!");
-                return false;
+                throw new TokenNoEncontrado("No se encontro token!");
             }
 
         } else {
             KeyStoreProvider ksp = new FileKeyStoreProvider(rutaLlaveTXT.getText());
-            try {
-                ks = ksp.getKeystore(claveTXT.getPassword());
-            } catch (KeyStoreException e1) {
-                System.err.println("Contraseña invalida. " +claveTXT.getPassword().toString());
-                //JOptionPane.showMessageDialog(frame, "Contraseña invalida.");
-                return false;
-            }
+            ks = ksp.getKeystore(claveTXT.getPassword());
+            
         }
-        return true;
     }
     
     // TODO Crear clase para manejar esto
@@ -576,7 +573,14 @@ public class Main extends javax.swing.JFrame {
         if (!documento.getAbsolutePath().equals(rutaDocumentoTXT.getText())) {
             documento = new File(rutaDocumentoTXT.getText());
         }
-        verificarDocumento();
+        try {
+            verificarDocumento();
+        } catch (Exception ex) {
+            //TODO agregar mensaje de error
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error no se pudo verificar ");
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_verificarBTNActionPerformed
 
     private void verificarBTN1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verificarBTN1ActionPerformed
@@ -587,6 +591,8 @@ public class Main extends javax.swing.JFrame {
         try {
             this.firmarDocumento();
         } catch (Exception ex) {
+            //TODO agregar mensaje de error
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Error no se pudo firmar ");
         }
