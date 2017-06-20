@@ -1,0 +1,6 @@
+= Firma Digital: Firmador Verificador
+
+Como empaquetar un solo JAR:
+
+----
+mvn clean compile assembly:single

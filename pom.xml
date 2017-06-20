@@ -1,33 +1,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>ec.gob.firmadigital</groupId>
-  <artifactId>firmador</artifactId>
-  <version>0.1.1-SNAPSHOT</version>
-  <name>firmador</name>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>ec.gob.firmadigital</groupId>
+    <artifactId>firmador</artifactId>
+    <version>0.1.2-SNAPSHOT</version>
+    <name>firmador</name>
   
-  <properties>
+    <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mainClass>ec.gob.firmadigital.firmador.Main</mainClass>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-  </properties>
-  <dependencies>
-      <dependency>
-          <groupId>rubrica</groupId>
-          <artifactId>rubrica</artifactId>
-          <version>2.0.0-SNAPSHOT</version>
-      </dependency>
-      <!-- Testing -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-  </dependencies>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>rubrica</groupId>
+            <artifactId>rubrica</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
   
-  <build>
+    <build>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
+         
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -35,11 +37,27 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ec.gob.firmadigital.firmador.Main</mainClass>
+                            <mainClass>${mainClass}</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
+       
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${mainClass}</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
 </project>

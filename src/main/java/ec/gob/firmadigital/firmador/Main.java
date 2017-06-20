@@ -17,7 +17,6 @@ import java.util.List;
 import javax.swing.JFileChooser;
 import java.io.File;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,12 +46,12 @@ public class Main extends javax.swing.JFrame {
     private String mensajeError;
     private static final String RUTA_IMG = "images/";
     private static final String CHECK_IMG = "CheckIcon.png";
-    private static final String NOTCHECK_IMG = "Deleteicon.png";
+    private static final String NOTCHECK_IMG = "DeleteIcon.png";
     private final List<String> extensionesPermitidas;
     private final FileNameExtensionFilter filtros = new FileNameExtensionFilter("Documentos de Oficina", "pdf", "docx", "xlsx", "pptx", "odt", "ods", "odp");
     private static final String OS = System.getProperty("os.name").toLowerCase();
-    private final ImageIcon checkIcon = new ImageIcon(RUTA_IMG + CHECK_IMG);
-    private final ImageIcon notCheckIcon = new ImageIcon(RUTA_IMG + NOTCHECK_IMG);
+    private final ImageIcon checkIcon = new ImageIcon(ClassLoader.getSystemResource(RUTA_IMG + CHECK_IMG));
+    private final ImageIcon notCheckIcon = new ImageIcon(ClassLoader.getSystemResource(RUTA_IMG + NOTCHECK_IMG));
 
     /**
      * Creates new form Main
@@ -217,6 +216,36 @@ public class Main extends javax.swing.JFrame {
         DefaultTreeModel model = (DefaultTreeModel) certificadosJTR.getModel();
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
         
+        certificadosJTR.setCellRenderer(new DefaultTreeCellRenderer() {
+
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree,
+                    Object value, boolean selected, boolean expanded,
+                    boolean isLeaf, int row, boolean focused) {
+                Component c = super.getTreeCellRendererComponent(tree, value,
+                        selected, expanded, isLeaf, row, focused);
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+                //TODO esto se podria hacer mas bonito
+                String s = node.getUserObject().toString();
+                
+                if (node.getLevel()==1){
+                    //System.out.println(node.getChildAt(5).toString());
+                    if(node.getChildAt(5).toString().toLowerCase().contains("true"))
+                        setIcon(checkIcon);
+                    else
+                        setIcon(notCheckIcon);
+                }else if (node.getLevel()==2 && s.toLowerCase().contains("validado")){
+                    // String s = node.getUserObject().toString();
+                    
+                    if(s.contains("true"))
+                        setIcon(checkIcon);
+                    else
+                        setIcon(notCheckIcon);
+                }
+                
+                return c;
+            }
+        });
         //Borramos los viejos nodos
         root.removeAllChildren(); //this removes all nodes
         model.reload();
@@ -523,11 +552,11 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(documentoFirmadoTXT, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(verificadoPorSPL, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
+                    .addComponent(jLabel4)
+                    .addComponent(verificadoPorSPL, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -589,7 +618,7 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_verificarBTN1ActionPerformed
 
     private void firmarBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firmarBTNActionPerformed
-        if (!documento.getAbsolutePath().equals(rutaDocumentoTXT.getText())) 
+        if (documento == null || !documento.getAbsolutePath().equals(rutaDocumentoTXT.getText())) 
             documento = new File(rutaDocumentoTXT.getText());
         
         try {
