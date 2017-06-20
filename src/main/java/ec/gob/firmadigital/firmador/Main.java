@@ -570,9 +570,10 @@ public class Main extends javax.swing.JFrame {
     private void verificarBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verificarBTNActionPerformed
         // Si lo del documento es distinto a lo de la ruta seteamos la ruta
         // del documento a la del textfield
-        if (!documento.getAbsolutePath().equals(rutaDocumentoTXT.getText())) {
+        if (!documento.getAbsolutePath().equals(rutaDocumentoTXT.getText())) 
             documento = new File(rutaDocumentoTXT.getText());
-        }
+        
+        
         try {
             verificarDocumento();
         } catch (Exception ex) {
@@ -588,6 +589,9 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_verificarBTN1ActionPerformed
 
     private void firmarBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firmarBTNActionPerformed
+        if (!documento.getAbsolutePath().equals(rutaDocumentoTXT.getText())) 
+            documento = new File(rutaDocumentoTXT.getText());
+        
         try {
             this.firmarDocumento();
         } catch (Exception ex) {
