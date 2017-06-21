@@ -296,8 +296,10 @@ public class Main extends javax.swing.JFrame {
         String nombreDocFirmado = crearNombreFirmado(documento);
         
         FirmadorFileUtils.saveByteArrayToDisc(docSigned, nombreDocFirmado);
+        
+        this.documentoFirmadoTXT.setText(nombreDocFirmado);
 
-        return false;
+        return true;
     }
 
     // TODO botar esto a una clase talvez FirmaDigital y botar exceptions
@@ -623,9 +625,12 @@ public class Main extends javax.swing.JFrame {
         
         try {
             this.firmarDocumento();
+            JOptionPane.showMessageDialog(this, "Documento firmado "+ this.documentoFirmadoTXT.getText(), "Firmador", JOptionPane.INFORMATION_MESSAGE, checkIcon);
+            System.out.println("Documento firmado");
         } catch (Exception ex) {
             //TODO agregar mensaje de error
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Error no se pudo firmar ");
         }
