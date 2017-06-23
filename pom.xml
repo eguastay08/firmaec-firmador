@@ -13,7 +13,7 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>rubrica</groupId>
+            <groupId>io.rubrica</groupId>
             <artifactId>rubrica</artifactId>
             <version>2.0.0-SNAPSHOT</version>
         </dependency>

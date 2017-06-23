@@ -4,26 +4,28 @@
  */
 package ec.gob.firmadigital.firmador;
 
-import java.util.Date;
+import java.util.Calendar;
 
 public class Certificado {
     private String issuedTo;
     private String issuedBy;
-    private Date validFrom;
-    private Date validTo;
-    private Date generated;
+    private Calendar validFrom;
+    private Calendar validTo;
+    private Calendar generated;
     private Boolean validated;
+    private Boolean revocated;
 
     public Certificado() {
     }
 
-    public Certificado(String issuedTo, String issuedBy, Date validFrom, Date validTo, Date generated, Boolean validated) {
+    public Certificado(String issuedTo, String issuedBy, Calendar validFrom, Calendar validTo, Calendar generated, Boolean validated, Boolean revocated) {
         this.issuedTo = issuedTo;
         this.issuedBy = issuedBy;
         this.validFrom = validFrom;
         this.validTo = validTo;
         this.generated = generated;
         this.validated = validated;
+        this.revocated = revocated;
     }
 
     public String getIssuedTo() {
@@ -42,27 +44,27 @@ public class Certificado {
         this.issuedBy = issuedBy;
     }
 
-    public Date getValidFrom() {
+    public Calendar getValidFrom() {
         return validFrom;
     }
 
-    public void setValidFrom(Date validFrom) {
+    public void setValidFrom(Calendar validFrom) {
         this.validFrom = validFrom;
     }
 
-    public Date getValidTo() {
+    public Calendar getValidTo() {
         return validTo;
     }
 
-    public void setValidTo(Date validTo) {
+    public void setValidTo(Calendar validTo) {
         this.validTo = validTo;
     }
 
-    public Date getGenerated() {
+    public Calendar getGenerated() {
         return generated;
     }
 
-    public void setGenerated(Date generated) {
+    public void setGenerated(Calendar generated) {
         this.generated = generated;
     }
 
@@ -72,5 +74,13 @@ public class Certificado {
 
     public void setValidated(Boolean validated) {
         this.validated = validated;
-    }    
+    }
+
+	public Boolean getRevocated() {
+		return revocated;
+	}
+
+	public void setRevocated(Boolean revocated) {
+		this.revocated = revocated;
+	}    
 }

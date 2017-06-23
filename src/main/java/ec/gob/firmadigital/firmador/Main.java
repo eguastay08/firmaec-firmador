@@ -5,8 +5,8 @@
  */
 package ec.gob.firmadigital.firmador;
 
-import ec.gob.firmadigital.cliente.pdf.FirmaDigital;
-import ec.gob.firmadigital.cliente.pdf.VerificadorDigital;
+import ec.gob.firmadigital.cliente.FirmaDigital;
+import ec.gob.firmadigital.cliente.VerificadorDigital;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
 import ec.gob.firmadigital.exceptions.DocumentoNoPermitido;
 import ec.gob.firmadigital.exceptions.TokenNoConectadoException;
@@ -29,9 +29,14 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import rubrica.keystore.FileKeyStoreProvider;
-import rubrica.keystore.KeyStoreProvider;
-import rubrica.keystore.KeyStoreProviderList;
+import io.rubrica.keystore.FileKeyStoreProvider;
+import io.rubrica.keystore.KeyStoreProvider;
+import io.rubrica.keystore.KeyStoreProviderFactory;import io.rubrica.ocsp.OcspValidationException;
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.SignatureException;
+import java.text.SimpleDateFormat;
+;
 
 /**
  *
@@ -200,7 +205,7 @@ public class Main extends javax.swing.JFrame {
     /*
     verificar documento
      */
-    private boolean verificarDocumento() throws DocumentoNoPermitido {
+    private boolean verificarDocumento() throws DocumentoNoPermitido, IOException, KeyStoreException, OcspValidationException, SignatureException {
         // Vemos si existe
         System.out.println("Verificando Docs");
         if (documento == null || !documento.exists()) {
@@ -229,8 +234,14 @@ public class Main extends javax.swing.JFrame {
                 String s = node.getUserObject().toString();
                 
                 if (node.getLevel()==1){
-                    //System.out.println(node.getChildAt(5).toString());
-                    if(node.getChildAt(5).toString().toLowerCase().contains("true"))
+                    /**
+                     * Solo si es un certificado valido, que no ha sido revocado 
+                     * y que pertenezca a una entidad reconocida
+                     * TODO usar constantes para las entidad
+                     */
+                    if(node.getChildAt(5).toString().toLowerCase().contains("true") && 
+                            node.getChildAt(6).toString().toLowerCase().contains("false")  &&
+                            !node.getChildAt(1).toString().toLowerCase().contains("entidad no reconocidad") )
                         setIcon(checkIcon);
                     else
                         setIcon(notCheckIcon);
@@ -241,6 +252,12 @@ public class Main extends javax.swing.JFrame {
                         setIcon(checkIcon);
                     else
                         setIcon(notCheckIcon);
+                }else if (node.getLevel()==2 && s.toLowerCase().contains("revocado")){
+                    // String s = node.getUserObject().toString();
+                    if(s.contains("true"))
+                        setIcon(notCheckIcon);
+                    else
+                        setIcon(checkIcon);
                 }
                 
                 return c;
@@ -252,19 +269,22 @@ public class Main extends javax.swing.JFrame {
         
         int cont = 0;
         
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+       
         
         for(Certificado cert: certs){
    
-            DefaultMutableTreeNode curCert = new DefaultMutableTreeNode("Certificado " + ++cont);    
+            DefaultMutableTreeNode curCert = new DefaultMutableTreeNode("Certificado " + ++cont+ ": "+cert.getIssuedTo());    
  
             root.add(curCert);
             
-            curCert.add(new DefaultMutableTreeNode("Issued To: " + cert.getIssuedTo()));
-            curCert.add(new DefaultMutableTreeNode("Issued By: " + cert.getIssuedBy()));
-            curCert.add(new DefaultMutableTreeNode("Válido desde: " + cert.getValidFrom()));
-            curCert.add(new DefaultMutableTreeNode("Válido hasta: " + cert.getValidTo()));
-            curCert.add(new DefaultMutableTreeNode("Fecha utilizado: " + cert.getGenerated()));
+            curCert.add(new DefaultMutableTreeNode("Emitido a: " + cert.getIssuedTo()));
+            curCert.add(new DefaultMutableTreeNode("Emitido por: " + cert.getIssuedBy()));
+            curCert.add(new DefaultMutableTreeNode("Válido desde: " + format1.format(cert.getValidFrom().getTime())));
+            curCert.add(new DefaultMutableTreeNode("Válido hasta: " + format1.format(cert.getValidTo().getTime())));
+            curCert.add(new DefaultMutableTreeNode("Fecha utilizado: " + format1.format(cert.getGenerated().getTime())));
             curCert.add(new DefaultMutableTreeNode("Validado: " + cert.getValidated()));
+            curCert.add(new DefaultMutableTreeNode("Revocado: " + cert.getRevocated()));
         }
         
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
@@ -273,6 +293,7 @@ public class Main extends javax.swing.JFrame {
         
         return false;
     }
+    
 
     
     // Se podria verificar el mimetype
@@ -306,7 +327,7 @@ public class Main extends javax.swing.JFrame {
      private void validarFirma() throws Exception  {
         System.out.println("Validar Firma");
         if (this.firmarTokenRBTN.isSelected()) {
-            ks = KeyStoreProviderList.getKeyStore(claveTXT.getPassword().toString());
+            ks = KeyStoreProviderFactory.getKeyStore(claveTXT.getPassword().toString());
             if (ks == null) {
                 //JOptionPane.showMessageDialog(frame, "No se encontro un token!");
                 throw new TokenNoEncontrado("No se encontro token!");
@@ -603,7 +624,6 @@ public class Main extends javax.swing.JFrame {
         // del documento a la del textfield
         if (!documento.getAbsolutePath().equals(rutaDocumentoTXT.getText())) 
             documento = new File(rutaDocumentoTXT.getText());
-        
         
         try {
             verificarDocumento();

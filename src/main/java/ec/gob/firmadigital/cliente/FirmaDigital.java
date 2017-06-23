@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ec.gob.firmadigital.cliente.pdf;
+package ec.gob.firmadigital.cliente;
 
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import java.io.File;
@@ -11,13 +11,13 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.List;
-import rubrica.keystore.Alias;
-import rubrica.keystore.KeyStoreUtilities;
-import rubrica.sign.SignConstants;
-import rubrica.sign.Signer;
-import rubrica.sign.odf.ODFSigner;
-import rubrica.sign.ooxml.OOXMLSigner;
-import rubrica.sign.pdf.PDFSigner;
+import io.rubrica.keystore.Alias;
+import io.rubrica.keystore.KeyStoreUtilities;
+import io.rubrica.sign.SignConstants;
+import io.rubrica.sign.Signer;
+import io.rubrica.sign.odf.ODFSigner;
+import io.rubrica.sign.ooxml.OOXMLSigner;
+import io.rubrica.sign.pdf.PDFSigner;
 
 /**
  *
