@@ -6,7 +6,6 @@
 package ec.gob.firmadigital.firmador;
 
 import ec.gob.firmadigital.cliente.FirmaDigital;
-import ec.gob.firmadigital.cliente.VerificadorDigital;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
 import ec.gob.firmadigital.exceptions.DocumentoNoPermitido;
 import ec.gob.firmadigital.exceptions.TokenNoConectadoException;
@@ -31,7 +30,9 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
-import io.rubrica.keystore.KeyStoreProviderFactory;import io.rubrica.ocsp.OcspValidationException;
+import io.rubrica.keystore.KeyStoreProviderFactory;
+import io.rubrica.ocsp.OcspValidationException;
+import io.rubrica.sign.InvalidFormatException;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.SignatureException;
@@ -205,7 +206,7 @@ public class Main extends javax.swing.JFrame {
     /*
     verificar documento
      */
-    private boolean verificarDocumento() throws DocumentoNoPermitido, IOException, KeyStoreException, OcspValidationException, SignatureException {
+    private boolean verificarDocumento() throws DocumentoNoPermitido, IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException {
         // Vemos si existe
         System.out.println("Verificando Docs");
         if (documento == null || !documento.exists()) {
@@ -214,9 +215,12 @@ public class Main extends javax.swing.JFrame {
         // Vemos si es un documento permitido primero
         tipoDeDocumentPermitido(documento);
         
-        VerificadorDigital verificadorDigital = new VerificadorDigital();
+        //VerificadorDigital verificadorDigital = new VerificadorDigital();
         
-        List<Certificado> certs = verificadorDigital.verificar(documento);
+        //List<Certificado> certs = verificadorDigital.verificar(documento);
+        FirmaDigital firmaDigital = new FirmaDigital();
+        
+        List<Certificado> certs = firmaDigital.verificar(documento);
         
         DefaultTreeModel model = (DefaultTreeModel) certificadosJTR.getModel();
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
@@ -236,7 +240,7 @@ public class Main extends javax.swing.JFrame {
                 if (node.getLevel()==1){
                     /**
                      * Solo si es un certificado valido, que no ha sido revocado 
-                     * y que pertenezca a una entidad reconocida
+                     * y que pertenezca a una entidad reconocida da un check
                      * TODO usar constantes para las entidad
                      */
                     if(node.getChildAt(5).toString().toLowerCase().contains("true") && 
