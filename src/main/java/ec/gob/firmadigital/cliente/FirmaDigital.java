@@ -35,6 +35,7 @@ import io.rubrica.sign.odf.ODFSigner;
 import io.rubrica.sign.ooxml.OOXMLSigner;
 import io.rubrica.sign.pdf.PDFSigner;
 import io.rubrica.core.Util;
+import io.rubrica.sign.xades.XAdESSigner;
 
 /**
  *
@@ -75,7 +76,7 @@ public class FirmaDigital {
 
     private Signer documentSigner(File documento) {
         String extDocumento = FirmadorFileUtils.getFileExtension(documento);
-        switch (extDocumento) {
+        switch (extDocumento.toLowerCase()) {
             case "pdf":
                 return new PDFSigner();
             case "docx":
@@ -86,6 +87,8 @@ public class FirmaDigital {
             case "ods":
             case "odp":
                 return new ODFSigner();
+            case "xml":
+                return new XAdESSigner();
             default:
                 return null;
         }
@@ -126,7 +129,7 @@ public class FirmaDigital {
     }
 
     //TODO poner los nombres como constantes
-    private String getNombreCA(X509Certificate certificado) {
+    public static String getNombreCA(X509Certificate certificado) {
         if (CertificadoBancoCentralFactory.esCertificadoDelBancoCentral(certificado)) {
             return "Banco Central del Ecuador";
         }
