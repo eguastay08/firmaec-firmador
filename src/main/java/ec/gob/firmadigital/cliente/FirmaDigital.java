@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import io.rubrica.certificate.ec.bce.CertificadoBancoCentralFactory;
 import io.rubrica.certificate.ec.cj.CertificadoConsejoJudicaturaDataFactory;
 import io.rubrica.certificate.ec.securitydata.CertificadoSecurityDataFactory;
+import io.rubrica.core.RubricaException;
 import io.rubrica.keystore.Alias;
 import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
@@ -36,6 +37,7 @@ import io.rubrica.sign.ooxml.OOXMLSigner;
 import io.rubrica.sign.pdf.PDFSigner;
 import io.rubrica.core.Util;
 import io.rubrica.sign.xades.XAdESSigner;
+import io.rubrica.util.OcspUtils;
 
 /**
  *
@@ -106,8 +108,8 @@ public class FirmaDigital {
                 dateToCalendar(p.getCerts()[0].getNotAfter()),
                 dateToCalendar(p.getSigningTime()),
                 //p.isOscpSignatureValid(), 
-                esValido(getNombreCA(p.getCerts()[0]), true),
-                false)).collect(Collectors.toList());
+                esValido(p.getCerts()[0], p.getSigningTime()),
+                esRevocado(p.getCerts()[0]))).collect(Collectors.toList());
         return certs;
     }
 
@@ -121,11 +123,21 @@ public class FirmaDigital {
      * funcion temporal para verificar contral el banco central porque cambio el
      * endpoint o algo!!!!
      */
-    private boolean esValido(String nombreCA, boolean validez) {
-        if (nombreCA.equals("Banco Central del Ecuador")) {
-            return true;
+    private boolean esValido(X509Certificate cert, Date signingTime) {
+        return !( signingTime.before(cert.getNotBefore()) || signingTime.after(cert.getNotAfter())) ;
+    }
+    
+      /**
+     * funcion temporal para verificar contral el banco central porque cambio el
+     * endpoint o algo!!!!
+     */
+    private Boolean esRevocado(X509Certificate cert) {
+        System.out.println("Revisamos si es valido el certificado contra un servicio OCSP");
+        try {
+            return !OcspUtils.isValidCertificate(cert);
+        } catch (RubricaException ex) {
+            return null;
         }
-        return validez;
     }
 
     //TODO poner los nombres como constantes

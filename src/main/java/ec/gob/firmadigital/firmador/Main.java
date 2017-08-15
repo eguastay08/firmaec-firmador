@@ -419,6 +419,14 @@ public class Main extends javax.swing.JFrame {
         certClaveTXT.setText("");
         //TOdo botar error si es null
     }
+    
+    private String resultadosCRL(ValidationResult result) {
+        if(result == result.CANNOT_DOWNLOAD_CRL)
+            return "No se pudo descargar el archivo CRL\nRevisar conexión de Internet";
+        if(result.isValid())
+            return "Válido";        
+        return "Inválido";
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -727,14 +735,14 @@ public class Main extends javax.swing.JFrame {
 
         jLabel7.setText("Emitido Por");
 
-        certificadoEmitidoATxt.setEnabled(false);
+        certificadoEmitidoATxt.setEditable(false);
         certificadoEmitidoATxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 certificadoEmitidoATxtActionPerformed(evt);
             }
         });
 
-        certificadoEmitidoPorTxt.setEnabled(false);
+        certificadoEmitidoPorTxt.setEditable(false);
         certificadoEmitidoPorTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 certificadoEmitidoPorTxtActionPerformed(evt);
@@ -743,7 +751,7 @@ public class Main extends javax.swing.JFrame {
 
         jLabel8.setText("Válido desde");
 
-        certificadoValidoDesdeTxt.setEnabled(false);
+        certificadoValidoDesdeTxt.setEditable(false);
         certificadoValidoDesdeTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 certificadoValidoDesdeTxtActionPerformed(evt);
@@ -752,7 +760,7 @@ public class Main extends javax.swing.JFrame {
 
         jLabel9.setText("Válido hasta");
 
-        certificadoValidoHastaTxt.setEnabled(false);
+        certificadoValidoHastaTxt.setEditable(false);
         certificadoValidoHastaTxt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 certificadoValidoHastaTxtActionPerformed(evt);
@@ -952,66 +960,66 @@ public class Main extends javax.swing.JFrame {
         if (documento != null) {
             rutaDocumentoTXT.setText(documento.getAbsolutePath());
             verificarBTN.setEnabled(true);
-        }
-        
-        // TODO de momento no abrirmos nada
-        //Si el documento es PDF abrirlo para desplegarlo
-        String ext = FirmadorFileUtils.getFileExtension(documento);
-        System.out.println("Extension " + ext);
-        switch(ext.toLowerCase() + "xx"){
-            case "pdf":
-                System.out.println("Abrimos el visor de pdfs " + ext);
-                {
-                    // TODO revisar como manejar este error a futuro
-                    try {
-                        //TODO pasar esto a una clase
-                        //TODO ver como revisamos esto de las paginas
-                        pdfDocument = PDDocument.load(documento);
-                        pdfRenderer = CustomPageDrawer.renderizar(pdfDocument);
-                        
-                        // pdfDocument.getNumberOfPages()
-                        // Limite de 3 para no sobrecargar, se debe hacer un lazyloading
-                        for(int i = 0; i < 3; i ++){
-                            BufferedImage image = pdfRenderer.renderImage(i);
-                            int anchoPanel = panelMenuPDF.getWidth();
-                            int anchoImagen = image.getWidth();
-                            int altoImagen = image.getHeight();
-                            int altoPic = (altoImagen/anchoImagen)*anchoPanel;
-                            JLabel imgMenu = new JLabel(new ImageIcon(image.getScaledInstance(anchoPanel, altoPic, Image.SCALE_SMOOTH)));
-                            
-                            imgMenu.addMouseListener(new MouseAdapter() {
-                                public void mouseClicked(MouseEvent e) {
-                                    System.out.println("Cambio de imagen ");
+
+            // TODO de momento no abrirmos nada
+            //Si el documento es PDF abrirlo para desplegarlo
+            String ext = FirmadorFileUtils.getFileExtension(documento);
+            System.out.println("Extension " + ext);
+            switch (ext.toLowerCase() + "xx") {
+                case "pdf":
+                    System.out.println("Abrimos el visor de pdfs " + ext);
+                     {
+                        // TODO revisar como manejar este error a futuro
+                        try {
+                            //TODO pasar esto a una clase
+                            //TODO ver como revisamos esto de las paginas
+                            pdfDocument = PDDocument.load(documento);
+                            pdfRenderer = CustomPageDrawer.renderizar(pdfDocument);
+
+                            // pdfDocument.getNumberOfPages()
+                            // Limite de 3 para no sobrecargar, se debe hacer un lazyloading
+                            for (int i = 0; i < 3; i++) {
+                                BufferedImage image = pdfRenderer.renderImage(i);
+                                int anchoPanel = panelMenuPDF.getWidth();
+                                int anchoImagen = image.getWidth();
+                                int altoImagen = image.getHeight();
+                                int altoPic = (altoImagen / anchoImagen) * anchoPanel;
+                                JLabel imgMenu = new JLabel(new ImageIcon(image.getScaledInstance(anchoPanel, altoPic, Image.SCALE_SMOOTH)));
+
+                                imgMenu.addMouseListener(new MouseAdapter() {
+                                    public void mouseClicked(MouseEvent e) {
+                                        System.out.println("Cambio de imagen ");
+                                        JLabel paginaVisorPDF = new JLabel(new ImageIcon(image));
+                                        panelVisorPDF.add(paginaVisorPDF);
+                                        panelVisorPDF.revalidate();
+                                        panelVisorPDF.repaint();
+                                    }
+                                });
+                                //imgMenu.setH
+                                panelMenuPDF.add(imgMenu);
+                                panelMenuPDF.add(new JLabel("Pag. " + (i + 1)));
+                                //panelMenuPDF.add(new JSeparator(JSeparator.VERTICAL));
+                                if (i == 0) {
                                     JLabel paginaVisorPDF = new JLabel(new ImageIcon(image));
                                     panelVisorPDF.add(paginaVisorPDF);
                                     panelVisorPDF.revalidate();
                                     panelVisorPDF.repaint();
                                 }
-                            });
-                            //imgMenu.setH
-                            panelMenuPDF.add(imgMenu);
-                            panelMenuPDF.add(new JLabel("Pag. "+ (i+1)));
-                            //panelMenuPDF.add(new JSeparator(JSeparator.VERTICAL));
-                            if(i == 0){
-                                JLabel paginaVisorPDF = new JLabel(new ImageIcon(image));
-                                panelVisorPDF.add(paginaVisorPDF);
-                                panelVisorPDF.revalidate();
-                                panelVisorPDF.repaint();
+
+                                //ImageIO.write(image, "PNG", new File("/tmp/test-"+i+".png"));
                             }
-                            
-                            //ImageIO.write(image, "PNG", new File("/tmp/test-"+i+".png"));
+                            System.out.println("Acabo");
+                            panelMenuPDF.revalidate();
+                            panelMenuPDF.repaint();
+                            //revalidate();
+                            //repaint();
+                        } catch (IOException ex) {
+                            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        System.out.println("Acabo");
-                        panelMenuPDF.revalidate();
-                        panelMenuPDF.repaint();
-                        //revalidate();
-                        //repaint();
-                    } catch (IOException ex) {
-                        Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }
-                break;
-                
+                    break;
+
+            }
         }
     }//GEN-LAST:event_abrirArchivoBtnActionPerformed
 
@@ -1123,21 +1131,21 @@ public class Main extends javax.swing.JFrame {
             }
             boolean validezCert = OcspUtils.isValidCertificate(cert);
             System.out.println("Valid? " +validezCert );
-            validarOCSPTxtArea.append("Certificado válido? " + validezCert + "\n");
+            String resultStr;
+            if(validezCert)
+                resultStr = "Válido";
+            else
+                resultStr = "Inválido";
+                
+            validarOCSPTxtArea.append("Certificado: " + resultStr + "\n");
             
-        } catch (KeyStoreException ex) {
+        } catch (KeyStoreException  | IOException | RubricaException ex) {
             //TODO botar error
-            System.out.println("Error keysotre1");
+            System.err.println("Error keysStore ");
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
             //Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            System.out.println("Error keysotre2");
-            //Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
-        } catch (RubricaException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
-        }
+        } 
         
         
     }//GEN-LAST:event_validarOCSPBtnActionPerformed
@@ -1174,19 +1182,19 @@ public class Main extends javax.swing.JFrame {
                             Arrays.asList(urlCrl));
                     System.out.println("Validation result: " + result);
                     
-                    validarCRLTxtArea.append("Resultado validación: " + result);
+                    validarCRLTxtArea.append("Certificado: " + resultadosCRL(result));
                     break;
                 case "Consejo de la Judicatura":
                     result = CrlUtils.verifyCertificateCRLs(cert, new ConsejoJudicaturaSubCert().getPublicKey(),
                     Arrays.asList(urlCrl));
                     System.out.println("Validation result: " + result);
-                    validarCRLTxtArea.append("Resultado validación: " + result);
+                    validarCRLTxtArea.append("Certificado: " + resultadosCRL(result));
                     break;
                 case "SecurityData":
                     result = CrlUtils.verifyCertificateCRLs(cert, new SecurityDataSubCaCert().getPublicKey(),
                             Arrays.asList(urlCrl));
                     System.out.println("Validation result: " + result);
-                    validarCRLTxtArea.append("Resultado validación: " + result);
+                    validarCRLTxtArea.append("Certificado: " + resultadosCRL(result));
                     break;
                 default:
                     validarCRLTxtArea.append("Error entidad no reconocida \n");
@@ -1195,37 +1203,11 @@ public class Main extends javax.swing.JFrame {
             
 
             System.out.println(CertificateUtils.getCN(cert));
-        } catch (KeyStoreException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            //Certificado invalido
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (RubricaException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } catch (KeyStoreException | IOException | RubricaException  ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             
+        }             
         
-        
-        /*try {
-            X509CRL bceCrl = ServicioCRL.downloadCrl(ServicioCRL.BCE_CRL);
-            msgValidarCRL = "Descargando archivo de "+ServicioCRL.BCE_CRL;
-            System.out.println(msgValidarCRL);
-            validarCRLTxtArea.setText(msgValidarCRL);
-            
-        } catch (Exception ex) {
-            //TODO botar mensaje de error que no pudo ser descargado
-        }
-        
-        try {
-          
-            
-            X509CRL sdCrl = ServicioCRL.downloadCrl(ServicioCRL.SD_CRL);
-            msgValidarCRL = "\nDescargando archivo de "+ServicioCRL.SD_CRL;
-            System.out.println(msgValidarCRL);
-            validarCRLTxtArea.append(msgValidarCRL);
-        } catch (Exception ex) {
-            //TODO botar mensaje de error que no pudo ser descargado
-        }*/
     }//GEN-LAST:event_validarCRLBtnActionPerformed
 
     private void resetValidarFormBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetValidarFormBtnActionPerformed

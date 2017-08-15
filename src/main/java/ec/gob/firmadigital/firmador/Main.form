@@ -556,7 +556,7 @@
             </Component>
             <Component class="javax.swing.JTextField" name="certificadoEmitidoATxt">
               <Properties>
-                <Property name="enabled" type="boolean" value="false"/>
+                <Property name="editable" type="boolean" value="false"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="certificadoEmitidoATxtActionPerformed"/>
@@ -564,7 +564,7 @@
             </Component>
             <Component class="javax.swing.JTextField" name="certificadoEmitidoPorTxt">
               <Properties>
-                <Property name="enabled" type="boolean" value="false"/>
+                <Property name="editable" type="boolean" value="false"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="certificadoEmitidoPorTxtActionPerformed"/>
@@ -577,7 +577,7 @@
             </Component>
             <Component class="javax.swing.JTextField" name="certificadoValidoDesdeTxt">
               <Properties>
-                <Property name="enabled" type="boolean" value="false"/>
+                <Property name="editable" type="boolean" value="false"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="certificadoValidoDesdeTxtActionPerformed"/>
@@ -590,7 +590,7 @@
             </Component>
             <Component class="javax.swing.JTextField" name="certificadoValidoHastaTxt">
               <Properties>
-                <Property name="enabled" type="boolean" value="false"/>
+                <Property name="editable" type="boolean" value="false"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="certificadoValidoHastaTxtActionPerformed"/>
