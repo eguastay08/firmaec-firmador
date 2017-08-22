@@ -5,6 +5,39 @@
  */
 package ec.gob.firmadigital.firmador;
 
+import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.Image;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.SignatureException;
+import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
+
 import ec.gob.firmadigital.cliente.FirmaDigital;
 import ec.gob.firmadigital.crl.ServicioCRL;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
@@ -16,33 +49,11 @@ import ec.gob.firmadigital.lectorpdf.CustomPageDrawer;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import io.rubrica.certificate.CrlUtils;
 import io.rubrica.certificate.ValidationResult;
-import io.rubrica.certificate.ec.bce.BceCaCert;
 import io.rubrica.certificate.ec.bce.BceSubTestCert;
-import io.rubrica.certificate.ec.bce.CertificadoBancoCentralFactory;
-import io.rubrica.certificate.ec.cj.CertificadoConsejoJudicaturaDataFactory;
-import io.rubrica.certificate.ec.cj.ConsejoJudicaturaCaCert;
 import io.rubrica.certificate.ec.cj.ConsejoJudicaturaSubCert;
-import io.rubrica.certificate.ec.securitydata.CertificadoSecurityDataFactory;
-import io.rubrica.certificate.ec.securitydata.SecurityDataCaCert;
 import io.rubrica.certificate.ec.securitydata.SecurityDataSubCaCert;
 import io.rubrica.core.RubricaException;
 import io.rubrica.core.Util;
-import java.awt.Component;
-import java.util.List;
-import javax.swing.JFileChooser;
-import java.io.File;
-import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
 import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
@@ -50,24 +61,7 @@ import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.ocsp.ValidadorOCSP;
 import io.rubrica.sign.InvalidFormatException;
 import io.rubrica.util.CertificateUtils;
-import io.rubrica.util.OcspUtils;
-import java.awt.CardLayout;
-import java.awt.Image;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.SignatureException;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import javax.imageio.ImageIO;
-import javax.swing.JLabel;
-import javax.swing.JSeparator;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.PDFRenderer;
+import java.security.cert.Certificate;
 ;
 
 /**
@@ -212,7 +206,10 @@ public class Main extends javax.swing.JFrame {
         if(!documento.exists()) 
             throw new DocumentoNoExistenteException("Documento "+documento.getAbsolutePath() + " no existe");
         
-            
+        if(llave == null){
+            throw new DocumentoNoExistenteException("No hay llave seleccionada");
+        }    
+        
         if (firmarLlaveRBTN.isSelected() && !llave.exists()) {
             throw new DocumentoNoExistenteException("La llave "+llave.getAbsolutePath() + " no existe");
         }
@@ -464,7 +461,7 @@ public class Main extends javax.swing.JFrame {
         certificadosJTR = new javax.swing.JTree();
         firmarBTN = new javax.swing.JButton();
         verificarBTN = new javax.swing.JButton();
-        verificarBTN1 = new javax.swing.JButton();
+        resetearBTN = new javax.swing.JButton();
         visorPdfPanel = new javax.swing.JPanel();
         scrollPaneVisorPDF = new javax.swing.JScrollPane();
         panelVisorPDF = new javax.swing.JPanel();
@@ -587,10 +584,10 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        verificarBTN1.setText("Resetear");
-        verificarBTN1.addActionListener(new java.awt.event.ActionListener() {
+        resetearBTN.setText("Resetear");
+        resetearBTN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                verificarBTN1ActionPerformed(evt);
+                resetearBTNActionPerformed(evt);
             }
         });
 
@@ -653,7 +650,7 @@ public class Main extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(verificarBTN)
                                 .addGap(18, 18, 18)
-                                .addComponent(verificarBTN1)
+                                .addComponent(resetearBTN)
                                 .addGap(0, 186, Short.MAX_VALUE))
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, firmarVerificarDocPanelLayout.createSequentialGroup()
                                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -719,7 +716,7 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(firmarBTN)
                     .addComponent(verificarBTN)
-                    .addComponent(verificarBTN1))
+                    .addComponent(resetearBTN))
                 .addGap(34, 34, 34)
                 .addComponent(visorPdfPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -1058,9 +1055,9 @@ public class Main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_verificarBTNActionPerformed
 
-    private void verificarBTN1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verificarBTN1ActionPerformed
+    private void resetearBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetearBTNActionPerformed
         this.resetForm();
-    }//GEN-LAST:event_verificarBTN1ActionPerformed
+    }//GEN-LAST:event_resetearBTNActionPerformed
 
     private void firmarBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firmarBTNActionPerformed
         if (documento == null || !documento.getAbsolutePath().equals(rutaDocumentoTXT.getText())) 
@@ -1132,7 +1129,15 @@ public class Main extends javax.swing.JFrame {
         KeyStoreProvider ksp = new FileKeyStoreProvider(rutaCertificadoTxt.getText());
         try {
             ks = ksp.getKeystore(certClaveTXT.getPassword());
-            X509Certificate cert = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
+            String alias = ks.aliases().nextElement();
+            X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+            Certificate [] cadenaCerts =  ks.getCertificateChain(alias);
+            System.out.println("cad " +cadenaCerts.length);
+            List<X509Certificate> cadena = new ArrayList<>();
+            for(int i=0; i< cadenaCerts.length; i++){
+                cadena.add((X509Certificate) cadenaCerts[i]);
+                System.out.println(FirmaDigital.getNombreCA(cadena.get(i)));
+            }
             
             setearInfoValidacionCertificado(cert);
             
@@ -1144,7 +1149,7 @@ public class Main extends javax.swing.JFrame {
             System.out.println("OCSPUrls "+ ocspUrls.size());
             
             ValidadorOCSP validadorOCSP = new ValidadorOCSP();
-            X509Certificate certRoot = FirmaDigital.getRootCertificate(cert);
+            X509Certificate certRoot = cadena.get(1); //FirmaDigital.getRootCertificate(cert);
                         
             validadorOCSP.validar(cert, certRoot, ocspUrls);
             
@@ -1158,7 +1163,7 @@ public class Main extends javax.swing.JFrame {
                 
             validarOCSPTxtArea.append("Certificado: " + resultStr + "\n");
             
-        } catch (IOException | RubricaException | OcspValidationException | KeyStoreException | EntidadCertificadoraNoValidaException ex) {
+        } catch (IOException | RubricaException | OcspValidationException | KeyStoreException ex) {
             //TODO botar error
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
@@ -1301,6 +1306,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JPanel panelMenuPDF;
     private javax.swing.JPanel panelVisorPDF;
     private javax.swing.JButton resetValidarFormBtn;
+    private javax.swing.JButton resetearBTN;
     private javax.swing.JTextField rutaCertificadoTxt;
     private javax.swing.JTextField rutaDocumentoTXT;
     private javax.swing.JTextField rutaLlaveTXT;
@@ -1315,7 +1321,6 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTextArea validarOCSPTxtArea;
     private javax.swing.JScrollPane verificadoPorSPL;
     private javax.swing.JButton verificarBTN;
-    private javax.swing.JButton verificarBTN1;
     private javax.swing.JPanel visorPdfPanel;
     // End of variables declaration//GEN-END:variables
 }

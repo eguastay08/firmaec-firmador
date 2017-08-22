@@ -97,7 +97,7 @@
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="verificarBTN" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="verificarBTN1" min="-2" max="-2" attributes="0"/>
+                                      <Component id="resetearBTN" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="186" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
@@ -187,7 +187,7 @@
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="firmarBTN" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="verificarBTN" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="verificarBTN1" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="resetearBTN" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
                       <Component id="visorPdfPanel" min="-2" max="-2" attributes="0"/>
@@ -320,12 +320,12 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verificarBTNActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JButton" name="verificarBTN1">
+            <Component class="javax.swing.JButton" name="resetearBTN">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Resetear"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verificarBTN1ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resetearBTNActionPerformed"/>
               </Events>
             </Component>
             <Container class="javax.swing.JPanel" name="visorPdfPanel">

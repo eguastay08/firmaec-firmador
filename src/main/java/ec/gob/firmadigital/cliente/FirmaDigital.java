@@ -9,6 +9,7 @@ import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.firmador.Certificado;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import io.rubrica.certificate.ec.bce.BceCaCert;
+import io.rubrica.certificate.ec.bce.BceSubCert;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -26,8 +27,10 @@ import java.util.stream.Collectors;
 import io.rubrica.certificate.ec.bce.CertificadoBancoCentralFactory;
 import io.rubrica.certificate.ec.cj.CertificadoConsejoJudicaturaDataFactory;
 import io.rubrica.certificate.ec.cj.ConsejoJudicaturaCaCert;
+import io.rubrica.certificate.ec.cj.ConsejoJudicaturaSubCert;
 import io.rubrica.certificate.ec.securitydata.CertificadoSecurityDataFactory;
 import io.rubrica.certificate.ec.securitydata.SecurityDataCaCert;
+import io.rubrica.certificate.ec.securitydata.SecurityDataSubCaCert;
 import io.rubrica.core.RubricaException;
 import io.rubrica.keystore.Alias;
 import io.rubrica.keystore.KeyStoreUtilities;
@@ -120,6 +123,7 @@ public class FirmaDigital {
                 esRevocado(p.getCerts()[0]))).collect(Collectors.toList());*/
         
         for (SignInfo temp : firmas) {
+            temp.getCerts();
             Certificado c = new Certificado(
                     Util.getCN(temp.getCerts()[0]),
                     getNombreCA(temp.getCerts()[0]),
@@ -157,17 +161,36 @@ public class FirmaDigital {
 
         List<String> ocspUrls;
         try {
+            
+            /*Certificate [] cadenaCerts =  cert.;
+            List<X509Certificate> cadena = new ArrayList<>();
+            for(int i=0; i< cadenaCerts.length; i++){
+                cadena.add((X509Certificate) cadenaCerts[i]);
+                System.out.println(FirmaDigital.getNombreCA(cadena.get(i)));
+            }*/
+            
             ocspUrls = CertificateUtils.getAuthorityInformationAccess(cert);
-            for (String ocsp : ocspUrls) {
+            /*for (String ocsp : ocspUrls) {
                 System.out.println("OCSP=" + ocsp);
-            }
-            X509Certificate certRoot = getRootCertificate(cert);
+            }*/
+            
+            getRootCertificate(cert);
+            X509Certificate certRoot =  new SecurityDataSubCaCert();///
             ValidadorOCSP validadorOCSP = new ValidadorOCSP();
-            validadorOCSP.validar(cert, certRoot, ocspUrls);
-            return true;
+            
+            if(ocspUrls != null || ocspUrls.size() > 0) {
+                for (String ocsp : ocspUrls) {
+                    System.out.println("OCSP=" + ocsp);
+                }
+
+                validadorOCSP.validar(cert, certRoot, ocspUrls);
+                return false;
+            }else{
+                return true;
+            }
         } catch (IOException |EntidadCertificadoraNoValidaException |OcspValidationException ex) {
             Logger.getLogger(FirmaDigital.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
+            return true;
         } 
         
         
@@ -177,11 +200,11 @@ public class FirmaDigital {
         String entidadCertStr = getNombreCA(cert);
         switch(entidadCertStr){
             case "Banco Central del Ecuador":
-                return new BceCaCert();
+                return new BceSubCert();
             case "Consejo de la Judicatura":
-                return new ConsejoJudicaturaCaCert();
+                return new ConsejoJudicaturaSubCert();
             case "SecurityData":
-                return new SecurityDataCaCert();
+                return new SecurityDataSubCaCert();
             default:
                 throw new EntidadCertificadoraNoValidaException("Entidad Certificador no encontra");
         }
