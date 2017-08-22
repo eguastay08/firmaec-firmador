@@ -5,8 +5,10 @@
  */
 package ec.gob.firmadigital.cliente;
 
+import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.firmador.Certificado;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
+import io.rubrica.certificate.ec.bce.BceCaCert;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -23,7 +25,9 @@ import java.util.stream.Collectors;
 
 import io.rubrica.certificate.ec.bce.CertificadoBancoCentralFactory;
 import io.rubrica.certificate.ec.cj.CertificadoConsejoJudicaturaDataFactory;
+import io.rubrica.certificate.ec.cj.ConsejoJudicaturaCaCert;
 import io.rubrica.certificate.ec.securitydata.CertificadoSecurityDataFactory;
+import io.rubrica.certificate.ec.securitydata.SecurityDataCaCert;
 import io.rubrica.core.RubricaException;
 import io.rubrica.keystore.Alias;
 import io.rubrica.keystore.KeyStoreUtilities;
@@ -36,8 +40,12 @@ import io.rubrica.sign.odf.ODFSigner;
 import io.rubrica.sign.ooxml.OOXMLSigner;
 import io.rubrica.sign.pdf.PDFSigner;
 import io.rubrica.core.Util;
+import io.rubrica.ocsp.ValidadorOCSP;
 import io.rubrica.sign.xades.XAdESSigner;
+import io.rubrica.util.CertificateUtils;
 import io.rubrica.util.OcspUtils;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -65,7 +73,7 @@ public class FirmaDigital {
         return signedDoc;
     }
 
-    public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException {
+    public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException {
 
         byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
         Signer docSigner = documentSigner(documento);
@@ -96,11 +104,11 @@ public class FirmaDigital {
         }
     }
 
-    private List<Certificado> firmasToCertificados(List<SignInfo> firmas) {
-        List<Certificado> certs;
+    private List<Certificado> firmasToCertificados(List<SignInfo> firmas) throws RubricaException {
+        List<Certificado> certs = new ArrayList<Certificado>();
         System.out.println("firmas a certificados");
         
-        certs = firmas.stream().map(p -> new Certificado(
+        /*certs = firmas.stream().map(p -> new Certificado(
                 Util.getCN(p.getCerts()[0]),
                 //p.getCertificadoFirmante().getIssuerDN().getName(), 
                 getNombreCA(p.getCerts()[0]),
@@ -109,7 +117,20 @@ public class FirmaDigital {
                 dateToCalendar(p.getSigningTime()),
                 //p.isOscpSignatureValid(), 
                 esValido(p.getCerts()[0], p.getSigningTime()),
-                esRevocado(p.getCerts()[0]))).collect(Collectors.toList());
+                esRevocado(p.getCerts()[0]))).collect(Collectors.toList());*/
+        
+        for (SignInfo temp : firmas) {
+            Certificado c = new Certificado(
+                    Util.getCN(temp.getCerts()[0]),
+                    getNombreCA(temp.getCerts()[0]),
+                    dateToCalendar(temp.getCerts()[0].getNotBefore()),
+                    dateToCalendar(temp.getCerts()[0].getNotAfter()),
+                    dateToCalendar(temp.getSigningTime()),
+                    esValido(temp.getCerts()[0], temp.getSigningTime()),
+                    esRevocado(temp.getCerts()[0]));
+            certs.add(c);
+        }
+        
         return certs;
     }
 
@@ -131,12 +152,38 @@ public class FirmaDigital {
      * funcion temporal para verificar contral el banco central porque cambio el
      * endpoint o algo!!!!
      */
-    private Boolean esRevocado(X509Certificate cert) {
+    private Boolean esRevocado(X509Certificate cert) throws RubricaException {
         System.out.println("Revisamos si es valido el certificado contra un servicio OCSP");
+
+        List<String> ocspUrls;
         try {
-            return !OcspUtils.isValidCertificate(cert);
-        } catch (RubricaException ex) {
-            return null;
+            ocspUrls = CertificateUtils.getAuthorityInformationAccess(cert);
+            for (String ocsp : ocspUrls) {
+                System.out.println("OCSP=" + ocsp);
+            }
+            X509Certificate certRoot = getRootCertificate(cert);
+            ValidadorOCSP validadorOCSP = new ValidadorOCSP();
+            validadorOCSP.validar(cert, certRoot, ocspUrls);
+            return true;
+        } catch (IOException |EntidadCertificadoraNoValidaException |OcspValidationException ex) {
+            Logger.getLogger(FirmaDigital.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } 
+        
+        
+    }
+    
+    public static X509Certificate getRootCertificate(X509Certificate cert) throws EntidadCertificadoraNoValidaException{
+        String entidadCertStr = getNombreCA(cert);
+        switch(entidadCertStr){
+            case "Banco Central del Ecuador":
+                return new BceCaCert();
+            case "Consejo de la Judicatura":
+                return new ConsejoJudicaturaCaCert();
+            case "SecurityData":
+                return new SecurityDataCaCert();
+            default:
+                throw new EntidadCertificadoraNoValidaException("Entidad Certificador no encontra");
         }
     }
 

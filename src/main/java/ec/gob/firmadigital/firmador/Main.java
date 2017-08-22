@@ -9,17 +9,21 @@ import ec.gob.firmadigital.cliente.FirmaDigital;
 import ec.gob.firmadigital.crl.ServicioCRL;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
 import ec.gob.firmadigital.exceptions.DocumentoNoPermitido;
+import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.exceptions.TokenNoConectadoException;
 import ec.gob.firmadigital.exceptions.TokenNoEncontrado;
 import ec.gob.firmadigital.lectorpdf.CustomPageDrawer;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import io.rubrica.certificate.CrlUtils;
 import io.rubrica.certificate.ValidationResult;
+import io.rubrica.certificate.ec.bce.BceCaCert;
 import io.rubrica.certificate.ec.bce.BceSubTestCert;
 import io.rubrica.certificate.ec.bce.CertificadoBancoCentralFactory;
 import io.rubrica.certificate.ec.cj.CertificadoConsejoJudicaturaDataFactory;
+import io.rubrica.certificate.ec.cj.ConsejoJudicaturaCaCert;
 import io.rubrica.certificate.ec.cj.ConsejoJudicaturaSubCert;
 import io.rubrica.certificate.ec.securitydata.CertificadoSecurityDataFactory;
+import io.rubrica.certificate.ec.securitydata.SecurityDataCaCert;
 import io.rubrica.certificate.ec.securitydata.SecurityDataSubCaCert;
 import io.rubrica.core.RubricaException;
 import io.rubrica.core.Util;
@@ -43,6 +47,7 @@ import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.ocsp.OcspValidationException;
+import io.rubrica.ocsp.ValidadorOCSP;
 import io.rubrica.sign.InvalidFormatException;
 import io.rubrica.util.CertificateUtils;
 import io.rubrica.util.OcspUtils;
@@ -237,7 +242,7 @@ public class Main extends javax.swing.JFrame {
     /*
     verificar documento
      */
-    private boolean verificarDocumento() throws DocumentoNoPermitido, IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException {
+    private boolean verificarDocumento() throws DocumentoNoPermitido, IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException {
         // Vemos si existe
         System.out.println("Verificando Docs");
         if (documento == null || !documento.exists()) {
@@ -427,6 +432,8 @@ public class Main extends javax.swing.JFrame {
             return "Válido";        
         return "Inválido";
     }
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -1038,11 +1045,16 @@ public class Main extends javax.swing.JFrame {
         
         try {
             verificarDocumento();
-        } catch (Exception ex) {
+        }catch(RubricaException ex){
+            System.err.println("Error no se pudo conectar al servicio de OSCP para verificar el certificado ");
+            JOptionPane.showMessageDialog(this, "Error no se pudo conectar al servicio de OSCP para verificar el certificado\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }catch (Exception ex) {
             //TODO agregar mensaje de error
             //Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Error no se pudo verificar ");
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }//GEN-LAST:event_verificarBTNActionPerformed
 
@@ -1129,8 +1141,15 @@ public class Main extends javax.swing.JFrame {
                 validarOCSPTxtArea.append("OCSP=" + ocsp + "\n");
                 System.out.println("OCSP=" + ocsp);
             }
-            boolean validezCert = OcspUtils.isValidCertificate(cert);
-            System.out.println("Valid? " +validezCert );
+            System.out.println("OCSPUrls "+ ocspUrls.size());
+            
+            ValidadorOCSP validadorOCSP = new ValidadorOCSP();
+            X509Certificate certRoot = FirmaDigital.getRootCertificate(cert);
+                        
+            validadorOCSP.validar(cert, certRoot, ocspUrls);
+            
+            boolean validezCert = true; //= OcspUtils.isValidCertificate(cert);
+            //System.out.println("Valid? " +OCSPRespStatus.MALFORMED_REQUEST );
             String resultStr;
             if(validezCert)
                 resultStr = "Válido";
@@ -1139,13 +1158,13 @@ public class Main extends javax.swing.JFrame {
                 
             validarOCSPTxtArea.append("Certificado: " + resultStr + "\n");
             
-        } catch (KeyStoreException  | IOException | RubricaException ex) {
+        } catch (IOException | RubricaException | OcspValidationException | KeyStoreException | EntidadCertificadoraNoValidaException ex) {
             //TODO botar error
-            System.err.println("Error keysStore ");
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
+            validarOCSPTxtArea.append("Certificado: No se pudo validar \n");
             //Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+        }
         
         
     }//GEN-LAST:event_validarOCSPBtnActionPerformed
