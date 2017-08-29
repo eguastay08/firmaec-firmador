@@ -5,6 +5,7 @@
  */
 package ec.gob.firmadigital.cliente;
 
+import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.firmador.DatosUsuario;
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.firmador.Certificado;
@@ -92,7 +93,7 @@ public class FirmaDigital {
         return signedDoc;
     }
 
-    public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException {
+    public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException {
 
         byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
         Signer docSigner = documentSigner(documento);
@@ -123,7 +124,7 @@ public class FirmaDigital {
         }
     }
 
-    private List<Certificado> firmasToCertificados(List<SignInfo> firmas) throws RubricaException {
+    private List<Certificado> firmasToCertificados(List<SignInfo> firmas) throws RubricaException, ConexionInvalidaOCSPException {
         List<Certificado> certs = new ArrayList<Certificado>();
         System.out.println("firmas a certificados");
         
@@ -175,7 +176,7 @@ public class FirmaDigital {
      * funcion temporal para verificar contral el banco central porque cambio el
      * endpoint o algo!!!!
      */
-    private Boolean esRevocado(X509Certificate cert) throws RubricaException {
+    private Boolean esRevocado(X509Certificate cert) throws RubricaException, ConexionInvalidaOCSPException {
         System.out.println("Revisamos si es valido el certificado contra un servicio OCSP");
 
         List<String> ocspUrls;
@@ -209,7 +210,7 @@ public class FirmaDigital {
             }
         } catch (IOException |EntidadCertificadoraNoValidaException |OcspValidationException ex) {
             Logger.getLogger(FirmaDigital.class.getName()).log(Level.SEVERE, null, ex);
-            return true;
+            throw new ConexionInvalidaOCSPException("No se pudo conectar al servicio OCSP");
         } 
         
         

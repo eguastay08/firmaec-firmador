@@ -30,12 +30,14 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 
 import ec.gob.firmadigital.cliente.FirmaDigital;
 import ec.gob.firmadigital.crl.ServicioCRL;
+import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
 import ec.gob.firmadigital.exceptions.DocumentoNoPermitido;
 import ec.gob.firmadigital.exceptions.TokenNoConectadoException;
 import ec.gob.firmadigital.exceptions.TokenNoEncontrado;
 import ec.gob.firmadigital.lectorpdf.CustomPageDrawer;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
+import ec.gob.firmadigital.utils.WordWrapCellRenderer;
 import io.rubrica.certificate.CrlUtils;
 import io.rubrica.certificate.ValidationResult;
 import io.rubrica.certificate.ec.bce.BceSubTestCert;
@@ -101,6 +103,12 @@ public class Main extends javax.swing.JFrame {
         // Filtro para archivos   
 
         initComponents();
+        
+        datosDelFirmanteFirmadorTbl.getColumnModel().getColumn(0).setCellRenderer(new WordWrapCellRenderer());
+        datosDelFirmanteFirmadorTbl.getColumnModel().getColumn(1).setCellRenderer(new WordWrapCellRenderer());
+        datosDelFirmanteFirmadorTbl.getColumnModel().getColumn(2).setCellRenderer(new WordWrapCellRenderer());
+        datosDelFirmanteFirmadorTbl.getColumnModel().getColumn(3).setCellRenderer(new WordWrapCellRenderer());
+        datosDelFirmanteFirmadorTbl.getColumnModel().getColumn(4).setCellRenderer(new WordWrapCellRenderer());
     }
 
     private File abrirArchivo(FileNameExtensionFilter filtro) {
@@ -247,7 +255,7 @@ public class Main extends javax.swing.JFrame {
     /*
     verificar documento
      */
-    private void verificarDocumento() throws DocumentoNoPermitido, IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException {
+    private void verificarDocumento() throws DocumentoNoPermitido, IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException {
         // Vemos si existe
         System.out.println("Verificando Docs");
         /*if (documento == null || !documento.exists()) {
@@ -378,6 +386,7 @@ public class Main extends javax.swing.JFrame {
         
         datosDelFirmanteFirmadorTbl.setModel(tableModel);
         tableModel.fireTableDataChanged();
+        
     }
     
     private void agregarDatosTablaCertificadoFirmador(X509Certificate cert, DatosUsuario datosUsuario){
@@ -414,6 +423,7 @@ public class Main extends javax.swing.JFrame {
         
         datosDelCertificadoFirmadorTbl.setModel(tableModel);
         tableModel.fireTableDataChanged();
+        
     }
    
     
@@ -428,8 +438,17 @@ public class Main extends javax.swing.JFrame {
         //Actualizamos los datos del archivo
         String[] data = new String[5];
         data[0] = datosUsuario.getCedula();
-        String nombres = datosUsuario.getNombre()+ " " +datosUsuario.getApellido();
-        data[1] = nombres;
+        
+        String nombres = datosUsuario.getNombre();
+        if(nombres == null){
+            nombres = "";
+        }
+        
+        String apellidos = datosUsuario.getApellido();
+        if(apellidos == null){
+            apellidos = "";
+        }
+        data[1] = nombres +" "+ apellidos;
         data[2] = datosUsuario.getInstitucion();
         data[3] = datosUsuario.getCargo();
         data[4] = ""; //LocalDateTime.now().toString();
@@ -856,18 +875,18 @@ public class Main extends javax.swing.JFrame {
                         .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(abrirArchivoPSKFirmarBtn)
                             .addComponent(abrirArchivoFirmarBtn)))
-                    .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
-                        .addGap(128, 128, 128)
-                        .addComponent(firmarBTN)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(resetearBTN)
-                        .addGap(110, 110, 110))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, firmarVerificarDocPanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 572, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 572, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(125, 125, 125))))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, firmarVerificarDocPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 572, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 572, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(125, 125, 125))
+                .addGap(92, 92, 92)
+                .addComponent(firmarBTN)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(resetearBTN)
+                .addGap(47, 47, 47))
         );
         firmarVerificarDocPanelLayout.setVerticalGroup(
             firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -898,14 +917,14 @@ public class Main extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jLabel11)
                 .addGap(10, 10, 10)
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(33, 33, 33)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(firmarBTN)
                     .addComponent(resetearBTN))
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addGap(18, 18, 18))
         );
 
         mainPanel.addTab("Firmar Electrónica De Documento", firmarVerificarDocPanel);
@@ -1502,6 +1521,7 @@ public class Main extends javax.swing.JFrame {
         tableModelCert.addRow(dataCert);
         datosArchivoVerificarTbl.setModel(tableModelCert);
         tableModelCert.fireTableDataChanged();
+        
     }//GEN-LAST:event_resetearBTN1ActionPerformed
 
     /**
