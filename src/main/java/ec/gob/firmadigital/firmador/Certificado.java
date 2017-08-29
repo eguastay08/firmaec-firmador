@@ -14,6 +14,7 @@ public class Certificado {
     private Calendar generated;
     private Boolean validated;
     private Boolean revocated;
+    private DatosUsuario datosUsuario;
 
     public Certificado() {
     }
@@ -28,6 +29,18 @@ public class Certificado {
         this.revocated = revocated;
     }
 
+    public Certificado(String issuedTo, String issuedBy, Calendar validFrom, Calendar validTo, Calendar generated, Boolean validated, Boolean revocated, DatosUsuario datosUsuario) {
+        this.issuedTo = issuedTo;
+        this.issuedBy = issuedBy;
+        this.validFrom = validFrom;
+        this.validTo = validTo;
+        this.generated = generated;
+        this.validated = validated;
+        this.revocated = revocated;
+        this.datosUsuario = datosUsuario;
+    }
+    
+    
     public String getIssuedTo() {
         return issuedTo;
     }
@@ -76,11 +89,21 @@ public class Certificado {
         this.validated = validated;
     }
 
-	public Boolean getRevocated() {
-		return revocated;
-	}
+    public Boolean getRevocated() {
+        return revocated;
+    }
 
-	public void setRevocated(Boolean revocated) {
-		this.revocated = revocated;
-	}    
+    public void setRevocated(Boolean revocated) {
+        this.revocated = revocated;
+    }
+
+    public DatosUsuario getDatosUsuario() {
+        return datosUsuario;
+    }
+
+    public void setDatosUsuario(DatosUsuario datosUsuario) {
+        this.datosUsuario = datosUsuario;
+    }
+        
+        
 }
