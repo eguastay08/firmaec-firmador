@@ -153,7 +153,6 @@ public class Main extends javax.swing.JFrame {
         this.rutaLlaveFirmarTxt.setEnabled(false);
         this.rutaLlaveFirmarTxt.setText("");
         //this.certificadosJTR.getModel().
-        resetDatosTablaDeArchivoFirmador();
         resetDatosTabladeFirmante();
         resetDatosTablaCertificadoFirmador();
 
@@ -164,11 +163,15 @@ public class Main extends javax.swing.JFrame {
         this.rutaLlaveFirmarTxt.setEnabled(true);
         this.abrirArchivoPSKFirmarBtn.setEnabled(true);
         // Si es windows no hay que habilitar el campo de contraseña
-        if (!esWindows()) {
-            this.claveTXT.setEnabled(true);
-        } else {
-            this.claveTXT.setEnabled(false);
-        }
+        
+        this.claveTXT.setEnabled(true);
+        
+    }
+    
+    private void selValidarArchivo() {
+        rutaCertificadoTxt.setEnabled(true);
+        abrirCertificadoBtn.setEnabled(true);
+        certClaveTXT.setEnabled(true);
     }
 
     private void selFirmarConToken() {
@@ -176,6 +179,23 @@ public class Main extends javax.swing.JFrame {
         this.rutaLlaveFirmarTxt.setEnabled(false);
         this.claveTXT.setEnabled(false);
         this.abrirArchivoPSKFirmarBtn.setEnabled(false);
+        
+        if (!esWindows()) {
+            this.claveTXT.setEnabled(true);
+        } else {
+            this.claveTXT.setEnabled(false);
+        }
+    }
+    
+    private void selValidarToken() {
+        rutaCertificadoTxt.setEnabled(false);
+        abrirCertificadoBtn.setEnabled(false);
+        
+        if (!esWindows()) {
+            this.certClaveTXT.setEnabled(true);
+        } else {
+            this.certClaveTXT.setEnabled(false);
+        }
     }
 
     private boolean esWindows() {
@@ -271,19 +291,6 @@ public class Main extends javax.swing.JFrame {
         datosFirmanteVerificarTbl.setModel(tableModelCertificados);
         tableModelCertificados.fireTableDataChanged();
 
-           /* curCert.add(new DefaultMutableTreeNode("Emitido a: " + cert.getIssuedTo()));
-            curCert.add(new DefaultMutableTreeNode("Emitido por: " + cert.getIssuedBy()));
-            curCert.add(new DefaultMutableTreeNode("Válido desde: " + format1.format(cert.getValidFrom().getTime())));
-            curCert.add(new DefaultMutableTreeNode("Válido hasta: " + format1.format(cert.getValidTo().getTime())));
-            curCert.add(new DefaultMutableTreeNode("Fecha utilizado: " + format1.format(cert.getGenerated().getTime())));
-            curCert.add(new DefaultMutableTreeNode("Validado: " + cert.getValidated()));
-            curCert.add(new DefaultMutableTreeNode("Revocado: " + cert.getRevocated()));*/
-    
-        
-
-       
-        
-        //return false;
     }
     
 
@@ -310,7 +317,7 @@ public class Main extends javax.swing.JFrame {
         
         FirmadorFileUtils.saveByteArrayToDisc(docSigned, nombreDocFirmado);
         
-        agregarDatosTablaDeArchivoFirmador(documento.getAbsolutePath(),nombreDocFirmado);
+        archivoFirmadoTxt.setText(nombreDocFirmado);
         
         //Obtenemos el certificado firmante para obtener los datos de usuarios
         String alias = ks.aliases().nextElement();
@@ -323,6 +330,8 @@ public class Main extends javax.swing.JFrame {
         DatosUsuario datosUsuario = FirmaDigital.getDatosUsuarios(cert);
         
         //datosDelFirmanteFirmadorTbl
+        
+        
         agregarDatosTabladeFirmante(datosUsuario);
         
         agregarDatosTablaCertificadoFirmador(cert, datosUsuario);
@@ -330,21 +339,6 @@ public class Main extends javax.swing.JFrame {
         return true;
     }
     
-    private void agregarDatosTablaDeArchivoFirmador(String documentoOriginalStr, String documentoFirmadoStr) {
-        DefaultTableModel tableModel = (DefaultTableModel) datosArchivoFirmarTbl.getModel();
-
-        tableModel.setRowCount(0);
-
-        //Actualizamos los datos del archivo
-        String[] data = new String[1];
-        data[0] = "Documento Original: " + documentoOriginalStr;
-        tableModel.addRow(data);
-        data[0] = "Documento Firmado:" + documentoFirmadoStr;
-        tableModel.addRow(data);
-        
-        datosArchivoFirmarTbl.setModel(tableModel);
-        tableModel.fireTableDataChanged();
-    }
     
     private void agregarDatosTabladeFirmante(DatosUsuario datosUsuario) {
         DefaultTableModel tableModel = (DefaultTableModel) datosDelFirmanteFirmadorTbl.getModel();
@@ -407,20 +401,7 @@ public class Main extends javax.swing.JFrame {
         datosDelCertificadoFirmadorTbl.setModel(tableModel);
         tableModel.fireTableDataChanged();
     }
-    
-    private void resetDatosTablaDeArchivoFirmador() {
-        DefaultTableModel tableModel = (DefaultTableModel) datosArchivoFirmarTbl.getModel();
-
-        tableModel.setRowCount(0);
-        String[] data = new String[1];
-        data[0] = "";
-        tableModel.addRow(data);
-        data[0] = "";
-        tableModel.addRow(data);
-        
-        datosArchivoFirmarTbl.setModel(tableModel);
-        tableModel.fireTableDataChanged();
-    }
+   
     
     private void resetDatosTabladeFirmante() {
         DefaultTableModel tableModel = (DefaultTableModel) datosDelFirmanteFirmadorTbl.getModel();
@@ -526,25 +507,103 @@ public class Main extends javax.swing.JFrame {
     
     private void setearInfoValidacionCertificado(X509Certificate cert){
         if(cert != null){
-            certificadoEmitidoATxt.setText(Util.getCN(cert));
             String emisor = FirmaDigital.getNombreCA(cert);
-            certificadoEmitidoPorTxt.setText(emisor);
-            certificadoValidoDesdeTxt.setText(cert.getNotBefore().toString());
-            certificadoValidoHastaTxt.setText(cert.getNotAfter().toString());
+            
+            DatosUsuario datosUsuario = FirmaDigital.getDatosUsuarios(cert);
+
+            DefaultTableModel tableModel = (DefaultTableModel) datosCertificadosValidarTbl.getModel();
+
+            tableModel.setRowCount(0);
+
+            //Actualizamos los datos del archivo
+            String[] data = new String[1];
+            data[0] = "Certificado Emitido por: " + FirmaDigital.getNombreCA(cert);
+            tableModel.addRow(data);
+
+            data[0] = "Cédula: " + datosUsuario.getCedula();
+            tableModel.addRow(data);
+
+            data[0] = "Nombres: " + datosUsuario.getNombre();
+            tableModel.addRow(data);
+
+            data[0] = "Apellidos: " + datosUsuario.getApellido();
+            tableModel.addRow(data);
+
+            data[0] = "Institución: " + datosUsuario.getInstitucion();
+            tableModel.addRow(data);
+
+            data[0] = "Cargo: " + datosUsuario.getCargo();
+            tableModel.addRow(data);
+
+            data[0] = "Fecha de Emisión: " + cert.getNotBefore();
+            tableModel.addRow(data);
+
+            data[0] = "Fecha de Expiración: " + cert.getNotAfter();
+            tableModel.addRow(data);
+
+            datosCertificadosValidarTbl.setModel(tableModel);
+            tableModel.fireTableDataChanged();
         }
         //TOdo botar error si es null
     }
     
+    private void agregarValidezCertificado(String validez){
+        DefaultTableModel tableModel = (DefaultTableModel) datosCertificadosValidarTbl.getModel();
+            //Actualizamos los datos del archivo
+            String[] data = new String[1];
+            data[0] = validez;
+            tableModel.addRow(data);
+            datosCertificadosValidarTbl.setModel(tableModel);
+            tableModel.fireTableDataChanged();
+    }
+    
+    
+    
+    private void resetInfoValidacionCertificado(){
+        DefaultTableModel tableModel = (DefaultTableModel) datosCertificadosValidarTbl.getModel();
+
+        tableModel.setRowCount(0);
+
+        //Actualizamos los datos del archivo
+        String[] data = new String[5];
+        data[0] = "";
+        tableModel.addRow(data);
+
+        data[0] = "";
+        tableModel.addRow(data);
+
+        data[0] = "";
+        tableModel.addRow(data);
+
+        data[0] = "";
+        tableModel.addRow(data);
+
+        data[0] = "";
+        tableModel.addRow(data);
+
+        data[0] = "";
+        tableModel.addRow(data);
+
+        data[0] = "";
+        tableModel.addRow(data);
+
+        data[0] = "";
+        tableModel.addRow(data);
+
+        data[0] = "";
+        tableModel.addRow(data);
+
+        datosCertificadosValidarTbl.setModel(tableModel);
+        tableModel.fireTableDataChanged();
+    }
+    
     private void resetearInfoValidacionCertificado() {
         rutaCertificadoTxt.setText("");
-        certificadoEmitidoATxt.setText("");
-        certificadoEmitidoPorTxt.setText("");
-        certificadoValidoDesdeTxt.setText("");
-        certificadoValidoHastaTxt.setText("");
         validarCRLTxtArea.setText("");
         validarOCSPTxtArea.setText("");
         llaveVerificar = null;
         certClaveTXT.setText("");
+        resetInfoValidacionCertificado();
         //TOdo botar error si es null
     }
     
@@ -582,16 +641,14 @@ public class Main extends javax.swing.JFrame {
         claveTXT = new javax.swing.JPasswordField();
         firmarBTN = new javax.swing.JButton();
         resetearBTN = new javax.swing.JButton();
-        jLabel10 = new javax.swing.JLabel();
-        formatoFirmaFirmarCbx = new javax.swing.JComboBox<>();
-        jScrollPane5 = new javax.swing.JScrollPane();
-        datosArchivoFirmarTbl = new javax.swing.JTable();
         jScrollPane6 = new javax.swing.JScrollPane();
         datosDelFirmanteFirmadorTbl = new javax.swing.JTable();
         jScrollPane7 = new javax.swing.JScrollPane();
         datosDelCertificadoFirmadorTbl = new javax.swing.JTable();
         jLabel5 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        archivoFirmadoTxt = new javax.swing.JTextField();
         verificarDocumentoPanel = new javax.swing.JPanel();
         verificarBTN = new javax.swing.JButton();
         archivoFirmadoVerficarLbl = new javax.swing.JLabel();
@@ -610,14 +667,6 @@ public class Main extends javax.swing.JFrame {
         certificadoVldCertLbl = new javax.swing.JLabel();
         rutaCertificadoTxt = new javax.swing.JTextField();
         abrirCertificadoBtn = new javax.swing.JButton();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        certificadoEmitidoATxt = new javax.swing.JTextField();
-        certificadoEmitidoPorTxt = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
-        certificadoValidoDesdeTxt = new javax.swing.JTextField();
-        jLabel9 = new javax.swing.JLabel();
-        certificadoValidoHastaTxt = new javax.swing.JTextField();
         validarCRLBtn = new javax.swing.JButton();
         validarOCSPBtn = new javax.swing.JButton();
         resetValidarFormBtn = new javax.swing.JButton();
@@ -630,6 +679,8 @@ public class Main extends javax.swing.JFrame {
         firmarLlaveRBTN1 = new javax.swing.JRadioButton();
         firmarTokenRBTN1 = new javax.swing.JRadioButton();
         jLabel4 = new javax.swing.JLabel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        datosCertificadosValidarTbl = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Verificador - Firmador");
@@ -704,26 +755,6 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        jLabel10.setText("Formato de Firma");
-
-        formatoFirmaFirmarCbx.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "PDF", "OOXML (MS OFFICE)", "ODT", "XML" }));
-        formatoFirmaFirmarCbx.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                formatoFirmaFirmarCbxActionPerformed(evt);
-            }
-        });
-
-        datosArchivoFirmarTbl.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null},
-                {null}
-            },
-            new String [] {
-                "Datos de Archivo"
-            }
-        ));
-        jScrollPane5.setViewportView(datosArchivoFirmarTbl);
-
         datosDelFirmanteFirmadorTbl.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null}
@@ -731,7 +762,15 @@ public class Main extends javax.swing.JFrame {
             new String [] {
                 "Cédula", "Nombres", "Institución", "Cargo", "Fecha"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane6.setViewportView(datosDelFirmanteFirmadorTbl);
 
         datosDelCertificadoFirmadorTbl.setModel(new javax.swing.table.DefaultTableModel(
@@ -749,12 +788,24 @@ public class Main extends javax.swing.JFrame {
             new String [] {
                 "Datos del Certificado"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane7.setViewportView(datosDelCertificadoFirmadorTbl);
 
         jLabel5.setText("Certificado en:");
 
         jLabel11.setText("Datos del Firmante");
+
+        jLabel15.setText("Archivo Firmado");
+
+        archivoFirmadoTxt.setEnabled(false);
 
         javax.swing.GroupLayout firmarVerificarDocPanelLayout = new javax.swing.GroupLayout(firmarVerificarDocPanel);
         firmarVerificarDocPanel.setLayout(firmarVerificarDocPanelLayout);
@@ -764,49 +815,45 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, firmarVerificarDocPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addGap(32, 32, 32)
+                        .addComponent(firmarLlaveRBTN)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(firmarTokenRBTN)
+                        .addGap(0, 572, Short.MAX_VALUE))
+                    .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
                         .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, firmarVerificarDocPanelLayout.createSequentialGroup()
-                                .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel10)
-                                    .addComponent(jLabel5))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
-                                        .addComponent(firmarLlaveRBTN)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(firmarTokenRBTN)
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addComponent(formatoFirmaFirmarCbx, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, firmarVerificarDocPanelLayout.createSequentialGroup()
+                            .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
                                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel2)
-                                    .addComponent(jLabel3))
-                                .addGap(36, 36, 36)
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel15))
+                                .addGap(24, 24, 24)
                                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
-                                        .addComponent(jLabel11)
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
-                                        .addComponent(firmarBTN)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(resetearBTN))
                                     .addComponent(rutaLlaveFirmarTxt)
                                     .addComponent(claveTXT)
-                                    .addComponent(rutaDocumentoFirmarTxt, javax.swing.GroupLayout.Alignment.TRAILING))))
+                                    .addComponent(rutaDocumentoFirmarTxt, javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(archivoFirmadoTxt)))
+                            .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel11)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGap(18, 18, 18)
                         .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(abrirArchivoPSKFirmarBtn)
-                            .addComponent(abrirArchivoFirmarBtn))
-                        .addGap(38, 38, 38))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, firmarVerificarDocPanelLayout.createSequentialGroup()
-                        .addGap(0, 96, Short.MAX_VALUE)
-                        .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
-                            .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
-                                .addComponent(jScrollPane6)))
-                        .addGap(101, 101, 101))))
+                            .addComponent(abrirArchivoFirmarBtn)))
+                    .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
+                        .addGap(128, 128, 128)
+                        .addComponent(firmarBTN)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(resetearBTN)
+                        .addGap(110, 110, 110))))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, firmarVerificarDocPanelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 572, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 572, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(125, 125, 125))
         );
         firmarVerificarDocPanelLayout.setVerticalGroup(
             firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -817,10 +864,6 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(firmarTokenRBTN)
                     .addComponent(jLabel5))
                 .addGap(18, 18, 18)
-                .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel10)
-                    .addComponent(formatoFirmaFirmarCbx, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(13, 13, 13)
                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(rutaDocumentoFirmarTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
@@ -834,19 +877,21 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(claveTXT, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
-                .addGap(31, 31, 31)
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel11)
-                .addGap(1, 1, 1)
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(27, 27, 27)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
+                .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel15)
+                    .addComponent(archivoFirmadoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jLabel11)
+                .addGap(10, 10, 10)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(33, 33, 33)
                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(firmarBTN)
                     .addComponent(resetearBTN))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         mainPanel.addTab("Firmar Electrónica De Documento", firmarVerificarDocPanel);
@@ -872,14 +917,14 @@ public class Main extends javax.swing.JFrame {
 
         datosFirmanteVerificarTbl.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null}
+                {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Emitido A", "Emitido Por", "Válido Desde", "Válido Hasta", "Fecha Firmado"
+                "Cédula", "Emitido A", "Emitido Por", "Institucion ", "Cargo", "Válido Desde", "Válido Hasta", "Fecha Firmado"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                true, true, true, false, true
+                false, false, false, true, true, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -944,18 +989,17 @@ public class Main extends javax.swing.JFrame {
                             .addGroup(verificarDocumentoPanelLayout.createSequentialGroup()
                                 .addGap(160, 160, 160)
                                 .addComponent(jLabel12)))
-                        .addGap(0, 25, Short.MAX_VALUE)))
+                        .addGap(0, 112, Short.MAX_VALUE)))
                 .addContainerGap())
             .addGroup(verificarDocumentoPanelLayout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addGroup(verificarDocumentoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel13)
-                    .addGroup(verificarDocumentoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 722, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(verificarDocumentoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel14)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 722, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(resetearBTN1)))
+                .addGroup(verificarDocumentoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 722, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(verificarDocumentoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel14)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 722, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel13))
+                    .addComponent(resetearBTN1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         verificarDocumentoPanelLayout.setVerticalGroup(
@@ -979,9 +1023,9 @@ public class Main extends javax.swing.JFrame {
                         .addGap(39, 39, 39)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel13)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(resetearBTN1)
@@ -994,46 +1038,13 @@ public class Main extends javax.swing.JFrame {
 
         certificadoVldCertLbl.setText("Certificado");
 
+        rutaCertificadoTxt.setEnabled(false);
+
         abrirCertificadoBtn.setText("Abrir");
+        abrirCertificadoBtn.setEnabled(false);
         abrirCertificadoBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 abrirCertificadoBtnActionPerformed(evt);
-            }
-        });
-
-        jLabel6.setText("Emitido A");
-
-        jLabel7.setText("Emitido Por");
-
-        certificadoEmitidoATxt.setEditable(false);
-        certificadoEmitidoATxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                certificadoEmitidoATxtActionPerformed(evt);
-            }
-        });
-
-        certificadoEmitidoPorTxt.setEditable(false);
-        certificadoEmitidoPorTxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                certificadoEmitidoPorTxtActionPerformed(evt);
-            }
-        });
-
-        jLabel8.setText("Válido desde");
-
-        certificadoValidoDesdeTxt.setEditable(false);
-        certificadoValidoDesdeTxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                certificadoValidoDesdeTxtActionPerformed(evt);
-            }
-        });
-
-        jLabel9.setText("Válido hasta");
-
-        certificadoValidoHastaTxt.setEditable(false);
-        certificadoValidoHastaTxt.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                certificadoValidoHastaTxtActionPerformed(evt);
             }
         });
 
@@ -1069,6 +1080,7 @@ public class Main extends javax.swing.JFrame {
         certificadoVldCertLbl1.setText("Contraseña");
 
         certClaveTXT.setText("jPasswordField1");
+        certClaveTXT.setEnabled(false);
 
         tipoFirmaBtnGRP.add(firmarLlaveRBTN1);
         firmarLlaveRBTN1.setText("Archivo");
@@ -1088,42 +1100,42 @@ public class Main extends javax.swing.JFrame {
 
         jLabel4.setText("Certificados en:");
 
+        datosCertificadosValidarTbl.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null},
+                {null},
+                {null},
+                {null},
+                {null},
+                {null},
+                {null},
+                {null},
+                {null}
+            },
+            new String [] {
+                "Datos del Certificado"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane5.setViewportView(datosCertificadosValidarTbl);
+
         javax.swing.GroupLayout validarCertificadoPanelLayout = new javax.swing.GroupLayout(validarCertificadoPanel);
         validarCertificadoPanel.setLayout(validarCertificadoPanelLayout);
         validarCertificadoPanelLayout.setHorizontalGroup(
             validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, validarCertificadoPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(resetValidarFormBtn)
-                .addGap(332, 332, 332))
             .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
-                        .addGap(104, 104, 104)
-                        .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(certificadoValidoDesdeTxt, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(certificadoEmitidoATxt, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(validarCRLBtn))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
-                                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel7)
-                                    .addComponent(jLabel9))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 86, Short.MAX_VALUE)
-                                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(certificadoValidoHastaTxt)
-                                    .addComponent(certificadoEmitidoPorTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
-                                .addComponent(validarOCSPBtn)
-                                .addGap(30, 30, 30))))
-                    .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
                         .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(certificadoVldCertLbl)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel8)
                             .addComponent(certificadoVldCertLbl1)
                             .addComponent(jLabel4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1131,22 +1143,28 @@ public class Main extends javax.swing.JFrame {
                             .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
                                 .addComponent(firmarLlaveRBTN1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(firmarTokenRBTN1)
-                                .addGap(0, 0, Short.MAX_VALUE))
+                                .addComponent(firmarTokenRBTN1))
                             .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
                                 .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(certClaveTXT)
                                     .addComponent(rutaCertificadoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 453, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(abrirCertificadoBtn)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap())
-            .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
-                .addGap(24, 24, 24)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(abrirCertificadoBtn)))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
+                        .addGap(104, 104, 104)
+                        .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
+                                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(validarCRLBtn))
+                                .addGap(18, 18, 18)
+                                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(validarOCSPBtn)))
+                            .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 651, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(resetValidarFormBtn, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addGap(0, 101, Short.MAX_VALUE))))
         );
         validarCertificadoPanelLayout.setVerticalGroup(
             validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1168,29 +1186,19 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(certClaveTXT, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(certificadoEmitidoATxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7)
-                    .addComponent(certificadoEmitidoPorTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8)
-                    .addComponent(certificadoValidoDesdeTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel9)
-                    .addComponent(certificadoValidoHastaTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(validarCRLBtn)
                     .addComponent(validarOCSPBtn))
                 .addGap(18, 18, 18)
-                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(64, 64, 64)
+                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(28, 28, 28)
                 .addComponent(resetValidarFormBtn)
-                .addContainerGap(82, Short.MAX_VALUE))
+                .addContainerGap(88, Short.MAX_VALUE))
         );
 
         mainPanel.addTab("Validar Certificado De Firma Electrónica", validarCertificadoPanel);
@@ -1229,22 +1237,6 @@ public class Main extends javax.swing.JFrame {
             ex.printStackTrace();
         }
     }//GEN-LAST:event_verificarBTNActionPerformed
-
-    private void certificadoValidoHastaTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_certificadoValidoHastaTxtActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_certificadoValidoHastaTxtActionPerformed
-
-    private void certificadoValidoDesdeTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_certificadoValidoDesdeTxtActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_certificadoValidoDesdeTxtActionPerformed
-
-    private void certificadoEmitidoPorTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_certificadoEmitidoPorTxtActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_certificadoEmitidoPorTxtActionPerformed
-
-    private void certificadoEmitidoATxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_certificadoEmitidoATxtActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_certificadoEmitidoATxtActionPerformed
 
     private void abrirCertificadoBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_abrirCertificadoBtnActionPerformed
         llaveVerificar = abrirArchivo();
@@ -1294,6 +1286,8 @@ public class Main extends javax.swing.JFrame {
                 resultStr = "Inválido";
                 
             validarOCSPTxtArea.append("Certificado: " + resultStr + "\n");
+            agregarValidezCertificado(resultStr);
+            
             
         } catch (IOException | RubricaException | OcspValidationException | KeyStoreException ex) {
             //TODO botar error
@@ -1330,6 +1324,7 @@ public class Main extends javax.swing.JFrame {
             
             String urlCrl = this.obtenerUrlCRL(CertificateUtils.getCrlDistributionPoints(cert));
             ValidationResult result;
+            String resultStr;
             switch(nombreCA){
                 case "Banco Central del Ecuador":
                     //TODO quemado hasta que arreglen en el banco central
@@ -1339,23 +1334,30 @@ public class Main extends javax.swing.JFrame {
                     System.out.println("Validation result: " + result);
                     
                     validarCRLTxtArea.append("Certificado: " + resultadosCRL(result));
+                    resultStr = resultadosCRL(result);
                     break;
                 case "Consejo de la Judicatura":
                     result = CrlUtils.verifyCertificateCRLs(cert, new ConsejoJudicaturaSubCert().getPublicKey(),
                     Arrays.asList(urlCrl));
                     System.out.println("Validation result: " + result);
                     validarCRLTxtArea.append("Certificado: " + resultadosCRL(result));
+                    resultStr = resultadosCRL(result);
                     break;
                 case "SecurityData":
                     result = CrlUtils.verifyCertificateCRLs(cert, new SecurityDataSubCaCert().getPublicKey(),
                             Arrays.asList(urlCrl));
                     System.out.println("Validation result: " + result);
                     validarCRLTxtArea.append("Certificado: " + resultadosCRL(result));
+                    resultStr = resultadosCRL(result);
                     break;
                 default:
+                    resultStr= " Error entidad no reconocida";
                     validarCRLTxtArea.append("Error entidad no reconocida \n");
                     break;
             }
+            
+            agregarValidezCertificado(resultStr);
+            
             
 
             System.out.println(CertificateUtils.getCN(cert));
@@ -1419,8 +1421,6 @@ public class Main extends javax.swing.JFrame {
             rutaDocumentoFirmarTxt.setText(documento.getAbsolutePath());
 
         }
-        
-        formatoFirmaFirmarCbx.setSelectedItem(OS);
     }//GEN-LAST:event_abrirArchivoFirmarBtnActionPerformed
 
     private void rutaDocumentoFirmarTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rutaDocumentoFirmarTxtActionPerformed
@@ -1428,11 +1428,11 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_rutaDocumentoFirmarTxtActionPerformed
 
     private void firmarLlaveRBTN1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firmarLlaveRBTN1ActionPerformed
-        // TODO add your handling code here:
+        selValidarArchivo();
     }//GEN-LAST:event_firmarLlaveRBTN1ActionPerformed
 
     private void firmarTokenRBTN1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firmarTokenRBTN1ActionPerformed
-        // TODO add your handling code here:
+        selValidarToken();
     }//GEN-LAST:event_firmarTokenRBTN1ActionPerformed
 
     private void examinarVerificarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_examinarVerificarBtnActionPerformed
@@ -1477,10 +1477,6 @@ public class Main extends javax.swing.JFrame {
         tableModelCert.fireTableDataChanged();
     }//GEN-LAST:event_resetearBTN1ActionPerformed
 
-    private void formatoFirmaFirmarCbxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formatoFirmaFirmarCbxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_formatoFirmaFirmarCbxActionPerformed
-
     /**
      * @param args the command line arguments
      */
@@ -1518,18 +1514,15 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JButton abrirArchivoFirmarBtn;
     private javax.swing.JButton abrirArchivoPSKFirmarBtn;
     private javax.swing.JButton abrirCertificadoBtn;
+    private javax.swing.JTextField archivoFirmadoTxt;
     private javax.swing.JLabel archivoFirmadoVerficarLbl;
     private javax.swing.JTextField archivoFirmadoVerificarTxt;
     private javax.swing.JPasswordField certClaveTXT;
-    private javax.swing.JTextField certificadoEmitidoATxt;
-    private javax.swing.JTextField certificadoEmitidoPorTxt;
-    private javax.swing.JTextField certificadoValidoDesdeTxt;
-    private javax.swing.JTextField certificadoValidoHastaTxt;
     private javax.swing.JLabel certificadoVldCertLbl;
     private javax.swing.JLabel certificadoVldCertLbl1;
     private javax.swing.JPasswordField claveTXT;
-    private javax.swing.JTable datosArchivoFirmarTbl;
     private javax.swing.JTable datosArchivoVerificarTbl;
+    private javax.swing.JTable datosCertificadosValidarTbl;
     private javax.swing.JTable datosDelCertificadoFirmadorTbl;
     private javax.swing.JTable datosDelFirmanteFirmadorTbl;
     private javax.swing.JTable datosFirmanteVerificarTbl;
@@ -1540,21 +1533,16 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JRadioButton firmarTokenRBTN;
     private javax.swing.JRadioButton firmarTokenRBTN1;
     private javax.swing.JPanel firmarVerificarDocPanel;
-    private javax.swing.JComboBox<String> formatoFirmaFirmarCbx;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
