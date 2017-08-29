@@ -277,14 +277,28 @@ public class Main extends javax.swing.JFrame {
         DefaultTableModel tableModelCertificados = (DefaultTableModel) datosFirmanteVerificarTbl.getModel();
         tableModelCertificados.setRowCount(0);
         for (Certificado cert: certs) {
-            String[] dataCert = new String[7];
-            dataCert[0] = cert.getIssuedTo();
-            dataCert[1] = cert.getIssuedBy();
-            dataCert[2] = format1.format(cert.getValidFrom().getTime());
-            dataCert[3] = format1.format(cert.getValidTo().getTime());
-            dataCert[4] = format1.format(cert.getGenerated().getTime());
-           // dataCert[5] = 
-            dataCert[6] = cert.getIssuedTo();
+            String[] dataCert = new String[8];
+            //DatosUsuario datosUsuario = FirmaDigital.getDatosUsuarios(cert);
+            dataCert[0] = cert.getDatosUsuario().getCedula();
+            String apellido = cert.getDatosUsuario().getApellido();
+            if(cert.getDatosUsuario().getApellido()==null){
+                apellido = "";
+            }
+            String nombre = cert.getDatosUsuario().getNombre();
+            if(cert.getDatosUsuario().getNombre()==null){
+                nombre = "";
+            }
+            dataCert[1] = nombre + " " +apellido;
+            dataCert[2] = cert.getDatosUsuario().getInstitucion();
+            dataCert[3] = cert.getDatosUsuario().getCargo();
+            dataCert[4] = format1.format(cert.getValidFrom().getTime());
+            dataCert[5] = format1.format(cert.getValidTo().getTime());
+            dataCert[6] = format1.format(cert.getGenerated().getTime());
+            String revocadoStr = "No ha sido revocado";
+            if(cert.getRevocated()){
+                revocadoStr = "Revocado";
+            }
+            dataCert[7] = revocadoStr;
             tableModelCertificados.addRow(dataCert);
         }
         
@@ -551,7 +565,7 @@ public class Main extends javax.swing.JFrame {
         DefaultTableModel tableModel = (DefaultTableModel) datosCertificadosValidarTbl.getModel();
             //Actualizamos los datos del archivo
             String[] data = new String[1];
-            data[0] = validez;
+            data[0] = "Estado certificado: "+validez;
             tableModel.addRow(data);
             datosCertificadosValidarTbl.setModel(tableModel);
             tableModel.fireTableDataChanged();
@@ -676,8 +690,8 @@ public class Main extends javax.swing.JFrame {
         validarOCSPTxtArea = new javax.swing.JTextArea();
         certificadoVldCertLbl1 = new javax.swing.JLabel();
         certClaveTXT = new javax.swing.JPasswordField();
-        firmarLlaveRBTN1 = new javax.swing.JRadioButton();
-        firmarTokenRBTN1 = new javax.swing.JRadioButton();
+        validarLlaveRBTN = new javax.swing.JRadioButton();
+        validarTokenRBTN = new javax.swing.JRadioButton();
         jLabel4 = new javax.swing.JLabel();
         jScrollPane5 = new javax.swing.JScrollPane();
         datosCertificadosValidarTbl = new javax.swing.JTable();
@@ -920,11 +934,11 @@ public class Main extends javax.swing.JFrame {
                 {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Cédula", "Emitido A", "Emitido Por", "Institucion ", "Cargo", "Válido Desde", "Válido Hasta", "Fecha Firmado"
+                "Cédula", "Nombres", "Institucion ", "Cargo", "Válido Desde", "Válido Hasta", "Fecha Firmado", "Revocado"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, true, true, false, false, true
+                false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1082,19 +1096,19 @@ public class Main extends javax.swing.JFrame {
         certClaveTXT.setText("jPasswordField1");
         certClaveTXT.setEnabled(false);
 
-        tipoFirmaBtnGRP.add(firmarLlaveRBTN1);
-        firmarLlaveRBTN1.setText("Archivo");
-        firmarLlaveRBTN1.addActionListener(new java.awt.event.ActionListener() {
+        tipoFirmaBtnGRP.add(validarLlaveRBTN);
+        validarLlaveRBTN.setText("Archivo");
+        validarLlaveRBTN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                firmarLlaveRBTN1ActionPerformed(evt);
+                validarLlaveRBTNActionPerformed(evt);
             }
         });
 
-        tipoFirmaBtnGRP.add(firmarTokenRBTN1);
-        firmarTokenRBTN1.setText("Firmar con Token");
-        firmarTokenRBTN1.addActionListener(new java.awt.event.ActionListener() {
+        tipoFirmaBtnGRP.add(validarTokenRBTN);
+        validarTokenRBTN.setText("Firmar con Token");
+        validarTokenRBTN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                firmarTokenRBTN1ActionPerformed(evt);
+                validarTokenRBTNActionPerformed(evt);
             }
         });
 
@@ -1141,9 +1155,9 @@ public class Main extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
-                                .addComponent(firmarLlaveRBTN1)
+                                .addComponent(validarLlaveRBTN)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(firmarTokenRBTN1))
+                                .addComponent(validarTokenRBTN))
                             .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
                                 .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(certClaveTXT)
@@ -1171,8 +1185,8 @@ public class Main extends javax.swing.JFrame {
             .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(firmarLlaveRBTN1)
-                    .addComponent(firmarTokenRBTN1)
+                    .addComponent(validarLlaveRBTN)
+                    .addComponent(validarTokenRBTN)
                     .addComponent(jLabel4))
                 .addGap(18, 18, 18)
                 .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1306,11 +1320,25 @@ public class Main extends javax.swing.JFrame {
         validarCRLTxtArea.setText("");
         validarCRLTxtArea.append("Abriendo el certificado " + rutaCertificadoTxt.getText() + "\n");    
         
-        KeyStoreProvider ksp = new FileKeyStoreProvider(rutaCertificadoTxt.getText());
-        
-        
+        KeyStoreProvider ksp;
         try {
-            ks = ksp.getKeystore(certClaveTXT.getPassword());
+            if (this.validarTokenRBTN.isSelected()) {
+                ks = KeyStoreProviderFactory.getKeyStore(claveTXT.getPassword().toString());
+                if (ks == null) {
+
+                    //JOptionPane.showMessageDialog(frame, "No se encontro un token!");
+                    throw new TokenNoEncontrado("No se encontro token!");
+                }
+
+            } else {
+                ksp = new FileKeyStoreProvider(rutaCertificadoTxt.getText());
+                ks = ksp.getKeystore(certClaveTXT.getPassword());
+
+            }
+            System.out.println("Validar CR2");
+         
+            //KeyStoreProvider ksp = new FileKeyStoreProvider(rutaCertificadoTxt.getText());
+            //ks = ksp.getKeystore(certClaveTXT.getPassword());
             X509Certificate cert = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
             
             setearInfoValidacionCertificado(cert);
@@ -1361,9 +1389,8 @@ public class Main extends javax.swing.JFrame {
             
 
             System.out.println(CertificateUtils.getCN(cert));
-        } catch (KeyStoreException | IOException | RubricaException  ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            
+        } catch (KeyStoreException | TokenNoEncontrado | IOException | RubricaException  ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);  
         }             
         
     }//GEN-LAST:event_validarCRLBtnActionPerformed
@@ -1427,13 +1454,13 @@ public class Main extends javax.swing.JFrame {
 
     }//GEN-LAST:event_rutaDocumentoFirmarTxtActionPerformed
 
-    private void firmarLlaveRBTN1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firmarLlaveRBTN1ActionPerformed
+    private void validarLlaveRBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_validarLlaveRBTNActionPerformed
         selValidarArchivo();
-    }//GEN-LAST:event_firmarLlaveRBTN1ActionPerformed
+    }//GEN-LAST:event_validarLlaveRBTNActionPerformed
 
-    private void firmarTokenRBTN1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firmarTokenRBTN1ActionPerformed
+    private void validarTokenRBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_validarTokenRBTNActionPerformed
         selValidarToken();
-    }//GEN-LAST:event_firmarTokenRBTN1ActionPerformed
+    }//GEN-LAST:event_validarTokenRBTNActionPerformed
 
     private void examinarVerificarBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_examinarVerificarBtnActionPerformed
        documento = abrirArchivo(filtros);
@@ -1529,9 +1556,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JButton examinarVerificarBtn;
     private javax.swing.JButton firmarBTN;
     private javax.swing.JRadioButton firmarLlaveRBTN;
-    private javax.swing.JRadioButton firmarLlaveRBTN1;
     private javax.swing.JRadioButton firmarTokenRBTN;
-    private javax.swing.JRadioButton firmarTokenRBTN1;
     private javax.swing.JPanel firmarVerificarDocPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
@@ -1562,8 +1587,10 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JButton validarCRLBtn;
     private javax.swing.JTextArea validarCRLTxtArea;
     private javax.swing.JPanel validarCertificadoPanel;
+    private javax.swing.JRadioButton validarLlaveRBTN;
     private javax.swing.JButton validarOCSPBtn;
     private javax.swing.JTextArea validarOCSPTxtArea;
+    private javax.swing.JRadioButton validarTokenRBTN;
     private javax.swing.JButton verificarBTN;
     private javax.swing.JPanel verificarDocumentoPanel;
     // End of variables declaration//GEN-END:variables
