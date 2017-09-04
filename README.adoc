@@ -1,6 +1,8 @@
-= Firma Digital: Firmador Verificador
+= Firma Digital: Firmador
 
-Como empaquetar un solo JAR:
+Para crear un JAR con todas las dependencias:
 
 ----
-mvn clean compile assembly:single
+mvn clean package
+----
+
