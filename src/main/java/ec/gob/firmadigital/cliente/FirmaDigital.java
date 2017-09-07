@@ -62,7 +62,6 @@ import io.rubrica.core.Util;
 import io.rubrica.ocsp.ValidadorOCSP;
 import io.rubrica.sign.xades.XAdESSigner;
 import io.rubrica.util.CertificateUtils;
-import io.rubrica.util.OcspUtils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
