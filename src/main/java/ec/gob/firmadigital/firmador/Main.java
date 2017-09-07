@@ -717,6 +717,7 @@ public class Main extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Verificador - Firmador");
+        setResizable(false);
 
         firmarVerificarDocPanel.setName(""); // NOI18N
 
@@ -770,7 +771,6 @@ public class Main extends javax.swing.JFrame {
 
         jLabel3.setText("Contraseña");
 
-        claveTXT.setText("jPasswordField1");
         claveTXT.setEnabled(false);
 
         firmarBTN.setText("Firmar");
@@ -868,9 +868,7 @@ public class Main extends javax.swing.JFrame {
                                     .addComponent(claveTXT)
                                     .addComponent(rutaDocumentoFirmarTxt, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(archivoFirmadoTxt)))
-                            .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
-                                .addComponent(jLabel11)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(jLabel11))
                         .addGap(18, 18, 18)
                         .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(abrirArchivoPSKFirmarBtn)
@@ -1112,7 +1110,6 @@ public class Main extends javax.swing.JFrame {
 
         certificadoVldCertLbl1.setText("Contraseña");
 
-        certClaveTXT.setText("jPasswordField1");
         certClaveTXT.setEnabled(false);
 
         tipoFirmaBtnGRP.add(validarLlaveRBTN);
