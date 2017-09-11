@@ -13,50 +13,36 @@ import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import javax.swing.JTree;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import javax.swing.UIManager.*;
 
 import ec.gob.firmadigital.cliente.FirmaDigital;
 import ec.gob.firmadigital.cliente.Validador;
-import ec.gob.firmadigital.crl.ServicioCRL;
 import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
 import ec.gob.firmadigital.exceptions.DocumentoNoPermitido;
 import ec.gob.firmadigital.exceptions.TokenNoConectadoException;
 import ec.gob.firmadigital.exceptions.TokenNoEncontrado;
-import ec.gob.firmadigital.lectorpdf.CustomPageDrawer;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import ec.gob.firmadigital.utils.WordWrapCellRenderer;
-import io.rubrica.certificate.CrlUtils;
 import io.rubrica.certificate.ValidationResult;
-import io.rubrica.certificate.ec.bce.BceSubTestCert;
-import io.rubrica.certificate.ec.cj.ConsejoJudicaturaSubCert;
-import io.rubrica.certificate.ec.securitydata.SecurityDataSubCaCert;
 import io.rubrica.core.RubricaException;
-import io.rubrica.core.Util;
 import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.ocsp.OcspValidationException;
-import io.rubrica.ocsp.ValidadorOCSP;
 import io.rubrica.sign.InvalidFormatException;
-import io.rubrica.util.CertificateUtils;
-import java.security.cert.Certificate;
-import java.time.Clock;
 import java.time.LocalDateTime;
-import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 ;
 
@@ -87,6 +73,21 @@ public class Main extends javax.swing.JFrame {
      * Creates new form Main
      */
     public Main() {
+        try {
+            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                System.out.println("LF disponibles "  +info.getName());
+                if ("GTK+".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("No tiene gtk+");
+            // If Nimbus is not available, you can set the GUI to another look and feel.
+        }
+
+        
+        
         extensionesPermitidas = new ArrayList<>();
         // Extensiones permitidas"pdf","docx","xlsx","pptx","odt","ods","odp"
         extensionesPermitidas.add("pdf");
@@ -350,10 +351,7 @@ public class Main extends javax.swing.JFrame {
         
         System.out.println("Nombre: " +nombre);
         
-        DatosUsuario datosUsuario = FirmaDigital.getDatosUsuarios(cert);
-        
-        //datosDelFirmanteFirmadorTbl
-        
+        DatosUsuario datosUsuario = FirmaDigital.getDatosUsuarios(cert);        
         
         agregarDatosTabladeFirmante(datosUsuario);
         
@@ -512,7 +510,10 @@ public class Main extends javax.swing.JFrame {
             KeyStoreProvider ksp = new FileKeyStoreProvider(rutaLlaveFirmarTxt.getText());
             ks = ksp.getKeystore(claveTXT.getPassword());
             
-        }
+         }
+
+         Validador validador = new Validador();
+         validador.validar(claveTXT.getPassword(), ks);
     }
     
     // TODO Crear clase para manejar esto
@@ -633,8 +634,6 @@ public class Main extends javax.swing.JFrame {
     
     private void resetearInfoValidacionCertificado() {
         rutaCertificadoTxt.setText("");
-        validarCRLTxtArea.setText("");
-        validarOCSPTxtArea.setText("");
         llaveVerificar = null;
         certClaveTXT.setText("");
         resetInfoValidacionCertificado();
@@ -702,13 +701,7 @@ public class Main extends javax.swing.JFrame {
         certificadoVldCertLbl = new javax.swing.JLabel();
         rutaCertificadoTxt = new javax.swing.JTextField();
         abrirCertificadoBtn = new javax.swing.JButton();
-        validarCRLBtn = new javax.swing.JButton();
-        validarOCSPBtn = new javax.swing.JButton();
         resetValidarFormBtn = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        validarCRLTxtArea = new javax.swing.JTextArea();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        validarOCSPTxtArea = new javax.swing.JTextArea();
         certificadoVldCertLbl1 = new javax.swing.JLabel();
         certClaveTXT = new javax.swing.JPasswordField();
         validarLlaveRBTN = new javax.swing.JRadioButton();
@@ -734,7 +727,7 @@ public class Main extends javax.swing.JFrame {
 
         jLabel1.setText("Documento");
 
-        abrirArchivoFirmarBtn.setText("Abrir");
+        abrirArchivoFirmarBtn.setText("Examinar");
         abrirArchivoFirmarBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 abrirArchivoFirmarBtnActionPerformed(evt);
@@ -766,7 +759,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        abrirArchivoPSKFirmarBtn.setText("Abrir");
+        abrirArchivoPSKFirmarBtn.setText("Examinar");
         abrirArchivoPSKFirmarBtn.setEnabled(false);
         abrirArchivoPSKFirmarBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -786,7 +779,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        resetearBTN.setText("Resetear");
+        resetearBTN.setText("Restablecer");
         resetearBTN.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetearBTNActionPerformed(evt);
@@ -860,7 +853,7 @@ public class Main extends javax.swing.JFrame {
                                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 572, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 572, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(archivoFirmadoTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)))
+                                    .addComponent(archivoFirmadoTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 604, Short.MAX_VALUE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, firmarVerificarDocPanelLayout.createSequentialGroup()
                                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -901,18 +894,22 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(firmarTokenRBTN)
                     .addComponent(jLabel5))
                 .addGap(18, 18, 18)
-                .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(rutaDocumentoFirmarTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1)
-                    .addComponent(abrirArchivoFirmarBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(16, 16, 16)
+                .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
+                        .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(abrirArchivoFirmarBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(16, 16, 16))
+                    .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
+                        .addComponent(rutaDocumentoFirmarTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(rutaLlaveFirmarTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(rutaLlaveFirmarTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(abrirArchivoPSKFirmarBtn))
                 .addGap(18, 18, 18)
                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(claveTXT, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(claveTXT, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -997,7 +994,7 @@ public class Main extends javax.swing.JFrame {
             datosArchivoVerificarTbl.getColumnModel().getColumn(0).setResizable(false);
         }
 
-        resetearBTN1.setText("Resetear");
+        resetearBTN1.setText("Restablecer");
         resetearBTN1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetearBTN1ActionPerformed(evt);
@@ -1042,8 +1039,8 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(verificarDocumentoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(archivoFirmadoVerficarLbl)
-                    .addComponent(archivoFirmadoVerificarTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(examinarVerificarBtn))
+                    .addComponent(examinarVerificarBtn)
+                    .addComponent(archivoFirmadoVerificarTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(verificarDocumentoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(verificarBTN)
@@ -1052,11 +1049,11 @@ public class Main extends javax.swing.JFrame {
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel12)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                .addGap(37, 37, 37)
                 .addComponent(jLabel14)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addGap(8, 8, 8)
                 .addComponent(jLabel13)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1071,7 +1068,7 @@ public class Main extends javax.swing.JFrame {
 
         rutaCertificadoTxt.setEnabled(false);
 
-        abrirCertificadoBtn.setText("Abrir");
+        abrirCertificadoBtn.setText("Examinar");
         abrirCertificadoBtn.setEnabled(false);
         abrirCertificadoBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1079,34 +1076,12 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
-        validarCRLBtn.setText("Validar por CRL");
-        validarCRLBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                validarCRLBtnActionPerformed(evt);
-            }
-        });
-
-        validarOCSPBtn.setText("Validar por OCSP");
-        validarOCSPBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                validarOCSPBtnActionPerformed(evt);
-            }
-        });
-
-        resetValidarFormBtn.setText("Resetear");
+        resetValidarFormBtn.setText("Restablecer");
         resetValidarFormBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetValidarFormBtnActionPerformed(evt);
             }
         });
-
-        validarCRLTxtArea.setColumns(20);
-        validarCRLTxtArea.setRows(5);
-        jScrollPane1.setViewportView(validarCRLTxtArea);
-
-        validarOCSPTxtArea.setColumns(20);
-        validarOCSPTxtArea.setRows(5);
-        jScrollPane2.setViewportView(validarOCSPTxtArea);
 
         certificadoVldCertLbl1.setText("Contraseña");
 
@@ -1196,22 +1171,13 @@ public class Main extends javax.swing.JFrame {
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
                         .addGap(104, 104, 104)
-                        .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
-                                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(validarCRLBtn))
-                                .addGap(18, 18, 18)
-                                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(validarOCSPBtn, javax.swing.GroupLayout.Alignment.TRAILING)))
-                            .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 651, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 651, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 101, Short.MAX_VALUE))))
             .addComponent(jSeparator3)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, validarCertificadoPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
+                .addGap(232, 232, 232)
                 .addComponent(jLabel6)
-                .addGap(226, 226, 226))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         validarCertificadoPanelLayout.setVerticalGroup(
             validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1224,7 +1190,7 @@ public class Main extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(certificadoVldCertLbl)
-                    .addComponent(rutaCertificadoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(rutaCertificadoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(abrirCertificadoBtn))
                 .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
@@ -1232,26 +1198,18 @@ public class Main extends javax.swing.JFrame {
                         .addComponent(certificadoVldCertLbl1))
                     .addGroup(validarCertificadoPanelLayout.createSequentialGroup()
                         .addGap(6, 6, 6)
-                        .addComponent(certClaveTXT, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(certClaveTXT, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(validarBtn)
-                    .addComponent(resetValidarFormBtn))
+                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(resetValidarFormBtn)
+                    .addComponent(validarBtn))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel6)
                 .addGap(23, 23, 23)
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(validarCRLBtn)
-                    .addComponent(validarOCSPBtn))
-                .addGap(18, 18, 18)
-                .addGroup(validarCertificadoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(96, Short.MAX_VALUE))
+                .addContainerGap(235, Short.MAX_VALUE))
         );
 
         mainPanel.addTab("Validar Certificado De Firma Electrónica", validarCertificadoPanel);
@@ -1299,141 +1257,6 @@ public class Main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_abrirCertificadoBtnActionPerformed
 
-    private void validarOCSPBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_validarOCSPBtnActionPerformed
-        System.out.println("Validar OCSP");
-        validarOCSPTxtArea.setText("");
-        validarOCSPTxtArea.append("Abriendo el certificado " + rutaCertificadoTxt.getText() + "\n");
-        KeyStoreProvider ksp = new FileKeyStoreProvider(rutaCertificadoTxt.getText());
-        try {
-            ks = ksp.getKeystore(certClaveTXT.getPassword());
-            String alias = ks.aliases().nextElement();
-            X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-            Certificate [] cadenaCerts =  ks.getCertificateChain(alias);
-            System.out.println("cad " +cadenaCerts.length);
-            List<X509Certificate> cadena = new ArrayList<>();
-            for(int i=0; i< cadenaCerts.length; i++){
-                cadena.add((X509Certificate) cadenaCerts[i]);
-                System.out.println(FirmaDigital.getNombreCA(cadena.get(i)));
-            }
-            
-            setearInfoValidacionCertificado(cert);
-            
-            List<String> ocspUrls = CertificateUtils.getAuthorityInformationAccess(cert);
-            for (String ocsp : ocspUrls) {
-                validarOCSPTxtArea.append("OCSP=" + ocsp + "\n");
-                System.out.println("OCSP=" + ocsp);
-            }
-            System.out.println("OCSPUrls "+ ocspUrls.size());
-            
-            ValidadorOCSP validadorOCSP = new ValidadorOCSP();
-            X509Certificate certRoot = cadena.get(1); //FirmaDigital.getRootCertificate(cert);
-                        
-            validadorOCSP.validar(cert, certRoot, ocspUrls);
-            
-            boolean validezCert = true; //= OcspUtils.isValidCertificate(cert);
-            //System.out.println("Valid? " +OCSPRespStatus.MALFORMED_REQUEST );
-            String resultStr;
-            if(validezCert)
-                resultStr = "Válido";
-            else
-                resultStr = "Inválido";
-                
-            validarOCSPTxtArea.append("Certificado: " + resultStr + "\n");
-            agregarValidezCertificado(resultStr);
-            
-            
-        } catch (IOException | RubricaException | OcspValidationException | KeyStoreException ex) {
-            //TODO botar error
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-            validarOCSPTxtArea.append("Certificado: No se pudo validar \n");
-            //Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        
-    }//GEN-LAST:event_validarOCSPBtnActionPerformed
-
-    private void validarCRLBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_validarCRLBtnActionPerformed
-        System.out.println("Validar CRL");
-        String msgValidarCRL;
-        validarCRLTxtArea.setText("");
-        validarCRLTxtArea.append("Abriendo el certificado " + rutaCertificadoTxt.getText() + "\n");    
-        
-        KeyStoreProvider ksp;
-        try {
-            if (this.validarTokenRBTN.isSelected()) {
-                ks = KeyStoreProviderFactory.getKeyStore(claveTXT.getPassword().toString());
-                if (ks == null) {
-
-                    //JOptionPane.showMessageDialog(frame, "No se encontro un token!");
-                    throw new TokenNoEncontrado("No se encontro token!");
-                }
-
-            } else {
-                ksp = new FileKeyStoreProvider(rutaCertificadoTxt.getText());
-                ks = ksp.getKeystore(certClaveTXT.getPassword());
-
-            }
-            System.out.println("Validar CR2");
-         
-            //KeyStoreProvider ksp = new FileKeyStoreProvider(rutaCertificadoTxt.getText());
-            //ks = ksp.getKeystore(certClaveTXT.getPassword());
-            X509Certificate cert = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
-            
-            setearInfoValidacionCertificado(cert);
-            
-            for (String url : CertificateUtils.getCrlDistributionPoints(cert)) {
-                System.out.println("url=" + url);
-            }
-            
-            String nombreCA = FirmaDigital.getNombreCA(cert);
-            validarCRLTxtArea.append("Validando CRL contra "+ nombreCA + "\n");
-            
-            String urlCrl = this.obtenerUrlCRL(CertificateUtils.getCrlDistributionPoints(cert));
-            ValidationResult result;
-            String resultStr;
-            switch(nombreCA){
-                case "Banco Central del Ecuador":
-                    //TODO quemado hasta que arreglen en el banco central
-                    urlCrl = ServicioCRL.BCE_CRL;
-                    result = CrlUtils.verifyCertificateCRLs(cert, new BceSubTestCert().getPublicKey(),
-                            Arrays.asList(urlCrl));
-                    System.out.println("Validation result: " + result);
-                    
-                    validarCRLTxtArea.append("Certificado: " + resultadosCRL(result));
-                    resultStr = resultadosCRL(result);
-                    break;
-                case "Consejo de la Judicatura":
-                    result = CrlUtils.verifyCertificateCRLs(cert, new ConsejoJudicaturaSubCert().getPublicKey(),
-                    Arrays.asList(urlCrl));
-                    System.out.println("Validation result: " + result);
-                    validarCRLTxtArea.append("Certificado: " + resultadosCRL(result));
-                    resultStr = resultadosCRL(result);
-                    break;
-                case "SecurityData":
-                    result = CrlUtils.verifyCertificateCRLs(cert, new SecurityDataSubCaCert().getPublicKey(),
-                            Arrays.asList(urlCrl));
-                    System.out.println("Validation result: " + result);
-                    validarCRLTxtArea.append("Certificado: " + resultadosCRL(result));
-                    resultStr = resultadosCRL(result);
-                    break;
-                default:
-                    resultStr= " Error entidad no reconocida";
-                    validarCRLTxtArea.append("Error entidad no reconocida \n");
-                    break;
-            }
-            
-            agregarValidezCertificado(resultStr);
-            
-            
-
-            System.out.println(CertificateUtils.getCN(cert));
-        } catch (KeyStoreException | TokenNoEncontrado | IOException | RubricaException  ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);  
-        }             
-        
-    }//GEN-LAST:event_validarCRLBtnActionPerformed
-
     private void resetValidarFormBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetValidarFormBtnActionPerformed
         resetearInfoValidacionCertificado();
     }//GEN-LAST:event_resetValidarFormBtnActionPerformed
@@ -1444,9 +1267,11 @@ public class Main extends javax.swing.JFrame {
 
     private void firmarBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firmarBTNActionPerformed
         if (documento == null || !documento.getAbsolutePath().equals(rutaDocumentoFirmarTxt.getText()))
-        documento = new File(rutaDocumentoFirmarTxt.getText());
+            documento = new File(rutaDocumentoFirmarTxt.getText());
 
         try {
+            // Primero validamos el certificado
+            
             this.firmarDocumento();
             // JOptionPane.showMessageDialog(this, "Documento firmado "+ this.documentoFirmadoTXT.getText(), "Firmador", JOptionPane.INFORMATION_MESSAGE, checkIcon);
             System.out.println("Documento firmado");
@@ -1559,7 +1384,9 @@ public class Main extends javax.swing.JFrame {
                 ks = ksp.getKeystore(certClaveTXT.getPassword());
 
             }
-            validador.validar(rutaCertificadoTxt.getText(), claveTXT.getPassword(), ks);
+            X509Certificate cert = validador.validar(claveTXT.getPassword(), ks);
+            setearInfoValidacionCertificado(cert);
+            agregarValidezCertificado("Válido");
         } catch (KeyStoreException | TokenNoEncontrado | IOException | RubricaException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -1630,8 +1457,6 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
@@ -1649,12 +1474,8 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTextField rutaLlaveFirmarTxt;
     private javax.swing.ButtonGroup tipoFirmaBtnGRP;
     private javax.swing.JButton validarBtn;
-    private javax.swing.JButton validarCRLBtn;
-    private javax.swing.JTextArea validarCRLTxtArea;
     private javax.swing.JPanel validarCertificadoPanel;
     private javax.swing.JRadioButton validarLlaveRBTN;
-    private javax.swing.JButton validarOCSPBtn;
-    private javax.swing.JTextArea validarOCSPTxtArea;
     private javax.swing.JRadioButton validarTokenRBTN;
     private javax.swing.JButton verificarBTN;
     private javax.swing.JPanel verificarDocumentoPanel;

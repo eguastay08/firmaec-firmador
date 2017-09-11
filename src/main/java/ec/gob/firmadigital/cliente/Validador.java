@@ -50,21 +50,22 @@ public class Validador {
      * @param rutaCertificado
      * @param clave
      * @param ks
+     * @return X509Certificate
      * @throws KeyStoreException
      * @throws IOException
      * @throws RubricaException 
      */
-    public void validar(String rutaCertificado, char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException{
+    public X509Certificate validar(char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException{
         try {
-            validarOCSP( rutaCertificado, clave,ks);
+            return validarOCSP( clave,ks);
         } catch (IOException | OcspValidationException | RubricaException ex) {
             Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Fallo la validacion por OCSP");
-            validarCRL(rutaCertificado, clave, ks);
+            System.out.println("Fallo la validacion por OCSP, Ahora intentamos por CRL");
+            return validarCRL(clave, ks);
         } 
     }
     
-    public void validarOCSP(String rutaCertificado, char [] clave,KeyStore ks) throws KeyStoreException, IOException, OcspValidationException, RubricaException{
+    public X509Certificate validarOCSP( char [] clave,KeyStore ks) throws KeyStoreException, IOException, OcspValidationException, RubricaException{
        
         String alias = ks.aliases().nextElement();
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
@@ -89,20 +90,18 @@ public class Validador {
 
         validadorOCSP.validar(cert, certRoot, ocspUrls);
 
-        boolean validezCert = true; //= OcspUtils.isValidCertificate(cert);
-        //System.out.println("Valid? " +OCSPRespStatus.MALFORMED_REQUEST );
+        return cert;
 
     }
     
-    public void validarCRL(String rutaCertificado, char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException{
+    public X509Certificate validarCRL(char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException{
         System.out.println("Validar CRL");
        
         KeyStoreProvider ksp;
 
         System.out.println("Validar CR2");
 
-        //KeyStoreProvider ksp = new FileKeyStoreProvider(rutaCertificadoTxt.getText());
-        //ks = ksp.getKeystore(certClaveTXT.getPassword());
+    
         X509Certificate cert = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
 
         for (String url : CertificateUtils.getCrlDistributionPoints(cert)) {
@@ -143,6 +142,7 @@ public class Validador {
         }
 
         System.out.println(CertificateUtils.getCN(cert));
+        return cert;
            
     }
     
