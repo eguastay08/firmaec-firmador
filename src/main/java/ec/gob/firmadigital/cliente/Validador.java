@@ -6,30 +6,35 @@
 package ec.gob.firmadigital.cliente;
 
 import ec.gob.firmadigital.crl.ServicioCRL;
-import ec.gob.firmadigital.exceptions.TokenNoEncontrado;
 import io.rubrica.certificate.CrlUtils;
 import io.rubrica.certificate.ValidationResult;
 import io.rubrica.certificate.ec.bce.BceSubTestCert;
 import io.rubrica.certificate.ec.cj.ConsejoJudicaturaSubCert;
 import io.rubrica.certificate.ec.securitydata.SecurityDataSubCaCert;
 import io.rubrica.core.RubricaException;
-import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
-import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.ocsp.ValidadorOCSP;
 import io.rubrica.util.CertificateUtils;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -37,6 +42,7 @@ import javax.swing.JOptionPane;
  */
 public class Validador {
     private KeyStore ks;
+    private static String FECHA_HORA_URL="http://localhost:8080/api/fecha-hora";
     
     public Validador(){
     }
@@ -161,6 +167,53 @@ public class Validador {
             return "Válido";        
         return "Inválido";
     }
+    
+    public Date getFechaHora() {
+        String fechaHora;
+
+        try {
+            fechaHora = getFechaHoraServidor();
+        } catch (IOException e) {
+            /*logger.severe("No se puede obtener la fecha del servidor: "
+                    + e.getMessage());*/
+            return new Date();
+        }
+
+        try {
+            TemporalAccessor accessor = DATE_TIME_FORMATTER.parse(fechaHora);
+            return Date.from(Instant.from(accessor));
+        } catch (DateTimeParseException e) {
+            //logger.severe("La fecha indicada ('" + fechaHora + "') no sigue el patron ISO-8601: " + e);
+            return new Date();
+        }
+    }
+
+    private String getFechaHoraServidor() throws IOException {
+        URL obj = new URL(FECHA_HORA_URL);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        int responseCode = con.getResponseCode();
+        //logger.fine("GET Response Code: " + responseCode);
+     
+
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            try (InputStream is = con.getInputStream();) {
+                InputStreamReader reader = new InputStreamReader(is);
+                BufferedReader in = new BufferedReader(reader);
+
+                String inputLine;
+                StringBuffer response = new StringBuffer();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+
+                return response.toString();
+            }
+        } else {
+            throw new RuntimeException(
+            "Error al obtener fecha y hora del servidor");
+         }
+     }
     
     
 }
