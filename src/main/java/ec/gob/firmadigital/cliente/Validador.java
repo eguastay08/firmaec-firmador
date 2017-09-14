@@ -1,7 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/* 
+ * Copyright (C) 2017 FirmaEC
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ec.gob.firmadigital.cliente;
 
@@ -12,7 +23,9 @@ import io.rubrica.certificate.ec.bce.BceSubTestCert;
 import io.rubrica.certificate.ec.cj.ConsejoJudicaturaSubCert;
 import io.rubrica.certificate.ec.securitydata.SecurityDataSubCaCert;
 import io.rubrica.core.RubricaException;
-import io.rubrica.keystore.KeyStoreProvider;
+
+import io.rubrica.keystore.Alias;
+import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.ocsp.ValidadorOCSP;
 import io.rubrica.util.CertificateUtils;
@@ -27,6 +40,7 @@ import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
@@ -43,6 +57,7 @@ import java.util.logging.Logger;
 public class Validador {
     private KeyStore ks;
     private static String FECHA_HORA_URL="http://localhost:8080/api/fecha-hora";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     
     public Validador(){
     }
@@ -63,6 +78,7 @@ public class Validador {
      */
     public X509Certificate validar(char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException{
         try {
+            
             return validarOCSP( clave,ks);
         } catch (IOException | OcspValidationException | RubricaException ex) {
             Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex);
@@ -73,9 +89,11 @@ public class Validador {
     
     public X509Certificate validarOCSP( char [] clave,KeyStore ks) throws KeyStoreException, IOException, OcspValidationException, RubricaException{
        
-        String alias = ks.aliases().nextElement();
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        Certificate[] cadenaCerts = ks.getCertificateChain(alias);
+        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
+        Alias alias = aliases.get(0);
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
+        Certificate[] cadenaCerts = ks.getCertificateChain(alias.getAlias());
+
         System.out.println("cad " + cadenaCerts.length);
         List<X509Certificate> cadena = new ArrayList<>();
         for (int i = 0; i < cadenaCerts.length; i++) {
@@ -102,13 +120,10 @@ public class Validador {
     
     public X509Certificate validarCRL(char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException{
         System.out.println("Validar CRL");
-       
-        KeyStoreProvider ksp;
 
-        System.out.println("Validar CR2");
-
-    
-        X509Certificate cert = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
+        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
+        Alias alias = aliases.get(0);
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
 
         for (String url : CertificateUtils.getCrlDistributionPoints(cert)) {
             System.out.println("url=" + url);

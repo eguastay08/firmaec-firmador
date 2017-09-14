@@ -1,7 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/* 
+ * Copyright (C) 2017 FirmaEC
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package ec.gob.firmadigital.firmador;
 
@@ -35,12 +46,17 @@ import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import ec.gob.firmadigital.utils.WordWrapCellRenderer;
 import io.rubrica.certificate.ValidationResult;
 import io.rubrica.core.RubricaException;
+import io.rubrica.keystore.Alias;
 import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
+import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.sign.InvalidFormatException;
+import java.awt.ComponentOrientation;
 import java.time.LocalDateTime;
+import javax.swing.Box;
+import javax.swing.JMenu;
 import javax.swing.table.DefaultTableModel;
 ;
 
@@ -118,6 +134,9 @@ public class Main extends javax.swing.JFrame {
         btnResetear.setMnemonic(java.awt.event.KeyEvent.VK_R);
         
         btnExaminarVerificar.setMnemonic(java.awt.event.KeyEvent.VK_E);
+        btnResetearVerificar.setMnemonic(java.awt.event.KeyEvent.VK_R);
+        /*jmbMenuPrincipal.add(Box.createHorizontalGlue());
+        jmAyuda.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT); */
         
         
     }
@@ -272,10 +291,6 @@ public class Main extends javax.swing.JFrame {
     private void verificarDocumento() throws DocumentoNoPermitido, IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException {
         // Vemos si existe
         System.out.println("Verificando Docs");
-        /*if (documento == null || !documento.exists()) {
-            return false;
-        }*/
-        // Vemos si es un documento permitido primero
         tipoDeDocumentPermitido(documento);
         
         FirmaDigital firmaDigital = new FirmaDigital();
@@ -284,17 +299,6 @@ public class Main extends javax.swing.JFrame {
         
         SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
         
-        /*DefaultTableModel tableModel = (DefaultTableModel) datosArchivoVerificarTbl.getModel();
-        
-        tableModel.setRowCount(0);
-       
-        //Actualizamos los datos del archivo
-        String[] data = new String[1];
-        data[0] = "Documento Verificado: " + documento.getAbsolutePath();
-        tableModel.addRow(data);
-
-        datosArchivoVerificarTbl.setModel(tableModel);
-        tableModel.fireTableDataChanged();*/
         jtxDocumentoVerificado.setText(documento.getAbsolutePath());
 
         DefaultTableModel tableModelCertificados = (DefaultTableModel) tblDatosFirmanteVerificar.getModel();
@@ -351,13 +355,11 @@ public class Main extends javax.swing.JFrame {
         
         byte[] docSigned = firmaDigital.firmar(ks, documento, jpfClave.getPassword());
         String nombreDocFirmado = crearNombreFirmado(documento);
-       
-        
-        
-        
-        //Obtenemos el certificado firmante para obtener los datos de usuarios
-        String alias = ks.aliases().nextElement();
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+
+        // Obtenemos el certificado firmante para obtener los datos de usuarios
+        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
+        Alias alias = aliases.get(0);
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
         
         String nombre = FirmaDigital.getNombreCA(cert);
         
@@ -512,7 +514,7 @@ public class Main extends javax.swing.JFrame {
         tableModel.fireTableDataChanged();
     }
 
-    // TODO botar esto a una clase talvez FirmaDigital y botar exceptions
+
      private boolean validarFirma() throws TokenNoEncontrado, KeyStoreException, IOException, RubricaException    {
         System.out.println("Validar Firma");
         if (this.rbFirmarToken.isSelected()) {
@@ -1162,6 +1164,7 @@ public class Main extends javax.swing.JFrame {
         jtxRutaCertificado.setEditable(false);
         jtxRutaCertificado.setEnabled(false);
 
+        btnAbrirCertificado.setMnemonic('E');
         btnAbrirCertificado.setText("Examinar");
         btnAbrirCertificado.setEnabled(false);
         btnAbrirCertificado.addActionListener(new java.awt.event.ActionListener() {
@@ -1174,6 +1177,7 @@ public class Main extends javax.swing.JFrame {
 
         certClaveTXT.setEnabled(false);
 
+        btnValidar.setMnemonic('v');
         btnValidar.setText("Validar");
         btnValidar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1181,6 +1185,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
+        btnResetValidarForm.setMnemonic('r');
         btnResetValidarForm.setText("Restablecer");
         btnResetValidarForm.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1321,6 +1326,9 @@ public class Main extends javax.swing.JFrame {
         mainPanel.addTab("<html><b>VALIDAR CERTIFICADO DE FIRMA ELECTRÓNICA</b></html>", validarCertificadoPanel);
 
         jmAyuda.setText("Ayuda");
+        jmAyuda.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jmAyuda.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        jmAyuda.setInheritsPopupMenu(true);
 
         jmiAcerca.setText("Acerca de");
         jmAyuda.add(jmiAcerca);

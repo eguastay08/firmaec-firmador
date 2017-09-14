@@ -9,6 +9,9 @@
         <Menu class="javax.swing.JMenu" name="jmAyuda">
           <Properties>
             <Property name="text" type="java.lang.String" value="Ayuda"/>
+            <Property name="horizontalAlignment" type="int" value="4"/>
+            <Property name="horizontalTextPosition" type="int" value="4"/>
+            <Property name="inheritsPopupMenu" type="boolean" value="true"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="jmiAcerca">
@@ -860,6 +863,7 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="btnAbrirCertificado">
                   <Properties>
+                    <Property name="mnemonic" type="int" value="69"/>
                     <Property name="text" type="java.lang.String" value="Examinar"/>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
@@ -879,6 +883,7 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="btnValidar">
                   <Properties>
+                    <Property name="mnemonic" type="int" value="118"/>
                     <Property name="text" type="java.lang.String" value="Validar"/>
                   </Properties>
                   <Events>
@@ -887,6 +892,7 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="btnResetValidarForm">
                   <Properties>
+                    <Property name="mnemonic" type="int" value="114"/>
                     <Property name="text" type="java.lang.String" value="Restablecer"/>
                   </Properties>
                   <Events>
