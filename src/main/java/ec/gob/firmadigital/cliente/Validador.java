@@ -13,9 +13,11 @@ import io.rubrica.certificate.ec.bce.BceSubTestCert;
 import io.rubrica.certificate.ec.cj.ConsejoJudicaturaSubCert;
 import io.rubrica.certificate.ec.securitydata.SecurityDataSubCaCert;
 import io.rubrica.core.RubricaException;
+import io.rubrica.keystore.Alias;
 import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
+import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.ocsp.ValidadorOCSP;
 import io.rubrica.util.CertificateUtils;
@@ -67,9 +69,11 @@ public class Validador {
     
     public X509Certificate validarOCSP( char [] clave,KeyStore ks) throws KeyStoreException, IOException, OcspValidationException, RubricaException{
        
-        String alias = ks.aliases().nextElement();
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        Certificate[] cadenaCerts = ks.getCertificateChain(alias);
+        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
+        Alias alias = aliases.get(0);
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
+        Certificate[] cadenaCerts = ks.getCertificateChain(alias.getAlias());
+
         System.out.println("cad " + cadenaCerts.length);
         List<X509Certificate> cadena = new ArrayList<>();
         for (int i = 0; i < cadenaCerts.length; i++) {
@@ -96,13 +100,10 @@ public class Validador {
     
     public X509Certificate validarCRL(char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException{
         System.out.println("Validar CRL");
-       
-        KeyStoreProvider ksp;
 
-        System.out.println("Validar CR2");
-
-    
-        X509Certificate cert = (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
+        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
+        Alias alias = aliases.get(0);
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
 
         for (String url : CertificateUtils.getCrlDistributionPoints(cert)) {
             System.out.println("url=" + url);

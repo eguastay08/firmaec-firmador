@@ -37,9 +37,11 @@ import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import ec.gob.firmadigital.utils.WordWrapCellRenderer;
 import io.rubrica.certificate.ValidationResult;
 import io.rubrica.core.RubricaException;
+import io.rubrica.keystore.Alias;
 import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
+import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.sign.InvalidFormatException;
 import java.time.LocalDateTime;
@@ -353,13 +355,11 @@ public class Main extends javax.swing.JFrame {
         
         byte[] docSigned = firmaDigital.firmar(ks, documento, claveTXT.getPassword());
         String nombreDocFirmado = crearNombreFirmado(documento);
-       
-        
-        
-        
-        //Obtenemos el certificado firmante para obtener los datos de usuarios
-        String alias = ks.aliases().nextElement();
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+
+        // Obtenemos el certificado firmante para obtener los datos de usuarios
+        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
+        Alias alias = aliases.get(0);
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
         
         String nombre = FirmaDigital.getNombreCA(cert);
         
