@@ -20,10 +20,10 @@ package ec.gob.firmadigital.exceptions;
  *
  * @author jdc
  */
-public class TokenNoEncontrado extends Exception{
+public class TokenNoEncontradoException extends Exception{
     private static final long serialVersionUID = 1L;
 
-	public TokenNoEncontrado(String msg){
+	public TokenNoEncontradoException(String msg){
 		super(msg);
 	}
 }

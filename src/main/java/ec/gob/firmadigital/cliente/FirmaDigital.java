@@ -134,16 +134,6 @@ public class FirmaDigital {
         List<Certificado> certs = new ArrayList<Certificado>();
         System.out.println("firmas a certificados");
         
-        /*certs = firmas.stream().map(p -> new Certificado(
-                Util.getCN(p.getCerts()[0]),
-                //p.getCertificadoFirmante().getIssuerDN().getName(), 
-                getNombreCA(p.getCerts()[0]),
-                dateToCalendar(p.getCerts()[0].getNotBefore()),
-                dateToCalendar(p.getCerts()[0].getNotAfter()),
-                dateToCalendar(p.getSigningTime()),
-                //p.isOscpSignatureValid(), 
-                esValido(p.getCerts()[0], p.getSigningTime()),
-                esRevocado(p.getCerts()[0]))).collect(Collectors.toList());*/
         
         for (SignInfo temp : firmas) {
             temp.getCerts();
@@ -171,16 +161,21 @@ public class FirmaDigital {
     }
 
     /**
-     * funcion temporal para verificar contral el banco central porque cambio el
-     * endpoint o algo!!!!
+     * Si el certificado ya caduco
+     * @param cert
+     * @param signingTime
+     * @return 
      */
     private boolean esValido(X509Certificate cert, Date signingTime) {
         return !( signingTime.before(cert.getNotBefore()) || signingTime.after(cert.getNotAfter())) ;
     }
-    
-      /**
-     * funcion temporal para verificar contral el banco central porque cambio el
-     * endpoint o algo!!!!
+
+    /**
+     * Si el certificado fue revocado
+     * @param cert
+     * @return
+     * @throws RubricaException
+     * @throws ConexionInvalidaOCSPException 
      */
     private Boolean esRevocado(X509Certificate cert) throws RubricaException, ConexionInvalidaOCSPException {
         System.out.println("Revisamos si es valido el certificado contra un servicio OCSP");

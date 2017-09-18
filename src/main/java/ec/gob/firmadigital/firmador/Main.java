@@ -39,9 +39,10 @@ import ec.gob.firmadigital.cliente.FirmaDigital;
 import ec.gob.firmadigital.cliente.Validador;
 import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
-import ec.gob.firmadigital.exceptions.DocumentoNoPermitido;
+import ec.gob.firmadigital.exceptions.DocumentoNoPermitidoException;
+import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.exceptions.TokenNoConectadoException;
-import ec.gob.firmadigital.exceptions.TokenNoEncontrado;
+import ec.gob.firmadigital.exceptions.TokenNoEncontradoException;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import ec.gob.firmadigital.utils.WordWrapCellRenderer;
 import io.rubrica.certificate.ValidationResult;
@@ -54,8 +55,10 @@ import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.sign.InvalidFormatException;
 import java.awt.ComponentOrientation;
+import java.awt.Desktop;
 import java.time.LocalDateTime;
 import javax.swing.Box;
+import javax.swing.JCheckBox;
 import javax.swing.JMenu;
 import javax.swing.table.DefaultTableModel;
 ;
@@ -125,6 +128,15 @@ public class Main extends javax.swing.JFrame {
         tblDatosDelFirmanteFirmador.getColumnModel().getColumn(2).setCellRenderer(new WordWrapCellRenderer());
         tblDatosDelFirmanteFirmador.getColumnModel().getColumn(3).setCellRenderer(new WordWrapCellRenderer());
         tblDatosDelFirmanteFirmador.getColumnModel().getColumn(4).setCellRenderer(new WordWrapCellRenderer());
+        
+        tblDatosFirmanteVerificar.getColumnModel().getColumn(0).setCellRenderer(new WordWrapCellRenderer());
+        tblDatosFirmanteVerificar.getColumnModel().getColumn(1).setCellRenderer(new WordWrapCellRenderer());
+        tblDatosFirmanteVerificar.getColumnModel().getColumn(2).setCellRenderer(new WordWrapCellRenderer());
+        tblDatosFirmanteVerificar.getColumnModel().getColumn(3).setCellRenderer(new WordWrapCellRenderer());
+        tblDatosFirmanteVerificar.getColumnModel().getColumn(4).setCellRenderer(new WordWrapCellRenderer());
+        tblDatosFirmanteVerificar.getColumnModel().getColumn(5).setCellRenderer(new WordWrapCellRenderer());
+        tblDatosFirmanteVerificar.getColumnModel().getColumn(6).setCellRenderer(new WordWrapCellRenderer());
+        tblDatosFirmanteVerificar.getColumnModel().getColumn(7).setCellRenderer(new WordWrapCellRenderer());
         
         //nemoics
         jblCertificadoEnFimador.setLabelFor(jblCertificadoEnFimador);
@@ -246,7 +258,7 @@ public class Main extends javax.swing.JFrame {
     /*
     Valida que esten los campos necesarios para firmar
      */
-    private void validacionPreFirmar() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitido {
+    private void validacionPreFirmar() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitidoException {
         //Revisamos si existe el documento a firmar
         // TODO no hacer un return directamente, se podria validar todos los parametros e ir aumentando los errores
         if (documento ==null )
@@ -288,7 +300,7 @@ public class Main extends javax.swing.JFrame {
     /*
     verificar documento
      */
-    private void verificarDocumento() throws DocumentoNoPermitido, IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException {
+    private void verificarDocumento() throws DocumentoNoPermitidoException, IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException {
         // Vemos si existe
         System.out.println("Verificando Docs");
         tipoDeDocumentPermitido(documento);
@@ -338,10 +350,10 @@ public class Main extends javax.swing.JFrame {
     
     // Se podria verificar el mimetype
     // Talvez eliminar el if
-    private void tipoDeDocumentPermitido(File documento) throws DocumentoNoPermitido {
+    private void tipoDeDocumentPermitido(File documento) throws DocumentoNoPermitidoException {
         String extDocumento = FirmadorFileUtils.getFileExtension(documento);
         if(!extensionesPermitidas.stream().anyMatch((extension) -> (extension.equals(extDocumento))))
-            throw new DocumentoNoPermitido("Extensión ." + extDocumento + " no permitida");
+            throw new DocumentoNoPermitidoException("Extensión ." + extDocumento + " no permitida");
     }
 
     //TODO botar exceptions en vez de return false
@@ -515,13 +527,13 @@ public class Main extends javax.swing.JFrame {
     }
 
 
-     private boolean validarFirma() throws TokenNoEncontrado, KeyStoreException, IOException, RubricaException    {
+     private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException    {
         System.out.println("Validar Firma");
         if (this.rbFirmarToken.isSelected()) {
             ks = KeyStoreProviderFactory.getKeyStore(jpfClave.getPassword().toString());
             if (ks == null) {
                 //JOptionPane.showMessageDialog(frame, "No se encontro un token!");
-                throw new TokenNoEncontrado("No se encontro token!");
+                throw new TokenNoEncontradoException("No se encontro token!");
             }
 
         } else {
@@ -599,6 +611,15 @@ public class Main extends javax.swing.JFrame {
             tableModel.fireTableDataChanged();
         }
         //TOdo botar error si es null
+    }
+    
+    private void abrirDocumento() throws IOException{    
+        if (esWindows()) {
+            String cmd = "rundll32 url.dll,FileProtocolHandler " + documento.getCanonicalPath();
+            Runtime.getRuntime().exec(cmd);
+        } else {
+            Desktop.getDesktop().open(documento);
+        }
     }
     
     private void agregarValidezCertificado(String validez){
@@ -1428,6 +1449,15 @@ public class Main extends javax.swing.JFrame {
             // JOptionPane.showMessageDialog(this, "Documento firmado "+ this.documentoFirmadoTXT.getText(), "Firmador", JOptionPane.INFORMATION_MESSAGE, checkIcon);
             System.out.println("Documento firmado");
             
+           JCheckBox jcbAbrirDocumento = new JCheckBox("Abrir documento");
+           String mensaje = "Documento firmado: " + this.jtxArchivoFirmado.getText();
+           
+           Object[] params = {mensaje, jcbAbrirDocumento};
+            JOptionPane.showMessageDialog(this, params, "Documento Firmado", JOptionPane.INFORMATION_MESSAGE);
+
+            if(jcbAbrirDocumento.isSelected()){
+                abrirDocumento();
+            }
             jplFirmar.setEnabled(true);
         } catch (Exception ex) {
             //TODO agregar mensaje de error
@@ -1486,12 +1516,13 @@ public class Main extends javax.swing.JFrame {
     private void btnValidarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnValidarActionPerformed
         Validador validador = new Validador();
         KeyStoreProvider ksp;
+        X509Certificate cert = null;
         try {
             jplValidar.setEnabled(false);
             if (this.rbValidarToken.isSelected()) {
                 ks = KeyStoreProviderFactory.getKeyStore(jpfClave.getPassword().toString());
                 if (ks == null) {
-                    throw new TokenNoEncontrado("No se encontro token!");
+                    throw new TokenNoEncontradoException("No se encontro token!");
                 }
 
             } else {
@@ -1499,13 +1530,20 @@ public class Main extends javax.swing.JFrame {
                 ks = ksp.getKeystore(certClaveTXT.getPassword());
 
             }
-            X509Certificate cert = validador.validar(jpfClave.getPassword(), ks);
+            cert = validador.validar(jpfClave.getPassword(), ks);
             setearInfoValidacionCertificado(cert);
             agregarValidezCertificado("Válido");
             jplValidar.setEnabled(true);
-        } catch (KeyStoreException | TokenNoEncontrado | IOException | RubricaException ex) {
+        } catch (KeyStoreException | TokenNoEncontradoException | IOException | RubricaException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             jplValidar.setEnabled(true);
+        } catch (HoraServidorException ex) {
+            if(cert != null){
+                setearInfoValidacionCertificado(cert);
+                agregarValidezCertificado("Caducado");
+                jplValidar.setEnabled(true);
+            }
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_btnValidarActionPerformed
 

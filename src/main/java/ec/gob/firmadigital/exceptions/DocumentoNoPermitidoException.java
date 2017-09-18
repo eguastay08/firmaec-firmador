@@ -20,10 +20,10 @@ package ec.gob.firmadigital.exceptions;
  *
  * @author jdc
  */
-public class DocumentoNoPermitido extends Exception{
+public class DocumentoNoPermitidoException extends Exception{
     private static final long serialVersionUID = 1L;
 
-	public DocumentoNoPermitido(String msg){
+	public DocumentoNoPermitidoException(String msg){
 		super(msg);
 	}
 }

@@ -17,6 +17,7 @@
 package ec.gob.firmadigital.cliente;
 
 import ec.gob.firmadigital.crl.ServicioCRL;
+import ec.gob.firmadigital.exceptions.HoraServidorException;
 import io.rubrica.certificate.CrlUtils;
 import io.rubrica.certificate.ValidationResult;
 import io.rubrica.certificate.ec.bce.BceSubTestCert;
@@ -58,6 +59,7 @@ public class Validador {
     private KeyStore ks;
     private static String FECHA_HORA_URL="http://localhost:8080/api/fecha-hora";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    private Boolean caducado;
     
     public Validador(){
     }
@@ -68,23 +70,27 @@ public class Validador {
     
     /**
      * Valida primero por OSCP, si falla lo hace por CRL
-     * @param rutaCertificado
      * @param clave
      * @param ks
      * @return X509Certificate
      * @throws KeyStoreException
      * @throws IOException
      * @throws RubricaException 
+     * @throws ec.gob.firmadigital.exceptions.HoraServidorException 
      */
-    public X509Certificate validar(char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException{
+    public X509Certificate validar(char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException, HoraServidorException{
+        X509Certificate cert;
         try {
             
-            return validarOCSP( clave,ks);
+            cert = validarOCSP( clave,ks);
         } catch (IOException | OcspValidationException | RubricaException ex) {
             Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Fallo la validacion por OCSP, Ahora intentamos por CRL");
-            return validarCRL(clave, ks);
+            cert = validarCRL(clave, ks);
         } 
+        //Si pasa todo los controles validamos si esta
+        validarFecha(cert);
+        return cert;
     }
     
     public X509Certificate validarOCSP( char [] clave,KeyStore ks) throws KeyStoreException, IOException, OcspValidationException, RubricaException{
@@ -98,7 +104,12 @@ public class Validador {
         List<X509Certificate> cadena = new ArrayList<>();
         for (int i = 0; i < cadenaCerts.length; i++) {
             cadena.add((X509Certificate) cadenaCerts[i]);
-            System.out.println(FirmaDigital.getNombreCA(cadena.get(i)));
+            /*
+            Solo por probar imprimimos el primero
+            */
+            if (i < i) {
+                System.out.println(FirmaDigital.getNombreCA(cadena.get(i)));
+            }
         }
 
         //setearInfoValidacionCertificado(cert);
@@ -167,6 +178,16 @@ public class Validador {
            
     }
     
+    public void validarFecha(X509Certificate cert) throws HoraServidorException{
+        Date fechaActual = getFechaHora();
+        System.out.println("Fecha actual: " +fechaActual);
+        //signingTime.before(cert.getNotBefore()) || signingTime.after(cert.getNotAfter()
+        if(fechaActual.before(cert.getNotBefore())){
+            
+        }
+       // if(fechaActual)
+    }
+    
     private String obtenerUrlCRL(List<String> urls){
         for(String url : urls){
             if(url.toLowerCase().contains("crl"))
@@ -183,7 +204,7 @@ public class Validador {
         return "Inválido";
     }
     
-    public Date getFechaHora() {
+    public Date getFechaHora() throws HoraServidorException {
         String fechaHora;
 
         try {
@@ -191,7 +212,8 @@ public class Validador {
         } catch (IOException e) {
             /*logger.severe("No se puede obtener la fecha del servidor: "
                     + e.getMessage());*/
-            return new Date();
+            //return new Date();
+            throw new HoraServidorException("Error al obtener fecha y hora del servidor");            
         }
 
         try {
