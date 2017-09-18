@@ -1352,6 +1352,11 @@ public class Main extends javax.swing.JFrame {
         jmAyuda.setInheritsPopupMenu(true);
 
         jmiAcerca.setText("Acerca de");
+        jmiAcerca.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jmiAcercaActionPerformed(evt);
+            }
+        });
         jmAyuda.add(jmiAcerca);
 
         jmiActualizar.setText("Actualizar");
@@ -1562,6 +1567,10 @@ public class Main extends javax.swing.JFrame {
     private void rbValidarLlaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbValidarLlaveActionPerformed
         selValidarArchivo();
     }//GEN-LAST:event_rbValidarLlaveActionPerformed
+
+    private void jmiAcercaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiAcercaActionPerformed
+        JOptionPane.showMessageDialog(this, "Acerca de FirmaEC \n");
+    }//GEN-LAST:event_jmiAcercaActionPerformed
 
     /**
      * @param args the command line arguments
