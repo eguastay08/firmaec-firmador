@@ -45,6 +45,7 @@ import ec.gob.firmadigital.exceptions.DocumentoNoPermitidoException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.exceptions.TokenNoConectadoException;
 import ec.gob.firmadigital.exceptions.TokenNoEncontradoException;
+import ec.gob.firmadigital.firmador.update.Update;
 import ec.gob.firmadigital.utils.CertificadoEcUtils;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import ec.gob.firmadigital.utils.WordWrapCellRenderer;
@@ -56,13 +57,18 @@ import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
-import io.rubrica.sign.InvalidFormatException;
+import java.awt.Cursor;
 import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.table.DefaultTableModel;
 ;
 
@@ -88,9 +94,11 @@ public class Main extends javax.swing.JFrame {
     //private final ImageIcon notCheckIcon = new ImageIcon(ClassLoader.getSystemResource(RUTA_IMG + NOTCHECK_IMG));
     private PDDocument pdfDocument;
     private PDFRenderer pdfRenderer;
-    private static final String URL_GOBIERNO_DIGITAL = "http://www.gobiernoelectronico.gob.ec/";
+    private static final String URL_GOBIERNO_DIGITAL = "http://www.gobiernoelectronico.gob.ec";
     
-    private JButton btnUrlFirmaDigital;
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
+    
+  
 
     /**
      * Creates new form Main
@@ -697,8 +705,32 @@ public class Main extends javax.swing.JFrame {
             return "Válido";        
         return "Inválido";
     }
-      
     
+    private void actualizar(){
+        Object[] options = {"Si", "No"};
+        int n = JOptionPane.showOptionDialog(getParent(), "Desea actualizar el cliente?", "Confirmar",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
+
+        if (n == 0) {
+            logger.info("Se solicita actualización...");
+            try {
+                Update update = new Update();
+
+                getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                update.updateCliente();
+
+                getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
+                // mostrarMensaje("Actualizado con éxito, se cerrará la ventana");
+                System.exit(0);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -1370,6 +1402,11 @@ public class Main extends javax.swing.JFrame {
         jmAyuda.add(jmiAcerca);
 
         jmiActualizar.setText("Actualizar");
+        jmiActualizar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jmiActualizarActionPerformed(evt);
+            }
+        });
         jmAyuda.add(jmiActualizar);
 
         jmbMenuPrincipal.add(jmAyuda);
@@ -1584,18 +1621,22 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_rbValidarLlaveActionPerformed
 
     private void jmiAcercaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiAcercaActionPerformed
-        //JOptionPane.showMessageDialog(this, "Acerca de FirmaEC \n");
-        
-        
-        String mensaje = "Acerca de FirmaEC \n";
-        btnUrlFirmaDigital = new JButton();
-        String copyRight = " © Copyright MINTEL 2017";
-        btnUrlFirmaDigital.setText("<HTML><a>"+URL_GOBIERNO_DIGITAL+"</a></HTML>");
-        JButton btnActualizar = new JButton();
-        btnActualizar.setText("Actualizar");
 
-        btnUrlFirmaDigital.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        String mensaje = "Acerca de FirmaEC \n";
+        JButton btnActualizarApp = new JButton();
+        JLabel jblCopyRight = new JLabel ("<html><div style='text-align: center;'> © Copyright MINTEL 2017</div></html>");
+ 
+
+        JLabel jblVacio1 = new JLabel (" ");
+        JLabel jblVacio2 = new JLabel (" ");
+        btnActualizarApp.setText("Actualizar");
+
+        
+        JLabel jlbUrlGobiernoDigital = new JLabel("<HTML><u>"+URL_GOBIERNO_DIGITAL+"</u></HTML>");
+        jlbUrlGobiernoDigital.setBounds(300, 120, 150, 25);
+        jlbUrlGobiernoDigital.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
                 try {
                     Desktop.getDesktop().browse(new URI(URL_GOBIERNO_DIGITAL));
                 } catch (URISyntaxException ex) {
@@ -1606,35 +1647,19 @@ public class Main extends javax.swing.JFrame {
             }
         });
         
-        btnActualizar.addActionListener(new java.awt.event.ActionListener() {
+        btnActualizarApp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Object[] options = { "Si", "No" };
-                /*int n = JOptionPane.showOptionDialog(getParent(),"Desea actualizar el cliente?", "Confirmar",
-                         JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
-
-                 if (n == 0) {
-                     //logger.info("Se solicita actualización...");
-                     try {
-                         Update update = new Update();
- 
-getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                         update.updateCliente();
- 
-getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
-                         mostrarMensaje("Actualizado con éxito, se cerrará la ventana");
-                         System.exit(0);
-                     } catch (IOException ex) {
-                         ex.printStackTrace();
-                     }
-                 }*/
+                actualizar();
             }
         });
 
-        Object[] params = {copyRight, btnUrlFirmaDigital};
+        Object[] params = {jblCopyRight, jblVacio1,jlbUrlGobiernoDigital, jblVacio2,btnActualizarApp};
         JOptionPane.showMessageDialog(this, params, "Acerca de FirmaEC", JOptionPane.PLAIN_MESSAGE);
     }//GEN-LAST:event_jmiAcercaActionPerformed
+
+    private void jmiActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiActualizarActionPerformed
+        actualizar();
+    }//GEN-LAST:event_jmiActualizarActionPerformed
 
     /**
      * @param args the command line arguments
