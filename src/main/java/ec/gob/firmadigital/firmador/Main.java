@@ -717,10 +717,10 @@ public class Main extends javax.swing.JFrame {
             try {
                 Update update = new Update();
 
-                getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+//                getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 update.updateCliente();
 
-                getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                //getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
                 // mostrarMensaje("Actualizado con éxito, se cerrará la ventana");
                 System.exit(0);
