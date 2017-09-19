@@ -16,6 +16,7 @@
  */
 package ec.gob.firmadigital.cliente;
 
+import ec.gob.firmadigital.exceptions.CRLValidationException;
 import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
 import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
@@ -49,6 +50,8 @@ import io.rubrica.sign.ooxml.OOXMLSigner;
 import io.rubrica.sign.pdf.PDFSigner;
 import io.rubrica.core.Util;
 import io.rubrica.sign.xades.XAdESSigner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -148,17 +151,28 @@ public class FirmaDigital {
     }
 
     /**
-     * Si el certificado fue revocado, si no pudo verificar es porque esta nulo
+     * Verifica si el certificado ha sido revocado 
      * @param cert
      * @return
      * @throws RubricaException
+     * @throws HoraServidorException
+     * @throws IOException
+     * @throws CertificadoInvalidoException 
      */
-    private Boolean esRevocado(X509Certificate cert) throws RubricaException, HoraServidorException, KeyStoreException, IOException, CertificadoInvalidoException {
-        System.out.println("Revisamos si es valido el certificado contra un servicio OCSP");
-
-        Validador validador = new Validador();
-        validador.validar(cert);
-        
-        return false;
+    private Boolean esRevocado(X509Certificate cert) throws RubricaException, HoraServidorException, IOException, CertificadoInvalidoException {
+        try {
+            System.out.println("Revisamos si es valido el certificado contra un servicio OCSP");
+            
+            Validador validador = new Validador();
+            validador.validar(cert);
+            
+            return false;
+        } catch (CRLValidationException ex) {
+            Logger.getLogger(FirmaDigital.class.getName()).log(Level.SEVERE, null, ex);
+            return true;
+        } catch (OcspValidationException ex) {
+            Logger.getLogger(FirmaDigital.class.getName()).log(Level.SEVERE, null, ex);
+            return true;
+        }
     }
 }

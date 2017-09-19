@@ -37,6 +37,7 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 
 import ec.gob.firmadigital.cliente.FirmaDigital;
 import ec.gob.firmadigital.cliente.Validador;
+import ec.gob.firmadigital.exceptions.CRLValidationException;
 import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
 import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
@@ -534,7 +535,7 @@ public class Main extends javax.swing.JFrame {
     }
 
 
-     private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException    {
+     private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException    {
         System.out.println("Validar Firma");
         if (this.rbFirmarToken.isSelected()) {
             ks = KeyStoreProviderFactory.getKeyStore(jpfClave.getPassword().toString());
@@ -1540,10 +1541,17 @@ public class Main extends javax.swing.JFrame {
 
             }
             cert = validador.getCert(ks,jpfClave.getPassword());
-            validador.validar(cert);
+            String validez;
+            try {
+                validador.validar(cert);
+                validez = "Válido";
+            } catch (OcspValidationException | CRLValidationException ex) {
+                validez = "Revocado";
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            } 
             //cert = validador.validar(jpfClave.getPassword(), ks);
             setearInfoValidacionCertificado(cert);
-            agregarValidezCertificado("Válido");
+            agregarValidezCertificado(validez);
             jplValidar.setEnabled(true);
         } catch (KeyStoreException | TokenNoEncontradoException | IOException |CertificadoInvalidoException| RubricaException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
