@@ -37,12 +37,14 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 
 import ec.gob.firmadigital.cliente.FirmaDigital;
 import ec.gob.firmadigital.cliente.Validador;
+import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
 import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
 import ec.gob.firmadigital.exceptions.DocumentoNoPermitidoException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.exceptions.TokenNoConectadoException;
 import ec.gob.firmadigital.exceptions.TokenNoEncontradoException;
+import ec.gob.firmadigital.utils.CertificadoEcUtils;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import ec.gob.firmadigital.utils.WordWrapCellRenderer;
 import io.rubrica.certificate.ValidationResult;
@@ -54,12 +56,12 @@ import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.sign.InvalidFormatException;
-import java.awt.ComponentOrientation;
 import java.awt.Desktop;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
-import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JMenu;
 import javax.swing.table.DefaultTableModel;
 ;
 
@@ -85,6 +87,9 @@ public class Main extends javax.swing.JFrame {
     //private final ImageIcon notCheckIcon = new ImageIcon(ClassLoader.getSystemResource(RUTA_IMG + NOTCHECK_IMG));
     private PDDocument pdfDocument;
     private PDFRenderer pdfRenderer;
+    private static final String URL_GOBIERNO_DIGITAL = "http://www.gobiernoelectronico.gob.ec/";
+    
+    private JButton btnUrlFirmaDigital;
 
     /**
      * Creates new form Main
@@ -300,7 +305,7 @@ public class Main extends javax.swing.JFrame {
     /*
     verificar documento
      */
-    private void verificarDocumento() throws DocumentoNoPermitidoException, IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException {
+    private void verificarDocumento() throws Exception {
         // Vemos si existe
         System.out.println("Verificando Docs");
         tipoDeDocumentPermitido(documento);
@@ -334,7 +339,9 @@ public class Main extends javax.swing.JFrame {
             dataCert[5] = format1.format(cert.getValidTo().getTime());
             dataCert[6] = format1.format(cert.getGenerated().getTime());
             String revocadoStr = "No ha sido revocado";
-            if(cert.getRevocated()){
+            if(cert.getRevocated()==null){
+                revocadoStr = "No se pudo verificar el certificado por OSCP o CRL";
+            }else if(cert.getRevocated()){
                 revocadoStr = "Revocado";
             }
             dataCert[7] = revocadoStr;
@@ -373,11 +380,11 @@ public class Main extends javax.swing.JFrame {
         Alias alias = aliases.get(0);
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
         
-        String nombre = FirmaDigital.getNombreCA(cert);
+        String nombre = CertificadoEcUtils.getNombreCA(cert);
         
         System.out.println("Nombre: " +nombre);
         
-        DatosUsuario datosUsuario = FirmaDigital.getDatosUsuarios(cert);        
+        DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(cert);        
         
         agregarDatosTabladeFirmante(datosUsuario);
         
@@ -425,7 +432,7 @@ public class Main extends javax.swing.JFrame {
 
         //Actualizamos los datos del archivo
         String[] data = new String[5];
-        data[0] = "Certificado Emitido por: "+FirmaDigital.getNombreCA(cert);
+        data[0] = "Certificado Emitido por: "+CertificadoEcUtils.getNombreCA(cert);
         tableModel.addRow(data);
         
         data[0] = "Cédula: "+datosUsuario.getCedula();
@@ -527,7 +534,7 @@ public class Main extends javax.swing.JFrame {
     }
 
 
-     private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException    {
+     private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException    {
         System.out.println("Validar Firma");
         if (this.rbFirmarToken.isSelected()) {
             ks = KeyStoreProviderFactory.getKeyStore(jpfClave.getPassword().toString());
@@ -543,7 +550,8 @@ public class Main extends javax.swing.JFrame {
          }
 
          Validador validador = new Validador();
-         validador.validar(jpfClave.getPassword(), ks);
+         X509Certificate cert = validador.getCert(ks,jpfClave.getPassword());
+         validador.validar(cert);
          return true;
     }
     
@@ -573,9 +581,9 @@ public class Main extends javax.swing.JFrame {
     
     private void setearInfoValidacionCertificado(X509Certificate cert){
         if(cert != null){
-            String emisor = FirmaDigital.getNombreCA(cert);
+            String emisor = CertificadoEcUtils.getNombreCA(cert);
             
-            DatosUsuario datosUsuario = FirmaDigital.getDatosUsuarios(cert);
+            DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(cert);
 
             DefaultTableModel tableModel = (DefaultTableModel) tblDatosCertificadosValidar.getModel();
 
@@ -583,7 +591,7 @@ public class Main extends javax.swing.JFrame {
 
             //Actualizamos los datos del archivo
             String[] data = new String[1];
-            data[0] = "Certificado Emitido por: " + FirmaDigital.getNombreCA(cert);
+            data[0] = "Certificado Emitido por: " + CertificadoEcUtils.getNombreCA(cert);
             tableModel.addRow(data);
 
             data[0] = "Cédula: " + datosUsuario.getCedula();
@@ -615,10 +623,11 @@ public class Main extends javax.swing.JFrame {
     
     private void abrirDocumento() throws IOException{    
         if (esWindows()) {
-            String cmd = "rundll32 url.dll,FileProtocolHandler " + documento.getCanonicalPath();
+            String cmd = "rundll32 url.dll,FileProtocolHandler " + jtxArchivoFirmado.getText();
             Runtime.getRuntime().exec(cmd);
         } else {
-            Desktop.getDesktop().open(documento);
+            File docFirmado = new File(jtxArchivoFirmado.getText());
+            Desktop.getDesktop().open(docFirmado);
         }
     }
     
@@ -687,7 +696,7 @@ public class Main extends javax.swing.JFrame {
             return "Válido";        
         return "Inválido";
     }
-    
+      
     
 
     /**
@@ -1453,14 +1462,14 @@ public class Main extends javax.swing.JFrame {
             this.firmarDocumento();
             // JOptionPane.showMessageDialog(this, "Documento firmado "+ this.documentoFirmadoTXT.getText(), "Firmador", JOptionPane.INFORMATION_MESSAGE, checkIcon);
             System.out.println("Documento firmado");
-            
-           JCheckBox jcbAbrirDocumento = new JCheckBox("Abrir documento");
-           String mensaje = "Documento firmado: " + this.jtxArchivoFirmado.getText();
-           
-           Object[] params = {mensaje, jcbAbrirDocumento};
+
+            JCheckBox jcbAbrirDocumento = new JCheckBox("Abrir documento");
+            String mensaje = "Documento firmado: " + this.jtxArchivoFirmado.getText();
+
+            Object[] params = {mensaje, jcbAbrirDocumento};
             JOptionPane.showMessageDialog(this, params, "Documento Firmado", JOptionPane.INFORMATION_MESSAGE);
 
-            if(jcbAbrirDocumento.isSelected()){
+            if (jcbAbrirDocumento.isSelected()){
                 abrirDocumento();
             }
             jplFirmar.setEnabled(true);
@@ -1493,11 +1502,6 @@ public class Main extends javax.swing.JFrame {
             jtxRutaDocumentoFirmar.setText(documento.getAbsolutePath());
 
         }
-        //       try{
-            /*rutaDocumentoFirmarTxt.setText(Fichero.ruta());
-        } catch (Exception ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
     }//GEN-LAST:event_btnAbrirArchivoFirmarActionPerformed
 
     private void jtxRutaDocumentoFirmarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtxRutaDocumentoFirmarActionPerformed
@@ -1535,11 +1539,14 @@ public class Main extends javax.swing.JFrame {
                 ks = ksp.getKeystore(certClaveTXT.getPassword());
 
             }
-            cert = validador.validar(jpfClave.getPassword(), ks);
+            cert = validador.getCert(ks,jpfClave.getPassword());
+            validador.validar(cert);
+            //cert = validador.validar(jpfClave.getPassword(), ks);
             setearInfoValidacionCertificado(cert);
             agregarValidezCertificado("Válido");
             jplValidar.setEnabled(true);
-        } catch (KeyStoreException | TokenNoEncontradoException | IOException | RubricaException ex) {
+        } catch (KeyStoreException | TokenNoEncontradoException | IOException |CertificadoInvalidoException| RubricaException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             jplValidar.setEnabled(true);
         } catch (HoraServidorException ex) {
@@ -1549,7 +1556,7 @@ public class Main extends javax.swing.JFrame {
                 jplValidar.setEnabled(true);
             }
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } 
     }//GEN-LAST:event_btnValidarActionPerformed
 
     private void btnAbrirCertificadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAbrirCertificadoActionPerformed
@@ -1569,7 +1576,56 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_rbValidarLlaveActionPerformed
 
     private void jmiAcercaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiAcercaActionPerformed
-        JOptionPane.showMessageDialog(this, "Acerca de FirmaEC \n");
+        //JOptionPane.showMessageDialog(this, "Acerca de FirmaEC \n");
+        
+        
+        String mensaje = "Acerca de FirmaEC \n";
+        btnUrlFirmaDigital = new JButton();
+        String copyRight = " © Copyright MINTEL 2017";
+        btnUrlFirmaDigital.setText("<HTML><a>"+URL_GOBIERNO_DIGITAL+"</a></HTML>");
+        JButton btnActualizar = new JButton();
+        btnActualizar.setText("Actualizar");
+
+        btnUrlFirmaDigital.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                try {
+                    Desktop.getDesktop().browse(new URI(URL_GOBIERNO_DIGITAL));
+                } catch (URISyntaxException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        
+        btnActualizar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Object[] options = { "Si", "No" };
+                /*int n = JOptionPane.showOptionDialog(getParent(),"Desea actualizar el cliente?", "Confirmar",
+                         JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
+
+                 if (n == 0) {
+                     //logger.info("Se solicita actualización...");
+                     try {
+                         Update update = new Update();
+ 
+getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                         update.updateCliente();
+ 
+getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
+                         mostrarMensaje("Actualizado con éxito, se cerrará la ventana");
+                         System.exit(0);
+                     } catch (IOException ex) {
+                         ex.printStackTrace();
+                     }
+                 }*/
+            }
+        });
+
+        Object[] params = {copyRight, btnUrlFirmaDigital};
+        JOptionPane.showMessageDialog(this, params, "Acerca de FirmaEC", JOptionPane.PLAIN_MESSAGE);
     }//GEN-LAST:event_jmiAcercaActionPerformed
 
     /**

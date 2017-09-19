@@ -17,9 +17,15 @@
 package ec.gob.firmadigital.cliente;
 
 import ec.gob.firmadigital.crl.ServicioCRL;
+import ec.gob.firmadigital.exceptions.CRLValidationException;
+import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
+import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
+import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
+import ec.gob.firmadigital.utils.CertificadoEcUtils;
 import io.rubrica.certificate.CrlUtils;
 import io.rubrica.certificate.ValidationResult;
+import io.rubrica.certificate.ec.bce.BceSubCert;
 import io.rubrica.certificate.ec.bce.BceSubTestCert;
 import io.rubrica.certificate.ec.cj.ConsejoJudicaturaSubCert;
 import io.rubrica.certificate.ec.securitydata.SecurityDataSubCaCert;
@@ -34,11 +40,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -58,7 +66,9 @@ import java.util.logging.Logger;
 public class Validador {
     private KeyStore ks;
     private static String FECHA_HORA_URL="http://localhost:8080/api/fecha-hora";
+    private static final String CERTIFICADO_URL = "http://localhost:8080/api/certificado/revocado";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    private static final Logger logger = Logger.getLogger(Validador.class.getName());
     private Boolean caducado;
     
     public Validador(){
@@ -70,49 +80,40 @@ public class Validador {
     
     /**
      * Valida primero por OSCP, si falla lo hace por CRL
-     * @param clave
-     * @param ks
+     * @param cert
      * @return X509Certificate
-     * @throws KeyStoreException
      * @throws IOException
-     * @throws RubricaException 
-     * @throws ec.gob.firmadigital.exceptions.HoraServidorException 
+     * @throws RubricaException si hay un error de conexion con el CRL bota esto, si es por OCSP y falla la conexion intenta por CRL
+     * @throws ec.gob.firmadigital.exceptions.HoraServidorException Si es que no puede obtener la hora con el servidor
+     * @throws ec.gob.firmadigital.exceptions.CertificadoInvalidoException Si por medio del API nos confirma que esta revocado
+     * @throws ec.gob.firmadigital.exceptions.CRLValidationException Si por CRL esta revocado
+     * @throws io.rubrica.ocsp.OcspValidationException Si por OCSP nos dice que esta revocado
      */
-    public X509Certificate validar(char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException, HoraServidorException{
-        X509Certificate cert;
+    public X509Certificate validar(X509Certificate cert) throws  HoraServidorException, RubricaException, IOException, CertificadoInvalidoException, CRLValidationException, OcspValidationException{
         try {
-            
-            cert = validarOCSP( clave,ks);
-        } catch (IOException | OcspValidationException | RubricaException ex) {
+            cert = validarOCSP( cert);
+        } catch (IOException  | RubricaException ex) {
             Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Fallo la validacion por OCSP, Ahora intentamos por CRL");
-            cert = validarCRL(clave, ks);
+            try {
+                cert = validarCRL(cert);
+            } catch ( IOException |RubricaException ex1) {
+               // cert = getCert( ks, clave );
+                System.out.println("Fallo la validacion por CRL, Ahora intentamos por el servicio del API");
+                Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex1);
+                BigInteger serial = cert.getSerialNumber();
+                Boolean valido = this.validarCrlServidorAPI(serial);
+                // Si no es valido botamos exception
+                if(!valido)
+                 throw new CertificadoInvalidoException("El certificado no es válido");
+            }
         } 
         //Si pasa todo los controles validamos si esta
         validarFecha(cert);
         return cert;
     }
     
-    public X509Certificate validarOCSP( char [] clave,KeyStore ks) throws KeyStoreException, IOException, OcspValidationException, RubricaException{
-       
-        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
-        Alias alias = aliases.get(0);
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
-        Certificate[] cadenaCerts = ks.getCertificateChain(alias.getAlias());
-
-        System.out.println("cad " + cadenaCerts.length);
-        List<X509Certificate> cadena = new ArrayList<>();
-        for (int i = 0; i < cadenaCerts.length; i++) {
-            cadena.add((X509Certificate) cadenaCerts[i]);
-            /*
-            Solo por probar imprimimos el primero
-            */
-            if (i < i) {
-                System.out.println(FirmaDigital.getNombreCA(cadena.get(i)));
-            }
-        }
-
-        //setearInfoValidacionCertificado(cert);
+    public X509Certificate validarOCSP( X509Certificate cert) throws IOException, OcspValidationException, RubricaException{
         List<String> ocspUrls = CertificateUtils.getAuthorityInformationAccess(cert);
         for (String ocsp : ocspUrls) {
             System.out.println("OCSP=" + ocsp);
@@ -121,7 +122,7 @@ public class Validador {
         System.out.println("OCSPUrls " + ocspUrls.size());
 
         ValidadorOCSP validadorOCSP = new ValidadorOCSP();
-        X509Certificate certRoot = cadena.get(1); //FirmaDigital.getRootCertificate(cert);
+        X509Certificate certRoot  =  new SecurityDataSubCaCert(); //FirmaDigital.getRootCertificate(cert);
 
         validadorOCSP.validar(cert, certRoot, ocspUrls);
 
@@ -129,27 +130,25 @@ public class Validador {
 
     }
     
-    public X509Certificate validarCRL(char [] clave,KeyStore ks) throws KeyStoreException, IOException, RubricaException{
+    public X509Certificate validarCRL(X509Certificate cert) throws IOException, RubricaException, CRLValidationException{
         System.out.println("Validar CRL");
 
-        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
-        Alias alias = aliases.get(0);
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
+        //X509Certificate cert = getCert( ks, clave );
 
         for (String url : CertificateUtils.getCrlDistributionPoints(cert)) {
             System.out.println("url=" + url);
         }
 
-        String nombreCA = FirmaDigital.getNombreCA(cert);
+        String nombreCA = CertificadoEcUtils.getNombreCA(cert);
 
         String urlCrl = this.obtenerUrlCRL(CertificateUtils.getCrlDistributionPoints(cert));
-        ValidationResult result;
+        ValidationResult result = null;
         String resultStr;
         switch (nombreCA) {
             case "Banco Central del Ecuador":
                 //TODO quemado hasta que arreglen en el banco central
                 urlCrl = ServicioCRL.BCE_CRL;
-                result = CrlUtils.verifyCertificateCRLs(cert, new BceSubTestCert().getPublicKey(),
+                result = CrlUtils.verifyCertificateCRLs(cert, new BceSubCert().getPublicKey(),
                         Arrays.asList(urlCrl));
                 System.out.println("Validation result: " + result);
 
@@ -172,10 +171,40 @@ public class Validador {
 
                 break;
         }
-
+        // Si el certificado no es valido botamos exception
+        if(!result.isValid()){
+            throw new CRLValidationException("Certificado Inválido");
+        }
+        
         System.out.println(CertificateUtils.getCN(cert));
         return cert;
            
+    }
+     
+
+    
+    public X509Certificate getCert(KeyStore ks, char [] clave) throws KeyStoreException{
+        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
+        Alias alias = aliases.get(0);
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
+        return cert;
+    }
+    
+    public boolean validarCrlServidorAPI(BigInteger serial) throws IOException {
+        URL url = new URL(CERTIFICADO_URL + "/" + serial);
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        int responseCode = urlConnection.getResponseCode();
+
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            logger.severe(CERTIFICADO_URL + " Response Code: " + responseCode);
+            return false;
+        }
+
+        try (InputStream is = urlConnection.getInputStream()) {
+            InputStreamReader reader = new InputStreamReader(is);
+            BufferedReader in = new BufferedReader(reader);
+            return Boolean.valueOf(in.readLine());
+        }
     }
     
     public void validarFecha(X509Certificate cert) throws HoraServidorException{
