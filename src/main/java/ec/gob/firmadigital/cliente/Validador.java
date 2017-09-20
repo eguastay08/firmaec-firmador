@@ -19,16 +19,11 @@ package ec.gob.firmadigital.cliente;
 import ec.gob.firmadigital.crl.ServicioCRL;
 import ec.gob.firmadigital.exceptions.CRLValidationException;
 import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
-import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.utils.CertificadoEcUtils;
 import io.rubrica.certificate.CrlUtils;
 import io.rubrica.certificate.ValidationResult;
-import io.rubrica.certificate.ec.bce.BceSubCert;
-import io.rubrica.certificate.ec.bce.BceSubTestCert;
-import io.rubrica.certificate.ec.cj.ConsejoJudicaturaSubCert;
-import io.rubrica.certificate.ec.securitydata.SecurityDataSubCaCert;
 import io.rubrica.core.RubricaException;
 
 import io.rubrica.keystore.Alias;
@@ -45,14 +40,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -145,21 +137,18 @@ public class Validador {
         String urlCrl = this.obtenerUrlCRL(CertificateUtils.getCrlDistributionPoints(cert));
         ValidationResult result = null;
         
-        switch (nombreCA) {
-            case "Banco Central del Ecuador":
-                //TODO quemado hasta que arreglen en el banco central
-                urlCrl = ServicioCRL.BCE_CRL;
-            case "Consejo de la Judicatura":
-            case "SecurityData":
-                X509Certificate root = CertificadoEcUtils.getRootCertificate(cert);
-                result = CrlUtils.verifyCertificateCRLs(cert, root.getPublicKey(),
-                        Arrays.asList(urlCrl));
-                System.out.println("Validation result: " + result);
-                break;
-            default:
-        
-                break;
+        if(nombreCA.equals("Banco Central del Ecuador")){
+            urlCrl = ServicioCRL.BCE_CRL;
         }
+        /*
+        if(nombreCA.equals("Consejo de la Judicatura")){
+            urlCrl = ServicioCRL.
+        }*/
+        X509Certificate root = CertificadoEcUtils.getRootCertificate(cert);
+        result = CrlUtils.verifyCertificateCRLs(cert, root.getPublicKey(),
+                Arrays.asList(urlCrl));
+        System.out.println("Validation result: " + result);
+
         // Si el certificado no es valido botamos exception
         if(!result.isValid()){
             throw new CRLValidationException("Certificado Inválido");
