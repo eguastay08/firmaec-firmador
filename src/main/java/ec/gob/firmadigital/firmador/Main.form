@@ -850,7 +850,7 @@
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="tipoFirmaBtnGRP"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Firmar con Token"/>
+                    <Property name="text" type="java.lang.String" value="Token"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbValidarTokenActionPerformed"/>

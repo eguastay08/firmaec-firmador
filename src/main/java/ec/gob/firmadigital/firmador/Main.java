@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,7 +38,6 @@ import ec.gob.firmadigital.cliente.FirmaDigital;
 import ec.gob.firmadigital.cliente.Validador;
 import ec.gob.firmadigital.exceptions.CRLValidationException;
 import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
-import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
 import ec.gob.firmadigital.exceptions.DocumentoNoPermitidoException;
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
@@ -58,15 +56,12 @@ import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
-import java.awt.Cursor;
 import java.awt.Desktop;
-import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
-import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -707,7 +702,7 @@ public class Main extends javax.swing.JFrame {
         return "Inválido";
     }
     
-    private void actualizar(){
+    public void actualizar(){
         Object[] options = {"Si", "No"};
         int n = JOptionPane.showOptionDialog(getParent(), "Desea actualizar el cliente?", "Confirmar",
                 JOptionPane.OK_CANCEL_OPTION,
@@ -1216,7 +1211,7 @@ public class Main extends javax.swing.JFrame {
         });
 
         tipoFirmaBtnGRP.add(rbValidarToken);
-        rbValidarToken.setText("Firmar con Token");
+        rbValidarToken.setText("Token");
         rbValidarToken.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rbValidarTokenActionPerformed(evt);
@@ -1512,6 +1507,10 @@ public class Main extends javax.swing.JFrame {
                 abrirDocumento();
             }
             jplFirmar.setEnabled(true);
+            
+            //Borramos la ruta y la clave una vez que esta firmado
+            this.jpfClave.setText("");
+            this.jtxRutaLlaveFirmar.setText("");
         } catch (Exception ex) {
             //TODO agregar mensaje de error
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -1622,39 +1621,8 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_rbValidarLlaveActionPerformed
 
     private void jmiAcercaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiAcercaActionPerformed
-
-        String mensaje = "Acerca de FirmaEC \n";
-        JButton btnActualizarApp = new JButton();
-        JLabel jblCopyRight = new JLabel ("<html><div style='text-align: center;'> © Copyright MINTEL 2017</div></html>");
- 
-
-        JLabel jblVacio1 = new JLabel (" ");
-        JLabel jblVacio2 = new JLabel (" ");
-        btnActualizarApp.setText("Actualizar");
-
-        
-        JLabel jlbUrlGobiernoDigital = new JLabel("<HTML><u>"+URL_GOBIERNO_DIGITAL+"</u></HTML>");
-        jlbUrlGobiernoDigital.setBounds(300, 120, 150, 25);
-        jlbUrlGobiernoDigital.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    Desktop.getDesktop().browse(new URI(URL_GOBIERNO_DIGITAL));
-                } catch (URISyntaxException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-        
-        btnActualizarApp.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actualizar();
-            }
-        });
-
-        Object[] params = {jblCopyRight, jblVacio1,jlbUrlGobiernoDigital, jblVacio2,btnActualizarApp};
+        JPanellAcercaDe jplAcercaDe = new JPanellAcercaDe();
+        Object[] params = {jplAcercaDe};
         JOptionPane.showMessageDialog(this, params, "Acerca de FirmaEC", JOptionPane.PLAIN_MESSAGE);
     }//GEN-LAST:event_jmiAcercaActionPerformed
 
