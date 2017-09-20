@@ -57,16 +57,10 @@ import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import java.awt.Desktop;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDateTime;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.table.DefaultTableModel;
-;
+
 
 /**
  *
@@ -1491,6 +1485,9 @@ public class Main extends javax.swing.JFrame {
         if (documento == null || !documento.getAbsolutePath().equals(jtxRutaDocumentoFirmar.getText()))
         documento = new File(jtxRutaDocumentoFirmar.getText());
 
+        Object []paramsLoading = {new JPanelLoading()};
+        //JOptionPane.showOptionDialog(this, null,"Cargando", JOptionPane.DEFAULT_OPTION,JOptionPane.PLAIN_MESSAGE, null,paramsLoading, null);
+        
         try {
             jplFirmar.setEnabled(false);
             this.firmarDocumento();
