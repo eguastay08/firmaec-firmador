@@ -88,6 +88,7 @@ public class Validador {
      * @throws ec.gob.firmadigital.exceptions.CertificadoInvalidoException Si por medio del API nos confirma que esta revocado
      * @throws ec.gob.firmadigital.exceptions.CRLValidationException Si por CRL esta revocado
      * @throws io.rubrica.ocsp.OcspValidationException Si por OCSP nos dice que esta revocado
+     * @throws ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException Cuando trata de validar certificados que no son del BCE, CJ o SecurityData
      */
     public X509Certificate validar(X509Certificate cert) throws  HoraServidorException, RubricaException, IOException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException{
         try {
@@ -130,7 +131,7 @@ public class Validador {
 
     }
     
-    public X509Certificate validarCRL(X509Certificate cert) throws IOException, RubricaException, CRLValidationException{
+    public X509Certificate validarCRL(X509Certificate cert) throws IOException, RubricaException, CRLValidationException, EntidadCertificadoraNoValidaException{
         System.out.println("Validar CRL");
 
         //X509Certificate cert = getCert( ks, clave );
@@ -143,32 +144,20 @@ public class Validador {
 
         String urlCrl = this.obtenerUrlCRL(CertificateUtils.getCrlDistributionPoints(cert));
         ValidationResult result = null;
-        String resultStr;
+        
         switch (nombreCA) {
             case "Banco Central del Ecuador":
                 //TODO quemado hasta que arreglen en el banco central
                 urlCrl = ServicioCRL.BCE_CRL;
-                result = CrlUtils.verifyCertificateCRLs(cert, new BceSubCert().getPublicKey(),
-                        Arrays.asList(urlCrl));
-                System.out.println("Validation result: " + result);
-
-                resultStr = resultadosCRL(result);
-                break;
             case "Consejo de la Judicatura":
-                result = CrlUtils.verifyCertificateCRLs(cert, new ConsejoJudicaturaSubCert().getPublicKey(),
-                        Arrays.asList(urlCrl));
-                System.out.println("Validation result: " + result);
-                resultStr = resultadosCRL(result);
-                break;
             case "SecurityData":
-                result = CrlUtils.verifyCertificateCRLs(cert, new SecurityDataSubCaCert().getPublicKey(),
+                X509Certificate root = CertificadoEcUtils.getRootCertificate(cert);
+                result = CrlUtils.verifyCertificateCRLs(cert, root.getPublicKey(),
                         Arrays.asList(urlCrl));
                 System.out.println("Validation result: " + result);
-                resultStr = resultadosCRL(result);
                 break;
             default:
-                resultStr = " Error entidad no reconocida";
-
+        
                 break;
         }
         // Si el certificado no es valido botamos exception
