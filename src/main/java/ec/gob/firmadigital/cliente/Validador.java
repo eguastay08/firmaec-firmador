@@ -89,7 +89,7 @@ public class Validador {
      * @throws ec.gob.firmadigital.exceptions.CRLValidationException Si por CRL esta revocado
      * @throws io.rubrica.ocsp.OcspValidationException Si por OCSP nos dice que esta revocado
      */
-    public X509Certificate validar(X509Certificate cert) throws  HoraServidorException, RubricaException, IOException, CertificadoInvalidoException, CRLValidationException, OcspValidationException{
+    public X509Certificate validar(X509Certificate cert) throws  HoraServidorException, RubricaException, IOException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException{
         try {
             cert = validarOCSP( cert);
         } catch (IOException  | RubricaException ex) {
@@ -113,7 +113,7 @@ public class Validador {
         return cert;
     }
     
-    public X509Certificate validarOCSP( X509Certificate cert) throws IOException, OcspValidationException, RubricaException{
+    public X509Certificate validarOCSP( X509Certificate cert) throws IOException, OcspValidationException, RubricaException, EntidadCertificadoraNoValidaException{
         List<String> ocspUrls = CertificateUtils.getAuthorityInformationAccess(cert);
         for (String ocsp : ocspUrls) {
             System.out.println("OCSP=" + ocsp);
@@ -122,7 +122,7 @@ public class Validador {
         System.out.println("OCSPUrls " + ocspUrls.size());
 
         ValidadorOCSP validadorOCSP = new ValidadorOCSP();
-        X509Certificate certRoot  =  new SecurityDataSubCaCert(); //FirmaDigital.getRootCertificate(cert);
+        X509Certificate certRoot  =  CertificadoEcUtils.getRootCertificate(cert); //FirmaDigital.getRootCertificate(cert);
 
         validadorOCSP.validar(cert, certRoot, ocspUrls);
 

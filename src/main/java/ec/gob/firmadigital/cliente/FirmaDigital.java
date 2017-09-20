@@ -19,6 +19,7 @@ package ec.gob.firmadigital.cliente;
 import ec.gob.firmadigital.exceptions.CRLValidationException;
 import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
 import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
+import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.firmador.DatosUsuario;
 import ec.gob.firmadigital.firmador.Certificado;
@@ -80,7 +81,7 @@ public class FirmaDigital {
         return signedDoc;
     }
 
-    public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException, HoraServidorException, CertificadoInvalidoException {
+    public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException, HoraServidorException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException {
 
         byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
         Signer docSigner = documentSigner(documento);
@@ -111,7 +112,7 @@ public class FirmaDigital {
         }
     }
 
-    private List<Certificado> firmasToCertificados(List<SignInfo> firmas) throws RubricaException, ConexionInvalidaOCSPException, HoraServidorException, KeyStoreException, IOException, CertificadoInvalidoException {
+    private List<Certificado> firmasToCertificados(List<SignInfo> firmas) throws RubricaException, ConexionInvalidaOCSPException, HoraServidorException, KeyStoreException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException {
         List<Certificado> certs = new ArrayList<Certificado>();
         System.out.println("firmas a certificados");
 
@@ -159,7 +160,7 @@ public class FirmaDigital {
      * @throws IOException
      * @throws CertificadoInvalidoException 
      */
-    private Boolean esRevocado(X509Certificate cert) throws RubricaException, HoraServidorException, IOException, CertificadoInvalidoException {
+    private Boolean esRevocado(X509Certificate cert) throws RubricaException, HoraServidorException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException {
         try {
             System.out.println("Revisamos si es valido el certificado contra un servicio OCSP");
             

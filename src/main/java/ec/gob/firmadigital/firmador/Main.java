@@ -42,6 +42,7 @@ import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
 import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
 import ec.gob.firmadigital.exceptions.DocumentoNoPermitidoException;
+import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.exceptions.TokenNoConectadoException;
 import ec.gob.firmadigital.exceptions.TokenNoEncontradoException;
@@ -543,7 +544,7 @@ public class Main extends javax.swing.JFrame {
     }
 
 
-     private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException    {
+     private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException    {
         System.out.println("Validar Firma");
         if (this.rbFirmarToken.isSelected()) {
             ks = KeyStoreProviderFactory.getKeyStore(jpfClave.getPassword().toString());
@@ -1590,7 +1591,7 @@ public class Main extends javax.swing.JFrame {
             setearInfoValidacionCertificado(cert);
             agregarValidezCertificado(validez);
             jplValidar.setEnabled(true);
-        } catch (KeyStoreException | TokenNoEncontradoException | IOException |CertificadoInvalidoException| RubricaException ex) {
+        } catch (EntidadCertificadoraNoValidaException |KeyStoreException | TokenNoEncontradoException | IOException |CertificadoInvalidoException| RubricaException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             jplValidar.setEnabled(true);
