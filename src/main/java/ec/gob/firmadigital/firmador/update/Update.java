@@ -29,7 +29,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.xml.bind.DatatypeConverter;
@@ -53,15 +52,7 @@ public class Update {
     public void updateCliente() throws IOException {
         String hashBajado = new String(download(JAR_SHA256_URL));
         logger.info("hashBajado=" + hashBajado);
-
-        String hash;
-        StringTokenizer st = new StringTokenizer(hashBajado);
-
-        if (st.hasMoreTokens()) {
-            hash = (st.nextToken());
-        } else {
-            throw new RuntimeException("Archivo SHA256 invalido!");
-        }
+        String hash = hashBajado.split("\\s")[0];
 
         // Se debe descargar?
         String path = rutaJar();
