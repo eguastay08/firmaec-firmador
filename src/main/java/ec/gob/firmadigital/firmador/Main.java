@@ -690,10 +690,12 @@ public class Main extends javax.swing.JFrame {
                 update.updateCliente();
 
                 //getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 // mostrarMensaje("Actualizado con éxito, se cerrará la ventana");
                 System.exit(0);
+                
             } catch (IOException ex) {
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 ex.printStackTrace();
             }
         }
