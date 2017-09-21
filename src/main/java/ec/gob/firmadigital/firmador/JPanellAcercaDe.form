@@ -16,22 +16,15 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="75" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="2" attributes="0">
-                          <Component id="jlbCopyrightAcercaDe" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="jlbLicenciaAcercaDe" alignment="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="btnActualizarAcerdaDe" alignment="2" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                      <Component id="jlbUrlGobiernoDigitalAcercaDe" min="-2" pref="256" max="-2" attributes="0"/>
-                  </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="btnActualizarAcerdaDe" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="jlbUrlGobiernoDigitalAcercaDe" alignment="2" min="-2" pref="256" max="-2" attributes="0"/>
+                  <Component id="jlbCopyrightAcercaDe" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="jlbLicenciaAcercaDe" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="40" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -42,7 +35,7 @@
               <Component id="jlbCopyrightAcercaDe" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jlbLicenciaAcercaDe" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="33" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Component id="jlbUrlGobiernoDigitalAcercaDe" min="-2" pref="17" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="btnActualizarAcerdaDe" min="-2" max="-2" attributes="0"/>

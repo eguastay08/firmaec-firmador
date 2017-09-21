@@ -57,8 +57,8 @@ import java.util.logging.Logger;
  */
 public class Validador {
     private KeyStore ks;
-    private static String FECHA_HORA_URL="https://api.firmadigital.gob.ec/api/fecha-hora";
-    private static final String CERTIFICADO_URL = "https://api.firmadigital.gob.ec/api/certificado/revocado";
+    private static String FECHA_HORA_URL="http://localhost:8080/api/fecha-hora";
+    private static final String CERTIFICADO_URL = "http://localhost:8080/api/certificado/revocado";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     private static final Logger logger = Logger.getLogger(Validador.class.getName());
     private Boolean caducado;
@@ -82,8 +82,8 @@ public class Validador {
      * @throws io.rubrica.ocsp.OcspValidationException Si por OCSP nos dice que esta revocado
      * @throws ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException Cuando trata de validar certificados que no son del BCE, CJ o SecurityData
      */
-    public X509Certificate validar(X509Certificate cert) throws  HoraServidorException, RubricaException, IOException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException{
-        try {
+    public X509Certificate validar(X509Certificate cert) throws  HoraServidorException, RubricaException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, IOException{
+        /*try {
             cert = validarOCSP( cert);
         } catch (IOException  | RubricaException ex) {
             Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex);
@@ -102,7 +102,25 @@ public class Validador {
             }
         } 
         //Si pasa todo los controles validamos si esta
-        validarFecha(cert);
+        validarFecha(cert);*/
+        
+        // Vemos contra el api primero
+        try {
+            BigInteger serial = cert.getSerialNumber();
+            Boolean valido = this.validarCrlServidorAPI(serial);
+            // Si no es valido botamos exception
+            if (!valido) {
+                throw new CertificadoInvalidoException("El certificado no es válido");
+            }
+        } catch (IOException e) {
+            try{
+                cert = validarOCSP(cert);
+            } catch (IOException | RubricaException ex) {
+                Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("Fallo la validacion por OCSP, Ahora intentamos por CRL");
+                cert = validarCRL(cert);
+            }
+        }
         return cert;
     }
     
@@ -217,8 +235,8 @@ public class Validador {
         try {
             fechaHora = getFechaHoraServidor();
         } catch (IOException e) {
-            /*logger.severe("No se puede obtener la fecha del servidor: "
-                    + e.getMessage());*/
+            logger.severe("No se puede obtener la fecha del servidor: "
+                    + e.getMessage());
             //return new Date();
             throw new HoraServidorException("Error al obtener fecha y hora del servidor");            
         }
@@ -236,8 +254,8 @@ public class Validador {
         URL obj = new URL(FECHA_HORA_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         int responseCode = con.getResponseCode();
-        //logger.fine("GET Response Code: " + responseCode);
-     
+        logger.fine("GET Response Code: " + responseCode);
+        System.out.println("XXXXXGET Response Code: " + responseCode);
 
         if (responseCode == HttpURLConnection.HTTP_OK) {
             try (InputStream is = con.getInputStream();) {

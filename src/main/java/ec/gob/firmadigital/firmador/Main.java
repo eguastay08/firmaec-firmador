@@ -94,19 +94,7 @@ public class Main extends javax.swing.JFrame {
      * Creates new form Main
      */
     public Main() {
-        /*try {
-            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                System.out.println("LF disponibles "  +info.getName());
-                if ("GTK+".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("No tiene gtk+");
-            // If Nimbus is not available, you can set the GUI to another look and feel.
-        }*/
-
+      
         
         
         extensionesPermitidas = new ArrayList<>();
@@ -1587,18 +1575,18 @@ public class Main extends javax.swing.JFrame {
             setearInfoValidacionCertificado(cert);
             agregarValidezCertificado(validez);
             jplValidar.setEnabled(true);
-        } catch (EntidadCertificadoraNoValidaException |KeyStoreException | TokenNoEncontradoException | IOException |CertificadoInvalidoException| RubricaException ex) {
+        } catch (HoraServidorException | EntidadCertificadoraNoValidaException |KeyStoreException | TokenNoEncontradoException | IOException |CertificadoInvalidoException| RubricaException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             jplValidar.setEnabled(true);
-        } catch (HoraServidorException ex) {
+        } /*catch (HoraServidorException ex) {
             if(cert != null){
                 setearInfoValidacionCertificado(cert);
                 agregarValidezCertificado("Caducado");
                 jplValidar.setEnabled(true);
             }
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+        } */
     }//GEN-LAST:event_btnValidarActionPerformed
 
     private void btnAbrirCertificadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAbrirCertificadoActionPerformed
