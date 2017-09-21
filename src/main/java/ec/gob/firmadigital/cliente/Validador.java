@@ -238,7 +238,7 @@ public class Validador {
         }
     }
 
-    private String getFechaHoraServidor() throws IOException {
+    public String getFechaHoraServidor() throws IOException {
         URL obj = new URL(FECHA_HORA_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         int responseCode = con.getResponseCode();

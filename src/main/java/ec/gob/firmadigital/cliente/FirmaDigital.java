@@ -51,6 +51,7 @@ import io.rubrica.sign.ooxml.OOXMLSigner;
 import io.rubrica.sign.pdf.PDFSigner;
 import io.rubrica.core.Util;
 import io.rubrica.sign.xades.XAdESSigner;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,6 +69,10 @@ public class FirmaDigital {
         List<Alias> signingAliases = KeyStoreUtilities.getSigningAliases(keyStore);
 
         byte[] signedDoc = null;
+        
+        Properties params = new Properties();
+        Validador validador = new Validador();
+        params.setProperty("signingTime", validador.getFechaHoraServidor());
 
         for (Alias alias : signingAliases) {
 
@@ -75,7 +80,8 @@ public class FirmaDigital {
             Certificate[] chain = keyStore.getCertificateChain(alias.getAlias());
             // (byte[] data, String algorithm, PrivateKey key, Certificate[] certChain, Properties xParams)
             Signer docSigner = documentSigner(documento);
-            signedDoc = docSigner.sign(docByteArry, SignConstants.SIGN_ALGORITHM_SHA1WITHRSA, pk, chain, null);  //(documento, pk, chain, null);
+            
+            signedDoc = docSigner.sign(docByteArry, SignConstants.SIGN_ALGORITHM_SHA1WITHRSA, pk, chain, params);  //(documento, pk, chain, null);
 
         }
         return signedDoc;
