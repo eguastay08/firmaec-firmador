@@ -59,8 +59,8 @@ import java.util.logging.Logger;
 public class Validador {
     private KeyStore ks;
 //PENDIENTE AL GENERAR INSTALADOR
-    private static String FECHA_HORA_URL="http://api.firmadigital.gob.ec/api/fecha-hora";
-    private static final String CERTIFICADO_URL = "http://api.firmadigital.gob.ec/api/certificado/revocado";
+    private static String FECHA_HORA_URL="https://api.firmadigital.gob.ec/api/fecha-hora";
+    private static final String CERTIFICADO_URL = "https://api.firmadigital.gob.ec/api/certificado/revocado";
 //PENDIENTE AL GENERAR INSTALADOR
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     private static final Logger logger = Logger.getLogger(Validador.class.getName());

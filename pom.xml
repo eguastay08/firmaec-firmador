@@ -4,7 +4,7 @@
 
 	<groupId>ec.gob.firmadigital</groupId>
 	<artifactId>firmador</artifactId>
-	<version>0.1.3-SNAPSHOT</version>
+	<version>0.1.3</version>
 
 	<name>firmadigital-firmador</name>
 	<description>Firmador de Firma Digital EC</description>
@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>io.rubrica</groupId>
 			<artifactId>rubrica</artifactId>
-			<version>0.1.2</version>
+			<version>0.1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
