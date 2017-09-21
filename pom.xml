@@ -4,7 +4,7 @@
 
 	<groupId>ec.gob.firmadigital</groupId>
 	<artifactId>firmador</artifactId>
-	<version>0.1.3</version>
+	<version>0.1.4-SNAPSHOT</version>
 
 	<name>firmadigital-firmador</name>
 	<description>Firmador de Firma Digital EC</description>
