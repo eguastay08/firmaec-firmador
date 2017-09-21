@@ -78,7 +78,7 @@ public class Main extends javax.swing.JFrame {
     private static final String CHECK_IMG = "CheckIcon.png";
     private static final String NOTCHECK_IMG = "DeleteIcon.png";
     private final List<String> extensionesPermitidas;
-    private final FileNameExtensionFilter filtros = new FileNameExtensionFilter("Documentos de Oficina", "pdf", "docx", "xlsx", "pptx", "odt", "ods", "odp","xml");
+    private final FileNameExtensionFilter filtros = new FileNameExtensionFilter("Documentos de Oficina", "pdf", "p7m", "docx", "xlsx", "pptx", "odt", "ods", "odp","xml");
     private static final String OS = System.getProperty("os.name").toLowerCase();
     //private final ImageIcon checkIcon = new ImageIcon(ClassLoader.getSystemResource(RUTA_IMG + CHECK_IMG));
     //private final ImageIcon notCheckIcon = new ImageIcon(ClassLoader.getSystemResource(RUTA_IMG + NOTCHECK_IMG));
@@ -88,18 +88,16 @@ public class Main extends javax.swing.JFrame {
     
     private static final Logger logger = Logger.getLogger(Main.class.getName());
     
-  
 
     /**
      * Creates new form Main
      */
     public Main() {
-      
-        
-        
+
         extensionesPermitidas = new ArrayList<>();
-        // Extensiones permitidas"pdf","docx","xlsx","pptx","odt","ods","odp"
+        // Extensiones permitidas"pdf","p7m","docx","xlsx","pptx","odt","ods","odp"
         extensionesPermitidas.add("pdf");
+        extensionesPermitidas.add("p7m");
         extensionesPermitidas.add("docx");
         extensionesPermitidas.add("xlsx");
         extensionesPermitidas.add("pptx");
@@ -107,7 +105,6 @@ public class Main extends javax.swing.JFrame {
         extensionesPermitidas.add("ods");
         extensionesPermitidas.add("odp");
         extensionesPermitidas.add("xml");
-        
 
         ultimaCarpeta = new File(System.getProperty("user.home"));
         //fileChooser.setCurrentDirectory(ultimaCarpeta);
@@ -141,8 +138,6 @@ public class Main extends javax.swing.JFrame {
         btnResetearVerificar.setMnemonic(java.awt.event.KeyEvent.VK_R);
         /*jmbMenuPrincipal.add(Box.createHorizontalGlue());
         jmAyuda.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT); */
-        
-        
     }
 
     private File abrirArchivo(FileNameExtensionFilter filtro) {
@@ -301,7 +296,7 @@ public class Main extends javax.swing.JFrame {
         
         List<Certificado> certs = firmaDigital.verificar(documento);
         
-        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         
         jtxDocumentoVerificado.setText(documento.getAbsolutePath());
 
@@ -337,10 +332,7 @@ public class Main extends javax.swing.JFrame {
         
         tblDatosFirmanteVerificar.setModel(tableModelCertificados);
         tableModelCertificados.fireTableDataChanged();
-
     }
-    
-
     
     // Se podria verificar el mimetype
     // Talvez eliminar el if
@@ -449,12 +441,10 @@ public class Main extends javax.swing.JFrame {
         
     }
    
-    
     private void resetDatosTabladeFirmante() {
         DefaultTableModel tableModel = (DefaultTableModel) tblDatosDelFirmanteFirmador.getModel();
         
         DatosUsuario datosUsuario = new DatosUsuario();
-        
 
         tableModel.setRowCount(0);
 
@@ -519,7 +509,6 @@ public class Main extends javax.swing.JFrame {
         tblDatosDelCertificadoFirmador.setModel(tableModel);
         tableModel.fireTableDataChanged();
     }
-
 
      private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException    {
         System.out.println("Validar Firma");
@@ -916,7 +905,7 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(jplFirmarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnFirmar)
                     .addComponent(btnResetear))
-                .addGap(19, 19, 19))
+                .addGap(8, 8, 8))
         );
 
         jLabel11.setText("<html><b>DATOS DEL FIRMANTE</b></html>");
@@ -1005,26 +994,30 @@ public class Main extends javax.swing.JFrame {
         firmarVerificarDocPanel.setLayout(firmarVerificarDocPanelLayout);
         firmarVerificarDocPanelLayout.setHorizontalGroup(
             firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jplFirmar, javax.swing.GroupLayout.PREFERRED_SIZE, 944, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
             .addComponent(jSeparator2)
+            .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
+                .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(jplFirmar, javax.swing.GroupLayout.PREFERRED_SIZE, 944, Short.MAX_VALUE))
+                    .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         firmarVerificarDocPanelLayout.setVerticalGroup(
             firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jplFirmar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(7, 7, 7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
-        mainPanel.addTab("<html><b>FIRMAR ELECTRÓNICA DE DOCUMENTO</b></html>", firmarVerificarDocPanel);
+        mainPanel.addTab("<html><b>FIRMAR DOCUMENTO</b></html>", firmarVerificarDocPanel);
 
         jlbArchivoFirmadoVerficar.setText("Archivo Firmado:");
 
@@ -1094,7 +1087,7 @@ public class Main extends javax.swing.JFrame {
                 {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Cédula", "Nombres", "Institucion ", "Cargo", "Válido Desde", "Válido Hasta", "Fecha Firmado", "Revocado"
+                "Cédula", "Nombres", "Institución", "Cargo", "Válido Desde", "Válido Hasta", "Fecha Firmado", "Revocado"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -1107,33 +1100,25 @@ public class Main extends javax.swing.JFrame {
         });
         jScrollPane3.setViewportView(tblDatosFirmanteVerificar);
 
-        jLabel13.setText("Datos De Los Firmantes");
+        jLabel13.setText("<html><b>DATOS DE LOS FIRMANTES</b></html>");
+
+        jtxDocumentoVerificado.setEditable(false);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.CENTER, jPanel4Layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addComponent(jScrollPane3)
-                .addGap(12, 12, 12))
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jLabel13))
-                            .addGroup(javax.swing.GroupLayout.Alignment.CENTER, jPanel4Layout.createSequentialGroup()
-                                .addGap(203, 203, 203)
-                                .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 192, Short.MAX_VALUE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jlbArchivoVerificado)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jtxDocumentoVerificado)))
-                .addContainerGap())
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 932, Short.MAX_VALUE)))
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(jlbArchivoVerificado)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jtxDocumentoVerificado))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1147,10 +1132,10 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addComponent(jtxDocumentoVerificado, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(29, 29, 29)
-                .addComponent(jLabel13)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(8, 8, 8)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1271,13 +1256,10 @@ public class Main extends javax.swing.JFrame {
                     .addComponent(rbValidarLlave)
                     .addComponent(rbValidarToken)
                     .addComponent(jlbCertificadoValidar))
-                .addGroup(jplValidarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jplValidarLayout.createSequentialGroup()
-                        .addGap(9, 9, 9)
-                        .addComponent(btnAbrirCertificado))
-                    .addGroup(jplValidarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jlbCertificadoVldCert)
-                        .addComponent(jtxRutaCertificado, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jplValidarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jlbCertificadoVldCert)
+                    .addComponent(jtxRutaCertificado, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnAbrirCertificado))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jplValidarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jplValidarLayout.createSequentialGroup()

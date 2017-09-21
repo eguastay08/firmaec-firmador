@@ -97,6 +97,10 @@ public class FirmaDigital {
         switch (extDocumento.toLowerCase()) {
             case "pdf":
                 return new PDFSigner();
+//IMPLEMENTAR P7M
+            case "p7m":
+                return new PDFSigner();
+//IMPLEMENTAR P7M
             case "docx":
             case "xlsx":
             case "pptx":
@@ -162,7 +166,7 @@ public class FirmaDigital {
      */
     private Boolean esRevocado(X509Certificate cert) throws RubricaException, HoraServidorException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException {
         try {
-            System.out.println("Revisamos si es valido el certificado contra un servicio OCSP");
+            System.out.println("Revisamos si es valido el certificado contra el servicio del API");
             
             Validador validador = new Validador();
             validador.validar(cert);

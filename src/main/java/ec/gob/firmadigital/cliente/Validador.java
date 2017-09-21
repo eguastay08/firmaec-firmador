@@ -19,6 +19,7 @@ package ec.gob.firmadigital.cliente;
 import ec.gob.firmadigital.crl.ServicioCRL;
 import ec.gob.firmadigital.exceptions.CRLValidationException;
 import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
+import ec.gob.firmadigital.exceptions.ConexionFirmadorApiException;
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.utils.CertificadoEcUtils;
@@ -57,8 +58,10 @@ import java.util.logging.Logger;
  */
 public class Validador {
     private KeyStore ks;
-    private static String FECHA_HORA_URL="http://localhost:8080/api/fecha-hora";
-    private static final String CERTIFICADO_URL = "http://localhost:8080/api/certificado/revocado";
+//PENDIENTE AL GENERAR INSTALADOR
+    private static String FECHA_HORA_URL="http://api.firmadigital.gob.ec/api/fecha-hora";
+    private static final String CERTIFICADO_URL = "http://api.firmadigital.gob.ec/api/certificado/revocado";
+//PENDIENTE AL GENERAR INSTALADOR
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     private static final Logger logger = Logger.getLogger(Validador.class.getName());
     private Boolean caducado;
@@ -82,45 +85,32 @@ public class Validador {
      * @throws io.rubrica.ocsp.OcspValidationException Si por OCSP nos dice que esta revocado
      * @throws ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException Cuando trata de validar certificados que no son del BCE, CJ o SecurityData
      */
-    public X509Certificate validar(X509Certificate cert) throws  HoraServidorException, RubricaException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, IOException{
-        /*try {
-            cert = validarOCSP( cert);
-        } catch (IOException  | RubricaException ex) {
-            Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Fallo la validacion por OCSP, Ahora intentamos por CRL");
-            try {
-                cert = validarCRL(cert);
-            } catch ( IOException |RubricaException ex1) {
-               // cert = getCert( ks, clave );
-                System.out.println("Fallo la validacion por CRL, Ahora intentamos por el servicio del API");
-                Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex1);
-                BigInteger serial = cert.getSerialNumber();
-                Boolean valido = this.validarCrlServidorAPI(serial);
-                // Si no es valido botamos exception
-                if(!valido)
-                 throw new CertificadoInvalidoException("El certificado no es válido");
-            }
-        } 
-        //Si pasa todo los controles validamos si esta
-        validarFecha(cert);*/
-        
-        // Vemos contra el api primero
+    public X509Certificate validar(X509Certificate cert) throws  HoraServidorException, RubricaException, IOException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException{
         try {
             BigInteger serial = cert.getSerialNumber();
             Boolean valido = this.validarCrlServidorAPI(serial);
             // Si no es valido botamos exception
-            if (!valido) {
+            if(!valido)
                 throw new CertificadoInvalidoException("El certificado no es válido");
-            }
-        } catch (IOException e) {
-            try{
-                cert = validarOCSP(cert);
-            } catch (IOException | RubricaException ex) {
-                Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex);
+
+        } catch (IOException | ConexionFirmadorApiException ex) {
+            System.out.println("Fallo la validacion por el servicio del API, Ahora intentamos por OCSP");
+            Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                cert = validarOCSP( cert);
+            } catch ( IOException |RubricaException ex1) {
+               // cert = getCert( ks, clave );
                 System.out.println("Fallo la validacion por OCSP, Ahora intentamos por CRL");
-                cert = validarCRL(cert);
+                Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex1);
+                try{
+                    cert = validarCRL(cert);
+                } catch ( IOException |RubricaException ex2) {
+                    System.out.println("Fallo la validacion por CRL");
+                    Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex2);
+                }
             }
-        }
+        } 
+
         return cert;
     }
     
@@ -174,10 +164,7 @@ public class Validador {
         
         System.out.println(CertificateUtils.getCN(cert));
         return cert;
-           
     }
-     
-
     
     public X509Certificate getCert(KeyStore ks, char [] clave) throws KeyStoreException{
         List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
@@ -186,14 +173,15 @@ public class Validador {
         return cert;
     }
     
-    public boolean validarCrlServidorAPI(BigInteger serial) throws IOException {
+    public boolean validarCrlServidorAPI(BigInteger serial) throws IOException, ConexionFirmadorApiException {
         URL url = new URL(CERTIFICADO_URL + "/" + serial);
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         int responseCode = urlConnection.getResponseCode();
 
         if (responseCode != HttpURLConnection.HTTP_OK) {
             logger.severe(CERTIFICADO_URL + " Response Code: " + responseCode);
-            return false;
+            //return false;
+            throw new ConexionFirmadorApiException("No se pudo conectar API. "+CERTIFICADO_URL + " Response Code: " + responseCode);
         }
 
         try (InputStream is = urlConnection.getInputStream()) {
@@ -276,6 +264,4 @@ public class Validador {
             "Error al obtener fecha y hora del servidor");
          }
      }
-    
-    
 }

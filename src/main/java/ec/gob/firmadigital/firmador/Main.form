@@ -79,8 +79,8 @@
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="&lt;html&gt;&lt;b&gt;FIRMAR ELECTR&#xd3;NICA DE DOCUMENTO&lt;/b&gt;&lt;/html&gt;">
-                <Property name="tabTitle" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;FIRMAR ELECTR&#xd3;NICA DE DOCUMENTO&lt;/b&gt;&lt;/html&gt;"/>
+              <JTabbedPaneConstraints tabName="&lt;html&gt;&lt;b&gt;FIRMAR DOCUMENTO&lt;/b&gt;&lt;/html&gt;">
+                <Property name="tabTitle" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;FIRMAR DOCUMENTO&lt;/b&gt;&lt;/html&gt;"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -88,15 +88,20 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jSeparator2" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jplFirmar" pref="944" max="32767" attributes="0"/>
-                          <Component id="jPanel2" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
+                              <Component id="jplFirmar" pref="944" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jPanel2" max="32767" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator2" alignment="0" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -104,10 +109,11 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jplFirmar" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="jSeparator2" min="-2" pref="2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel2" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -186,7 +192,7 @@
                               <Component id="btnFirmar" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="btnResetear" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -561,34 +567,19 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="2" attributes="0">
-                          <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
-                          <Component id="jScrollPane3" max="32767" attributes="0"/>
-                          <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
-                      </Group>
                       <Group type="102" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" attributes="0">
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Group type="102" alignment="2" attributes="0">
-                                          <EmptySpace min="203" pref="203" max="-2" attributes="0"/>
-                                          <Component id="jLabel12" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <EmptySpace min="0" pref="192" max="32767" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="jlbArchivoVerificado" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="jtxDocumentoVerificado" max="32767" attributes="0"/>
-                              </Group>
-                          </Group>
                           <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="2" attributes="0">
+                              <Component id="jLabel12" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel13" alignment="2" min="-2" max="-2" attributes="0"/>
+                              <Component id="jScrollPane3" alignment="2" pref="932" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
+                          <Component id="jlbArchivoVerificado" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jtxDocumentoVerificado" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -598,19 +589,19 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jLabel12" min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                                   <Component id="jlbArchivoVerificado" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Group type="102" attributes="0">
-                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                                   <Component id="jtxDocumentoVerificado" min="-2" pref="35" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace min="-2" pref="29" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                          <Component id="jScrollPane3" pref="301" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" pref="318" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -640,7 +631,7 @@
                           <Table columnCount="8" rowCount="1">
                             <Column editable="false" title="C&#xe9;dula" type="java.lang.Object"/>
                             <Column editable="false" title="Nombres" type="java.lang.Object"/>
-                            <Column editable="false" title="Institucion " type="java.lang.Object"/>
+                            <Column editable="false" title="Instituci&#xf3;n" type="java.lang.Object"/>
                             <Column editable="false" title="Cargo" type="java.lang.Object"/>
                             <Column editable="false" title="V&#xe1;lido Desde" type="java.lang.Object"/>
                             <Column editable="false" title="V&#xe1;lido Hasta" type="java.lang.Object"/>
@@ -701,10 +692,13 @@
                 </Container>
                 <Component class="javax.swing.JLabel" name="jLabel13">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Datos De Los Firmantes"/>
+                    <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;DATOS DE LOS FIRMANTES&lt;/b&gt;&lt;/html&gt;"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="jtxDocumentoVerificado">
+                  <Properties>
+                    <Property name="editable" type="boolean" value="false"/>
+                  </Properties>
                 </Component>
               </SubComponents>
             </Container>
@@ -800,15 +794,10 @@
                               <Component id="rbValidarToken" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jlbCertificadoValidar" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="9" pref="9" max="-2" attributes="0"/>
-                                  <Component id="btnAbrirCertificado" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="jlbCertificadoVldCert" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jtxRutaCertificado" alignment="3" min="-2" pref="34" max="-2" attributes="0"/>
-                              </Group>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="jlbCertificadoVldCert" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jtxRutaCertificado" alignment="3" min="-2" pref="34" max="-2" attributes="0"/>
+                              <Component id="btnAbrirCertificado" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
