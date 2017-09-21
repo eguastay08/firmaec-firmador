@@ -57,6 +57,7 @@ import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.time.LocalDateTime;
 import javax.swing.JCheckBox;
@@ -94,7 +95,7 @@ public class Main extends javax.swing.JFrame {
      * Creates new form Main
      */
     public Main() {
-
+        
         extensionesPermitidas = new ArrayList<>();
         // Extensiones permitidas"pdf","p7m","docx","xlsx","pptx","odt","ods","odp"
         extensionesPermitidas.add("pdf");
@@ -137,8 +138,7 @@ public class Main extends javax.swing.JFrame {
         
         btnExaminarVerificar.setMnemonic(java.awt.event.KeyEvent.VK_E);
         btnResetearVerificar.setMnemonic(java.awt.event.KeyEvent.VK_R);
-        /*jmbMenuPrincipal.add(Box.createHorizontalGlue());
-        jmAyuda.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT); */
+        
     }
 
     private File abrirArchivo(FileNameExtensionFilter filtro) {
@@ -344,7 +344,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     //TODO botar exceptions en vez de return false
-    private boolean firmarDocumento() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitidoException, TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException, Exception  {
+    private boolean firmarDocumento() throws Exception  {
         // Vemos si es un documento permitido primero
         validacionPreFirmar();
 
@@ -682,6 +682,7 @@ public class Main extends javax.swing.JFrame {
 
         if (n == 0) {
             logger.info("Se solicita actualización...");
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             try {
                 Update update = new Update();
 
@@ -1394,19 +1395,23 @@ public class Main extends javax.swing.JFrame {
         if (!documento.getAbsolutePath().equals(jtxArchivoFirmadoVerificar.getText())) 
             documento = new File(jtxArchivoFirmadoVerificar.getText());
         
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
         try {
             jplVerificarDocumento.setEnabled(false);
             verificarDocumento();
             jplVerificarDocumento.setEnabled(true);
+            setCursor(Cursor.getDefaultCursor());
         }catch(RubricaException ex){
+            setCursor(Cursor.getDefaultCursor());
             System.err.println("Error no se pudo conectar al servicio de OSCP para verificar el certificado ");
             JOptionPane.showMessageDialog(this, "Error no se pudo conectar al servicio de OSCP para verificar el certificado\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
             jplVerificarDocumento.setEnabled(true);
         }catch (Exception ex) {
-            //TODO agregar mensaje de error
-            //Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            System.err.println("Error no se pudo verificar ");
+            setCursor(Cursor.getDefaultCursor());
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            //System.err.println("Error no se pudo verificar ");
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
             jplVerificarDocumento.setEnabled(true);
@@ -1456,10 +1461,9 @@ public class Main extends javax.swing.JFrame {
     private void btnFirmarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFirmarActionPerformed
         if (documento == null || !documento.getAbsolutePath().equals(jtxRutaDocumentoFirmar.getText()))
         documento = new File(jtxRutaDocumentoFirmar.getText());
+        //Cambiamos el cursor a que se ponga en loading
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        Object []paramsLoading = {new JPanelLoading()};
-        //JOptionPane.showOptionDialog(this, null,"Cargando", JOptionPane.DEFAULT_OPTION,JOptionPane.PLAIN_MESSAGE, null,paramsLoading, null);
-        
         try {
             jplFirmar.setEnabled(false);
             this.firmarDocumento();
@@ -1480,18 +1484,14 @@ public class Main extends javax.swing.JFrame {
             //Borramos la ruta y la clave una vez que esta firmado
             this.jpfClave.setText("");
             this.jtxRutaLlaveFirmar.setText("");
+            setCursor(Cursor.getDefaultCursor());
         }catch(KeyStoreException e){
+            this.setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
             JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
             jplValidar.setEnabled(true);
-        } catch ( IOException | ConexionValidarCRLException |EntidadCertificadoraNoValidaException |OcspValidationException |CRLValidationException |CertificadoInvalidoException | HoraServidorException |RubricaException | DocumentoNoPermitidoException  | TokenNoConectadoException ex) {
-            //TODO agregar mensaje de error
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            System.err.println("Error no se pudo firmar ");
-            jplFirmar.setEnabled(true);
-        }  catch (Exception ex) {
+        } catch (Exception ex) {
+            this.setCursor(Cursor.getDefaultCursor());
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Error no se pudo firmar ");
@@ -1542,6 +1542,7 @@ public class Main extends javax.swing.JFrame {
         Validador validador = new Validador();
         KeyStoreProvider ksp;
         X509Certificate cert = null;
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             jplValidar.setEnabled(false);
             if (this.rbValidarToken.isSelected()) {
@@ -1568,11 +1569,14 @@ public class Main extends javax.swing.JFrame {
             setearInfoValidacionCertificado(cert);
             agregarValidezCertificado(validez);
             jplValidar.setEnabled(true);
+            setCursor(Cursor.getDefaultCursor());
         }catch(KeyStoreException e){
+            setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
             JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
             jplValidar.setEnabled(true);
-        }catch (ConexionValidarCRLException | HoraServidorException | EntidadCertificadoraNoValidaException |IOException | TokenNoEncontradoException  |CertificadoInvalidoException| RubricaException ex) {
+        }catch (Exception ex) {
+            setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             jplValidar.setEnabled(true);
