@@ -90,7 +90,8 @@ public class Validador {
             BigInteger serial = cert.getSerialNumber();
             Boolean valido = this.validarCrlServidorAPI(serial);
             // Si no es valido botamos exception
-            if(!valido)
+            System.out.println(valido);
+            if(valido)
                 throw new CertificadoInvalidoException("El certificado no es válido");
 
         } catch (IOException | ConexionFirmadorApiException ex) {
