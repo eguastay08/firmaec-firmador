@@ -38,6 +38,7 @@ import ec.gob.firmadigital.cliente.FirmaDigital;
 import ec.gob.firmadigital.cliente.Validador;
 import ec.gob.firmadigital.exceptions.CRLValidationException;
 import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
+import ec.gob.firmadigital.exceptions.ConexionValidarCRLException;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
 import ec.gob.firmadigital.exceptions.DocumentoNoPermitidoException;
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
@@ -343,7 +344,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     //TODO botar exceptions en vez de return false
-    private boolean firmarDocumento() throws Exception  {
+    private boolean firmarDocumento() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitidoException, TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException, Exception  {
         // Vemos si es un documento permitido primero
         validacionPreFirmar();
 
@@ -510,7 +511,7 @@ public class Main extends javax.swing.JFrame {
         tableModel.fireTableDataChanged();
     }
 
-     private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException    {
+     private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException    {
         System.out.println("Validar Firma");
         if (this.rbFirmarToken.isSelected()) {
             ks = KeyStoreProviderFactory.getKeyStore(jpfClave.getPassword().toString());
@@ -1413,7 +1414,8 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_btnVerificarActionPerformed
 
     private void btnExaminarVerificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExaminarVerificarActionPerformed
-       documento = abrirArchivo(filtros);
+        //filtros
+        documento = abrirArchivo(filtros);
         if (documento != null) {
             jtxArchivoFirmadoVerificar.setText(documento.getAbsolutePath());
             btnVerificar.setEnabled(true);
@@ -1478,14 +1480,23 @@ public class Main extends javax.swing.JFrame {
             //Borramos la ruta y la clave una vez que esta firmado
             this.jpfClave.setText("");
             this.jtxRutaLlaveFirmar.setText("");
-        } catch (Exception ex) {
+        }catch(KeyStoreException e){
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
+            JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+            jplValidar.setEnabled(true);
+        } catch ( IOException | ConexionValidarCRLException |EntidadCertificadoraNoValidaException |OcspValidationException |CRLValidationException |CertificadoInvalidoException | HoraServidorException |RubricaException | DocumentoNoPermitidoException  | TokenNoConectadoException ex) {
             //TODO agregar mensaje de error
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Error no se pudo firmar ");
             jplFirmar.setEnabled(true);
-        }
+        }  catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Error no se pudo firmar ");
+            jplFirmar.setEnabled(true);
+        } 
     }//GEN-LAST:event_btnFirmarActionPerformed
 
     private void btnAbrirArchivoPSKFirmarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAbrirArchivoPSKFirmarActionPerformed
@@ -1557,18 +1568,15 @@ public class Main extends javax.swing.JFrame {
             setearInfoValidacionCertificado(cert);
             agregarValidezCertificado(validez);
             jplValidar.setEnabled(true);
-        } catch (HoraServidorException | EntidadCertificadoraNoValidaException |KeyStoreException | TokenNoEncontradoException | IOException |CertificadoInvalidoException| RubricaException ex) {
+        }catch(KeyStoreException e){
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
+            JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+            jplValidar.setEnabled(true);
+        }catch (ConexionValidarCRLException | HoraServidorException | EntidadCertificadoraNoValidaException |IOException | TokenNoEncontradoException  |CertificadoInvalidoException| RubricaException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             jplValidar.setEnabled(true);
-        } /*catch (HoraServidorException ex) {
-            if(cert != null){
-                setearInfoValidacionCertificado(cert);
-                agregarValidezCertificado("Caducado");
-                jplValidar.setEnabled(true);
-            }
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } */
+        } 
     }//GEN-LAST:event_btnValidarActionPerformed
 
     private void btnAbrirCertificadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAbrirCertificadoActionPerformed

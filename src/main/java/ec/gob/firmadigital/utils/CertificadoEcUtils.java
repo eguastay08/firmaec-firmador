@@ -55,7 +55,7 @@ public class CertificadoEcUtils {
             case "SecurityData":
                 return new SecurityDataSubCaCert();
             default:
-                throw new EntidadCertificadoraNoValidaException("Entidad Certificador no encontra");
+                throw new EntidadCertificadoraNoValidaException("Entidad Certificador no reconocida");
         }
     }
 

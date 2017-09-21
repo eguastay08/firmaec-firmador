@@ -20,6 +20,7 @@ import ec.gob.firmadigital.crl.ServicioCRL;
 import ec.gob.firmadigital.exceptions.CRLValidationException;
 import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
 import ec.gob.firmadigital.exceptions.ConexionFirmadorApiException;
+import ec.gob.firmadigital.exceptions.ConexionValidarCRLException;
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.utils.CertificadoEcUtils;
@@ -58,10 +59,8 @@ import java.util.logging.Logger;
  */
 public class Validador {
     private KeyStore ks;
-//PENDIENTE AL GENERAR INSTALADOR
     private static String FECHA_HORA_URL="https://api.firmadigital.gob.ec/api/fecha-hora";
     private static final String CERTIFICADO_URL = "https://api.firmadigital.gob.ec/api/certificado/revocado";
-//PENDIENTE AL GENERAR INSTALADOR
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     private static final Logger logger = Logger.getLogger(Validador.class.getName());
     private Boolean caducado;
@@ -84,8 +83,9 @@ public class Validador {
      * @throws ec.gob.firmadigital.exceptions.CRLValidationException Si por CRL esta revocado
      * @throws io.rubrica.ocsp.OcspValidationException Si por OCSP nos dice que esta revocado
      * @throws ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException Cuando trata de validar certificados que no son del BCE, CJ o SecurityData
+     * @throws ec.gob.firmadigital.exceptions.ConexionValidarCRLException si fallo API, fallo OCSP y fallo la conexion con el CRL
      */
-    public X509Certificate validar(X509Certificate cert) throws  HoraServidorException, RubricaException, IOException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException{
+    public X509Certificate validar(X509Certificate cert) throws  HoraServidorException, RubricaException, IOException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException{
         try {
             BigInteger serial = cert.getSerialNumber();
             Boolean valido = this.validarCrlServidorAPI(serial);
@@ -103,12 +103,8 @@ public class Validador {
                // cert = getCert( ks, clave );
                 System.out.println("Fallo la validacion por OCSP, Ahora intentamos por CRL");
                 Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex1);
-                try{
-                    cert = validarCRL(cert);
-                } catch ( IOException |RubricaException ex2) {
-                    System.out.println("Fallo la validacion por CRL");
-                    Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex2);
-                }
+                cert = validarCRL(cert);
+                
             }
         } 
 
@@ -132,7 +128,7 @@ public class Validador {
 
     }
     
-    public X509Certificate validarCRL(X509Certificate cert) throws IOException, RubricaException, CRLValidationException, EntidadCertificadoraNoValidaException{
+    public X509Certificate validarCRL(X509Certificate cert) throws IOException, RubricaException, CRLValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException{
         System.out.println("Validar CRL");
 
         //X509Certificate cert = getCert( ks, clave );
@@ -156,8 +152,13 @@ public class Validador {
         X509Certificate root = CertificadoEcUtils.getRootCertificate(cert);
         result = CrlUtils.verifyCertificateCRLs(cert, root.getPublicKey(),
                 Arrays.asList(urlCrl));
-        System.out.println("Validation result: " + result);
+    
+    //    System.out.println("Validation result: " + result);
 
+        if(result == result.CANNOT_DOWNLOAD_CRL){
+            throw new ConexionValidarCRLException("No se puede validar contra la lista de revocación:"+urlCrl);
+        }
+        
         // Si el certificado no es valido botamos exception
         if(!result.isValid()){
             throw new CRLValidationException("Certificado Inválido");
@@ -244,7 +245,7 @@ public class Validador {
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         int responseCode = con.getResponseCode();
         logger.fine("GET Response Code: " + responseCode);
-        System.out.println("XXXXXGET Response Code: " + responseCode);
+        System.out.println("GET Response Code: " + responseCode);
 
         if (responseCode == HttpURLConnection.HTTP_OK) {
             try (InputStream is = con.getInputStream();) {
