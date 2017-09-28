@@ -686,25 +686,24 @@ public class Main extends javax.swing.JFrame {
         if (n == 0) {
             logger.info("Se solicita actualización...");
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
             try {
                 Update update = new Update();
+                File jar = update.sePuedeActualizar();
+                update.updateCliente(jar);
 
-//                getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                update.updateCliente();
-
-                //getParent().getParent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                // mostrarMensaje("Actualizado con éxito, se cerrará la ventana");
+                JOptionPane.showMessageDialog(this, "Actualizado con éxito, se cerrará la ventana");
                 System.exit(0);
-                
-            } catch (IOException ex) {
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                ex.printStackTrace();
+            } catch (IllegalArgumentException e) {
+                JOptionPane.showMessageDialog(this, "No se puede actualizar, inicie la aplicación como Administrador");
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Error al actualizar:", e);
+                JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage());
             }
+
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
-
-
 
     /**
      * This method is called from within the constructor to initialize the form.

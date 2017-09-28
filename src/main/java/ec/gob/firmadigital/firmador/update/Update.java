@@ -49,11 +49,7 @@ public class Update {
 
     private static final Logger logger = Logger.getLogger(Update.class.getName());
 
-    public void updateCliente() throws IOException {
-        String hashBajado = new String(download(JAR_SHA256_URL));
-        logger.info("hashBajado=" + hashBajado);
-        String hash = hashBajado.split("\\s")[0];
-
+    public File sePuedeActualizar() throws IllegalArgumentException {
         // Se debe descargar?
         String path = rutaJar();
         logger.info("path=" + path);
@@ -61,6 +57,18 @@ public class Update {
         File file = new File(path);
         logger.info("file=" + file.getAbsolutePath() + "; canWrite=" + file.canWrite() + ";file.getName()="
                 + file.getName());
+
+        if (file.canWrite()) {
+            return file;
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    public void updateCliente(File file) throws IOException {
+        String hashBajado = new String(download(JAR_SHA256_URL));
+        logger.info("hashBajado=" + hashBajado);
+        String hash = hashBajado.split("\\s")[0];
 
         byte[] actualJar = Files.readAllBytes(file.toPath());
         String actualHash = generateHash(actualJar);
