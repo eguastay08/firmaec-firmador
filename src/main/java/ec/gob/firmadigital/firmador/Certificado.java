@@ -16,6 +16,7 @@
  */
 package ec.gob.firmadigital.firmador;
 
+import io.rubrica.sign.cms.DatosUsuario;
 import java.util.Calendar;
 
 public class Certificado {

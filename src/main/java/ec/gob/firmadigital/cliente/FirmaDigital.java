@@ -22,7 +22,6 @@ import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.ConexionValidarCRLException;
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
-import ec.gob.firmadigital.firmador.DatosUsuario;
 import ec.gob.firmadigital.firmador.Certificado;
 import ec.gob.firmadigital.utils.CertificadoEcUtils;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
@@ -40,6 +39,7 @@ import java.util.Date;
 import java.util.List;
 
 import io.rubrica.core.RubricaException;
+import io.rubrica.core.SignatureVerificationException;
 import io.rubrica.keystore.Alias;
 import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
@@ -51,6 +51,7 @@ import io.rubrica.sign.odf.ODFSigner;
 import io.rubrica.sign.ooxml.OOXMLSigner;
 import io.rubrica.sign.pdf.PDFSigner;
 import io.rubrica.core.Util;
+import io.rubrica.sign.cms.DatosUsuario;
 import io.rubrica.sign.xades.XAdESSigner;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -88,15 +89,49 @@ public class FirmaDigital {
         return signedDoc;
     }
 
-    public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException, HoraServidorException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
+    public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException, HoraServidorException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException, SignatureVerificationException {
 
         byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
-        Signer docSigner = documentSigner(documento);
-        System.out.println("Verificar");
-        List<Certificado> certificados = firmasToCertificados(docSigner.getSigners(docByteArry));
-        System.out.println("paso Verificar");
-        
-        return certificados;
+        // para P7m, ya que p7m no tiene signer
+        String extDocumento = FirmadorFileUtils.getFileExtension(documento);
+        if(extDocumento.toLowerCase().equals("p7m")){
+            VerificadorP7M verificador = new VerificadorP7M();
+            byte[] archivoOriginal = verificador.verify(docByteArry);
+                
+            return datosP7MACertificado(verificador.certificados, verificador.fechasFirmados);
+        } else {
+            Signer docSigner = documentSigner(documento);
+            System.out.println("Verificar");
+            List<Certificado> certificados = firmasToCertificados(docSigner.getSigners(docByteArry));
+            System.out.println("paso Verificar");
+
+            return certificados;
+        }
+    }
+    
+    private List<Certificado> datosP7MACertificado(List<X509Certificate> certificados,List<Date> fechasFirmados) throws RubricaException, HoraServidorException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
+        List<Certificado> certs = new ArrayList<>();
+        /*
+        if(fechasFirmados.size() != certificados.size()){
+            throw error;
+        }*/
+        for(int i=0; i<certificados.size(); i++){
+            X509Certificate temp = certificados.get(i);
+            Date fechaFirmado = fechasFirmados.get(i);
+            DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(temp);
+            Certificado c = new Certificado(
+                    Util.getCN(temp),
+                    CertificadoEcUtils.getNombreCA(temp),
+                    dateToCalendar(temp.getNotBefore()),
+                    dateToCalendar(temp.getNotAfter()),
+                    dateToCalendar(fechaFirmado),
+                    esValido(temp, fechaFirmado),
+                    esRevocado(temp),
+                    datosUsuario);
+            
+            certs.add(c);
+        }
+        return certs;
     }
 
     private Signer documentSigner(File documento) {
@@ -104,10 +139,6 @@ public class FirmaDigital {
         switch (extDocumento.toLowerCase()) {
             case "pdf":
                 return new PDFSigner();
-//IMPLEMENTAR P7M
-            case "p7m":
-                return new PDFSigner();
-//IMPLEMENTAR P7M
             case "docx":
             case "xlsx":
             case "pptx":
@@ -124,7 +155,7 @@ public class FirmaDigital {
     }
 
     private List<Certificado> firmasToCertificados(List<SignInfo> firmas) throws RubricaException, ConexionInvalidaOCSPException, HoraServidorException, KeyStoreException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
-        List<Certificado> certs = new ArrayList<Certificado>();
+        List<Certificado> certs = new ArrayList<>();
         System.out.println("firmas a certificados");
 
         for (SignInfo temp : firmas) {

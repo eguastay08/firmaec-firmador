@@ -17,7 +17,7 @@
 package ec.gob.firmadigital.utils;
 
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
-import ec.gob.firmadigital.firmador.DatosUsuario;
+
 import io.rubrica.certificate.ec.CertificadoFuncionarioPublico;
 import io.rubrica.certificate.ec.CertificadoMiembroEmpresa;
 import io.rubrica.certificate.ec.CertificadoPersonaJuridica;
@@ -38,6 +38,7 @@ import io.rubrica.certificate.ec.cj.ConsejoJudicaturaSubCert;
 import io.rubrica.certificate.ec.securitydata.CertificadoSecurityData;
 import io.rubrica.certificate.ec.securitydata.CertificadoSecurityDataFactory;
 import io.rubrica.certificate.ec.securitydata.SecurityDataSubCaCert;
+import io.rubrica.sign.cms.DatosUsuario;
 import java.security.cert.X509Certificate;
 
 /**

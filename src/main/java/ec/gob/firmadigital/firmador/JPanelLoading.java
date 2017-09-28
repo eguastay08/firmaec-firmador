@@ -18,7 +18,6 @@ package ec.gob.firmadigital.firmador;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 
 /**
  *

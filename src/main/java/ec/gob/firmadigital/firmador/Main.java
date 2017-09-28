@@ -57,6 +57,7 @@ import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
+import io.rubrica.sign.cms.DatosUsuario;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.time.LocalDateTime;
@@ -303,7 +304,7 @@ public class Main extends javax.swing.JFrame {
 
         DefaultTableModel tableModelCertificados = (DefaultTableModel) tblDatosFirmanteVerificar.getModel();
         tableModelCertificados.setRowCount(0);
-        for (Certificado cert: certs) {
+        certs.stream().map((cert) -> {
             String[] dataCert = new String[8];
             //DatosUsuario datosUsuario = FirmaDigital.getDatosUsuarios(cert);
             dataCert[0] = cert.getDatosUsuario().getCedula();
@@ -323,13 +324,15 @@ public class Main extends javax.swing.JFrame {
             dataCert[6] = format1.format(cert.getGenerated().getTime());
             String revocadoStr = "No ha sido revocado";
             if(cert.getRevocated()==null){
-                revocadoStr = "No se pudo verificar el certificado por OSCP o CRL";
+                revocadoStr = "No se pudo verificar el certificado por el Servicio API, OSCP o CRL";
             }else if(cert.getRevocated()){
                 revocadoStr = "Revocado";
             }
             dataCert[7] = revocadoStr;
+            return dataCert;
+        }).forEachOrdered((dataCert) -> {
             tableModelCertificados.addRow(dataCert);
-        }
+        });
         
         tblDatosFirmanteVerificar.setModel(tableModelCertificados);
         tableModelCertificados.fireTableDataChanged();
@@ -1422,6 +1425,7 @@ public class Main extends javax.swing.JFrame {
 
     private void btnExaminarVerificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExaminarVerificarActionPerformed
         //filtros
+        FileNameExtensionFilter filtrosVerificar = new FileNameExtensionFilter("Documentos de Oficina", "pdf", "p7m", "docx", "xlsx", "pptx", "odt", "ods", "odp","xml","p7m");
         documento = abrirArchivo(filtros);
         if (documento != null) {
             jtxArchivoFirmadoVerificar.setText(documento.getAbsolutePath());
