@@ -4,7 +4,7 @@
 
 	<groupId>ec.gob.firmadigital</groupId>
 	<artifactId>firmador</artifactId>
-	<version>0.1.4-SNAPSHOT</version>
+	<version>0.9.0-SNAPSHOT</version>
 
 	<name>firmadigital-firmador</name>
 	<description>Firmador de Firma Digital EC</description>
@@ -94,7 +94,7 @@
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-jar-plugin</artifactId>
                             <configuration>
-                                <archive>                   
+                                <archive>
                                     <manifest>
                                         <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                                         <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
