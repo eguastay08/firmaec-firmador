@@ -1,8 +1,85 @@
-= Firma Digital: Firmador
+= FirmaEC: Firmador
 
-Para crear un JAR con todas las dependencias:
+FirmaEC Firmador es una aplicación Java que permite firmar digitalmente documentos en varios formatos.
+Soporta Portable Document Format (PDF), Microsoft OfficeOpen XML (OOXML) y OpenDocument Format (ODF).
+También permite verificar documentos.
 
+== Introducción
+FirmaEC Firmador es una aplicación Java implementada usando Java Swing.
+
+Los siguientes pasos le permitirán obtener una copia del proyecto para correrla en la máquina local para propósitos de desarrollo y pruebas.
+
+=== Prerequisitos
+
+==== Java
+Se necesita instalar _Java Development Kit (JDK) 8_ para compilar y correr la aplicación.
+
+En Microsoft Windows se debe descargar de la página de descargas en http://www.oracle.com/technetwork/java/javase/downloads/[Java SE Downloads].
+
+En Fedora se debe instalar el paquete _java-1.8.0-openjdk-devel_:
+
+[source, bash]
 ----
-mvn clean package
+$ sudo dnf install java-1.8.0-openjdk-devel
 ----
 
+En Ubuntu se debe instalar el paquete _openjdk-8-jdk_.
+
+[source, bash]
+----
+$ sudo apt-get install openjdk-8-jdk
+----
+
+==== NetBeans
+Se utilizó NetBeans como entorno de desarrollo.
+Descargar de http://netbeans.org[netbeans.org].
+
+==== Maven
+Para compilar y empaquetar se utiliza http://maven.apache.org[Apache Maven].
+
+
+== Instalación
+Para compilar se utilizar Apache Maven:
+
+[source, bash]
+----
+$ mvn clean package
+----
+
+Esto produce el JAR en _target/firmador-jar-with-dependencies.jar_
+
+
+== Despliegue
+
+Para utilizar la aplicación se debe ejecutar
+
+[source,bash]
+----
+$ java -jar target/firmador-jar-with-dependencies.jar
+----
+
+
+== Construido con
+
+* https://maven.apache.org/[Maven] - Dependency Management
+
+
+== Colaborar
+
+Para colaborar se puede enviar un Merge Request utilizando la plataforma https://minka.gob.ec[Minka].
+
+
+== Versiones
+
+Usamos http://semver.org[SemVer] para versionar.
+
+
+== Autores
+
+* *Juan Diego Calle* - *Desarrollo inicial* - https://www.soportelibre.com[Soporte Libre]
+* *Ricardo Arguello* - *Desarrollo* - https://www.soportelibre.com[Soporte Libre]
+
+== Licencia
+
+Este proyecto esta licenciado bajo la licencia GPLv3.
+Revisar LICENSE para detalles.
