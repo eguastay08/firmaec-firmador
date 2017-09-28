@@ -4,10 +4,10 @@
 
 	<groupId>ec.gob.firmadigital</groupId>
 	<artifactId>firmador</artifactId>
-	<version>0.9.0-SNAPSHOT</version>
+	<version>0.9.0</version>
 
 	<name>firmadigital-firmador</name>
-	<description>Firmador de Firma Digital EC</description>
+	<description>FirmaEC Firmador</description>
 	<url>http://www.firmadigital.gob.ec</url>
 	<licenses>
 		<license>
@@ -32,10 +32,10 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:https://minka.gob.ec/snap/firmadigital-firmador.git</connection>
-		<developerConnection>scm:git:git@minka.gob.ec:snap/firmadigital-firmador.git</developerConnection>
-		<url>https://minka.gob.ec/snap/firmadigital-firmador</url>
-		<tag>HEAD</tag>
+		<connection>scm:git:https://minka.gob.ec/mintel/ge/firmaec/firmadigital-firmador.git</connection>
+		<developerConnection>scm:git:git@minka.gob.ec:mintel/ge/firmaec/firmadigital-firmador.git</developerConnection>
+		<url>https://minka.gob.ec/mintel/ge/firmaec/firmadigital-firmador</url>
+		<tag>v0.9.0</tag>
 	</scm>
 
 	<properties>
