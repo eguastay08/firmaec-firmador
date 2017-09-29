@@ -26,6 +26,7 @@ import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.firmador.Certificado;
 import ec.gob.firmadigital.utils.CertificadoEcUtils;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
+import ec.gob.firmadigital.utils.TiempoUtils;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -74,8 +75,7 @@ public class FirmaDigital {
         byte[] signedDoc = null;
         
         Properties params = new Properties();
-        Validador validador = new Validador();
-        params.setProperty("signingTime", validador.getFechaHoraServidor());
+        params.setProperty("signingTime", TiempoUtils.getFechaHoraServidor());
 
         for (Alias alias : signingAliases) {
 
@@ -98,6 +98,13 @@ public class FirmaDigital {
         if(extDocumento.toLowerCase().equals("p7m")){
             VerificadorP7M verificador = new VerificadorP7M();
             byte[] archivoOriginal = verificador.verify(docByteArry);
+            
+            String nombreArchivo = FirmadorFileUtils.crearNombreArchivoP7M(documento);
+            
+            FirmadorFileUtils.saveByteArrayToDisc(archivoOriginal, nombreArchivo);
+            //System.out.println(nombreArchivo);
+            
+            FirmadorFileUtils.abrirDocumento(nombreArchivo);
                 
             return datosP7MACertificado(verificador.certificados, verificador.fechasFirmados);
         } else {

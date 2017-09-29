@@ -48,6 +48,8 @@ import ec.gob.firmadigital.exceptions.TokenNoEncontradoException;
 import ec.gob.firmadigital.firmador.update.Update;
 import ec.gob.firmadigital.utils.CertificadoEcUtils;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
+import ec.gob.firmadigital.utils.KeyStoreUtils;
+import ec.gob.firmadigital.utils.TiempoUtils;
 import ec.gob.firmadigital.utils.WordWrapCellRenderer;
 import io.rubrica.certificate.ValidationResult;
 import io.rubrica.core.RubricaException;
@@ -60,6 +62,8 @@ import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.sign.cms.DatosUsuario;
 import java.awt.Cursor;
 import java.awt.Desktop;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.time.LocalDateTime;
 import java.util.Date;
 import javax.swing.JCheckBox;
@@ -72,7 +76,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class Main extends javax.swing.JFrame {
 
-    private KeyStore ks;
+    //private KeyStore ks;
     private File documento;
     private File llave;
     private File llaveVerificar;
@@ -352,15 +356,30 @@ public class Main extends javax.swing.JFrame {
         // Vemos si es un documento permitido primero
         validacionPreFirmar();
 
-        Boolean validacion = validarFirma();
+        KeyStore ks;
+        
+        if (this.rbFirmarToken.isSelected()) {
+            ks = KeyStoreProviderFactory.getKeyStore(new String(jpfClave.getPassword()));
+            if (ks == null) {
+                //JOptionPane.showMessageDialog(frame, "No se encontro un token!");
+                throw new TokenNoEncontradoException("No se encontro token!");
+            }
+
+        } else {
+            KeyStoreProvider ksp = new FileKeyStoreProvider(jtxRutaLlaveFirmar.getText());
+            ks = ksp.getKeystore(jpfClave.getPassword());
+            
+        }
+        
+        Boolean validacion = validarFirma(ks);
 
         FirmaDigital firmaDigital = new FirmaDigital();
         
         byte[] docSigned = firmaDigital.firmar(ks, documento, jpfClave.getPassword());
-        String nombreDocFirmado = crearNombreFirmado(documento);
+        String nombreDocFirmado = FirmadorFileUtils.crearNombreFirmado(documento);
 
         // Obtenemos el certificado firmante para obtener los datos de usuarios
-        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
+        List<Alias> aliases = KeyStoreUtils.getSigningAliases(ks, TiempoUtils.getFechaHora());
         Alias alias = aliases.get(0);
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
         
@@ -515,42 +534,27 @@ public class Main extends javax.swing.JFrame {
         tableModel.fireTableDataChanged();
     }
 
-     private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException    {
+     private boolean validarFirma(KeyStore ks) throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
         System.out.println("Validar Firma");
-        if (this.rbFirmarToken.isSelected()) {
-            ks = KeyStoreProviderFactory.getKeyStore(new String(jpfClave.getPassword()));
-            if (ks == null) {
-                //JOptionPane.showMessageDialog(frame, "No se encontro un token!");
-                throw new TokenNoEncontradoException("No se encontro token!");
-            }
 
-        } else {
-            KeyStoreProvider ksp = new FileKeyStoreProvider(jtxRutaLlaveFirmar.getText());
-            ks = ksp.getKeystore(jpfClave.getPassword());
-            
-         }
+        Validador validador = new Validador();
+        X509Certificate cert = validador.getCert(ks, jpfClave.getPassword());
 
-         Validador validador = new Validador();
-         X509Certificate cert = validador.getCert(ks,jpfClave.getPassword());
-         validador.validar(cert);
-         return true;
+        try {
+
+            cert.checkValidity(TiempoUtils.getFechaHora());
+            validador.validar(cert);
+            return true;
+        } catch (CertificateExpiredException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            throw new CertificadoInvalidoException("Certificado caducó en " + cert.getNotAfter());
+        } catch (CertificateNotYetValidException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            throw new CertificadoInvalidoException("Certificado aún no está vigente. Valido desde: " + cert.getNotBefore());
+        }
     }
     
-    // TODO Crear clase para manejar esto
-    private String crearNombreFirmado(File documento){
-        // buscamos el nombre para crear el signed
-        // TODO validar si hay otro archivo de momento lo sobre escribe
-        // USAR solo getAbsolutPath, talvez sin ruta
-        String nombreCompleto = documento.getAbsolutePath();
-        
-        String nombre = nombreCompleto.replaceFirst("[.][^.]+$", "");
-
-        //String extension = getFileExtension(documento);
-        String extension =  FirmadorFileUtils.getFileExtension(documento);
-        
-        System.out.println(nombre + "-signed." + extension);
-        return nombre + "-signed." + extension;
-    }
+    
     
     private String obtenerUrlCRL(List<String> urls){
         for(String url : urls){
@@ -602,22 +606,21 @@ public class Main extends javax.swing.JFrame {
         //TOdo botar error si es null
     }
     
-    private void abrirDocumento() throws IOException{    
-        if (esWindows()) {
-            String cmd = "rundll32 url.dll,FileProtocolHandler " + jtxArchivoFirmado.getText();
-            Runtime.getRuntime().exec(cmd);
-        } else {
-            File docFirmado = new File(jtxArchivoFirmado.getText());
-            Desktop.getDesktop().open(docFirmado);
-        }
+    private void abrirDocumento() throws IOException{
+        FirmadorFileUtils.abrirDocumento(jtxArchivoFirmado.getText());
     }
     
-    private void agregarValidezCertificado(String validez){
+    private void agregarValidezCertificado(String validez, String estado){
         DefaultTableModel tableModel = (DefaultTableModel) tblDatosCertificadosValidar.getModel();
             //Actualizamos los datos del archivo
             String[] data = new String[1];
-            data[0] = "Estado certificado: "+validez;
+            data[0] = "Validez: "+validez;
             tableModel.addRow(data);
+            
+            data[0] = "Estado: "+estado;
+            tableModel.addRow(data);
+            
+            
             tblDatosCertificadosValidar.setModel(tableModel);
             tableModel.fireTableDataChanged();
     }
@@ -1494,7 +1497,11 @@ public class Main extends javax.swing.JFrame {
         }catch(KeyStoreException e){
             this.setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
-            JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+            if(e.getMessage().equals("keystore password was incorrect")){
+                JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+            }else{
+                JOptionPane.showMessageDialog(this, "Formato inválido de llaves", "Error", JOptionPane.ERROR_MESSAGE);
+            }
             jplValidar.setEnabled(true);
         } catch (Exception ex) {
             this.setCursor(Cursor.getDefaultCursor());
@@ -1549,6 +1556,7 @@ public class Main extends javax.swing.JFrame {
         KeyStoreProvider ksp;
         X509Certificate cert = null;
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        KeyStore ks;
         try {
             jplValidar.setEnabled(false);
             if (this.rbValidarToken.isSelected()) {
@@ -1563,39 +1571,47 @@ public class Main extends javax.swing.JFrame {
 
             }
             cert = validador.getCert(ks,jpfCertClaveTXT.getPassword());
-            String validez;
+            String revocado;
             try {
                 validador.validar(cert);
-                validez = "Válido";
+                revocado = "No ha sido revocado";
             } catch (OcspValidationException | CRLValidationException ex) {
-                validez = "Revocado";
-				JOptionPane.showMessageDialog(getParent(), "Certificado Revocado", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                revocado = "Revocado";
+                JOptionPane.showMessageDialog(getParent(), "Certificado Revocado", "Advertencia", JOptionPane.WARNING_MESSAGE);
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
-			Date fechaHora = validador.getFechaHora();
-			System.out.println("fechaHora: "+fechaHora);
-			System.out.println("Antes: "+fechaHora.before(cert.getNotBefore())+" "+cert.getNotBefore());
-			System.out.println("Después: "+fechaHora.after(cert.getNotAfter())+" "+cert.getNotAfter());
-			if (fechaHora.before(cert.getNotBefore()) || fechaHora.after(cert.getNotAfter()))
-				JOptionPane.showMessageDialog(getParent(), "Certificado Caducado", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            
+            Date fechaHora = TiempoUtils.getFechaHora();
+            System.out.println("fechaHora: " + fechaHora);
+            System.out.println("Antes: " + fechaHora.before(cert.getNotBefore()) + " " + cert.getNotBefore());
+            System.out.println("Después: " + fechaHora.after(cert.getNotAfter()) + " " + cert.getNotAfter());
+            
+            String validez = "Certificado válido";
+            if (fechaHora.before(cert.getNotBefore()) || fechaHora.after(cert.getNotAfter())) {
+                validez = "Certificado caducado";
+                JOptionPane.showMessageDialog(getParent(), "Certificado Caducado", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            }
             setearInfoValidacionCertificado(cert);
-            agregarValidezCertificado(validez);
+            
+            agregarValidezCertificado(validez, revocado);
+            jpfCertClaveTXT.setText("");
             jplValidar.setEnabled(true);
             setCursor(Cursor.getDefaultCursor());
         }catch(KeyStoreException e){
             setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
-            if(e.getMessage().equals("keystore password was incorrect")){
+            if(e.getMessage().equals("java.io.IOException: keystore password was incorrect")){
                 JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
             }else{
                 JOptionPane.showMessageDialog(this, "Formato inválido de llaves", "Error", JOptionPane.ERROR_MESSAGE);
             }
-            
+            jpfCertClaveTXT.setText("");
             jplValidar.setEnabled(true);
         }catch (Exception ex) {
             setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            jpfCertClaveTXT.setText("");
             jplValidar.setEnabled(true);
         } 
     }//GEN-LAST:event_btnValidarActionPerformed

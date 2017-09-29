@@ -24,6 +24,8 @@ import ec.gob.firmadigital.exceptions.ConexionValidarCRLException;
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.utils.CertificadoEcUtils;
+import ec.gob.firmadigital.utils.KeyStoreUtils;
+import ec.gob.firmadigital.utils.TiempoUtils;
 import io.rubrica.certificate.CrlUtils;
 import io.rubrica.certificate.ValidationResult;
 import io.rubrica.core.RubricaException;
@@ -59,9 +61,8 @@ import java.util.logging.Logger;
  */
 public class Validador {
     private KeyStore ks;
-    private static String FECHA_HORA_URL="https://api.firmadigital.gob.ec/api/fecha-hora";
+    
     private static final String CERTIFICADO_URL = "https://api.firmadigital.gob.ec/api/certificado/revocado";
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     private static final Logger logger = Logger.getLogger(Validador.class.getName());
     private Boolean caducado;
     
@@ -168,8 +169,12 @@ public class Validador {
         return cert;
     }
     
-    public X509Certificate getCert(KeyStore ks, char [] clave) throws KeyStoreException{
-        List<Alias> aliases = KeyStoreUtilities.getSigningAliases(ks);
+    public X509Certificate getCert(KeyStore ks, char [] clave) throws KeyStoreException, CertificadoInvalidoException, HoraServidorException{
+        List<Alias> aliases = KeyStoreUtils.getSigningAliases(ks);
+        
+        if(aliases == null || aliases.size() == 0)
+            throw new CertificadoInvalidoException("No se pudo encontrar los Aliases en el Certificado");
+        
         Alias alias = aliases.get(0);
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
         return cert;
@@ -194,7 +199,7 @@ public class Validador {
     }
     
     public void validarFecha(X509Certificate cert) throws HoraServidorException{
-        Date fechaActual = getFechaHora();
+        Date fechaActual = TiempoUtils.getFechaHora();
         System.out.println("Fecha actual: " +fechaActual);
         //signingTime.before(cert.getNotBefore()) || signingTime.after(cert.getNotAfter()
         if(fechaActual.before(cert.getNotBefore())){
@@ -219,51 +224,4 @@ public class Validador {
         return "Inválido";
     }
     
-    public Date getFechaHora() throws HoraServidorException {
-        String fechaHora;
-
-        try {
-            fechaHora = getFechaHoraServidor();
-        } catch (IOException e) {
-            logger.severe("No se puede obtener la fecha del servidor: "
-                    + e.getMessage());
-            //return new Date();
-            throw new HoraServidorException("Error al obtener fecha y hora del servidor");            
-        }
-
-        try {
-            TemporalAccessor accessor = DATE_TIME_FORMATTER.parse(fechaHora);
-            return Date.from(Instant.from(accessor));
-        } catch (DateTimeParseException e) {
-            //logger.severe("La fecha indicada ('" + fechaHora + "') no sigue el patron ISO-8601: " + e);
-            return new Date();
-        }
-    }
-
-    public String getFechaHoraServidor() throws IOException {
-        URL obj = new URL(FECHA_HORA_URL);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-        int responseCode = con.getResponseCode();
-        logger.fine("GET Response Code: " + responseCode);
-        System.out.println("GET Response Code: " + responseCode);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            try (InputStream is = con.getInputStream();) {
-                InputStreamReader reader = new InputStreamReader(is);
-                BufferedReader in = new BufferedReader(reader);
-
-                String inputLine;
-                StringBuffer response = new StringBuffer();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-
-                return response.toString();
-            }
-        } else {
-            throw new RuntimeException(
-            "Error al obtener fecha y hora del servidor");
-         }
-     }
 }
