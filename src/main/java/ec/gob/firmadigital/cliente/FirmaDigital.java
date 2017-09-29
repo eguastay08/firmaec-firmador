@@ -20,6 +20,7 @@ import ec.gob.firmadigital.exceptions.CRLValidationException;
 import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
 import ec.gob.firmadigital.exceptions.ConexionInvalidaOCSPException;
 import ec.gob.firmadigital.exceptions.ConexionValidarCRLException;
+import ec.gob.firmadigital.exceptions.DocumentoException;
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
 import ec.gob.firmadigital.exceptions.HoraServidorException;
 import ec.gob.firmadigital.firmador.Certificado;
@@ -89,7 +90,7 @@ public class FirmaDigital {
         return signedDoc;
     }
 
-    public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException, HoraServidorException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException, SignatureVerificationException {
+    public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException, HoraServidorException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException, SignatureVerificationException, DocumentoException {
 
         byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
         // para P7m, ya que p7m no tiene signer
@@ -154,9 +155,13 @@ public class FirmaDigital {
         }
     }
 
-    private List<Certificado> firmasToCertificados(List<SignInfo> firmas) throws RubricaException, ConexionInvalidaOCSPException, HoraServidorException, KeyStoreException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
+    private List<Certificado> firmasToCertificados(List<SignInfo> firmas) throws RubricaException, ConexionInvalidaOCSPException, HoraServidorException, KeyStoreException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException, DocumentoException {
         List<Certificado> certs = new ArrayList<>();
         System.out.println("firmas a certificados");
+        
+        if(firmas == null || firmas.size()==0){
+            throw new DocumentoException("Documento sin firmas");
+        }
 
         for (SignInfo temp : firmas) {
             temp.getCerts();

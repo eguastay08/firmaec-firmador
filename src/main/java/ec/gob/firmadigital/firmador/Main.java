@@ -1578,7 +1578,12 @@ public class Main extends javax.swing.JFrame {
         }catch(KeyStoreException e){
             setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
-            JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+            if(e.getMessage().equals("java.io.IOException: keystore password was incorrect")){
+                JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+            }else{
+                JOptionPane.showMessageDialog(this, "Formato inválido de llaves", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            System.out.println(e.getMessage());
             jplValidar.setEnabled(true);
         }catch (Exception ex) {
             setCursor(Cursor.getDefaultCursor());
