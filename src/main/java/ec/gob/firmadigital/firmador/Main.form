@@ -775,7 +775,7 @@
                                           <Component id="btnResetValidarForm" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Component id="jtxRutaCertificado" alignment="0" max="32767" attributes="0"/>
-                                      <Component id="certClaveTXT" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="jpfCertClaveTXT" alignment="0" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                                   <Component id="btnAbrirCertificado" min="-2" max="-2" attributes="0"/>
@@ -805,7 +805,7 @@
                                   <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                                   <Component id="jlbCertificadoValidarCert" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="certClaveTXT" alignment="0" min="-2" pref="36" max="-2" attributes="0"/>
+                              <Component id="jpfCertClaveTXT" alignment="0" min="-2" pref="36" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -871,7 +871,7 @@
                     <Property name="text" type="java.lang.String" value="Contrase&#xf1;a"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JPasswordField" name="certClaveTXT">
+                <Component class="javax.swing.JPasswordField" name="jpfCertClaveTXT">
                   <Properties>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
