@@ -1558,7 +1558,11 @@ public class Main extends javax.swing.JFrame {
         try {
             jplValidar.setEnabled(false);
             if (this.rbValidarToken.isSelected()) {
-                ks = KeyStoreProviderFactory.getKeyStore(new String(jpfCertClaveTXT.getPassword()));
+                /*
+                * MISAEL acá le comente
+                */
+                //ks = KeyStoreProviderFactory.getKeyStore(new String(jpfCertClaveTXT.getPassword()));
+                ks = KeyStoreProviderFactory.getKeyStore(null);
                 if (ks == null) {
                     throw new TokenNoEncontradoException("No se encontro token!");
                 }
