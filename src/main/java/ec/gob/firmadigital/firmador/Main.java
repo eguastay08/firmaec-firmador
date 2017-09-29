@@ -61,6 +61,7 @@ import io.rubrica.sign.cms.DatosUsuario;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.time.LocalDateTime;
+import java.util.Date;
 import javax.swing.JCheckBox;
 import javax.swing.table.DefaultTableModel;
 
@@ -210,7 +211,7 @@ public class Main extends javax.swing.JFrame {
     private void selValidarArchivo() {
         jtxRutaCertificado.setEnabled(true);
         btnAbrirCertificado.setEnabled(true);
-        certClaveTXT.setEnabled(true);
+        jpfCertClaveTXT.setEnabled(true);
     }
 
     private void selFirmarConToken() {
@@ -234,9 +235,9 @@ public class Main extends javax.swing.JFrame {
         btnAbrirCertificado.setEnabled(false);
         
         if (!esWindows()) {
-            this.certClaveTXT.setEnabled(true);
+            this.jpfCertClaveTXT.setEnabled(true);
         } else {
-            this.certClaveTXT.setEnabled(false);
+            this.jpfCertClaveTXT.setEnabled(false);
         }
     }
 
@@ -256,7 +257,7 @@ public class Main extends javax.swing.JFrame {
         if(!documento.exists()) 
             throw new DocumentoNoExistenteException("Documento "+documento.getAbsolutePath() + " no existe");
         
-        if(llave == null){
+        if(llave == null && rbFfirmarLlave.isSelected()){
             throw new DocumentoNoExistenteException("No hay llave seleccionada");
         }    
         
@@ -517,7 +518,7 @@ public class Main extends javax.swing.JFrame {
      private boolean validarFirma() throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException    {
         System.out.println("Validar Firma");
         if (this.rbFirmarToken.isSelected()) {
-            ks = KeyStoreProviderFactory.getKeyStore(jpfClave.getPassword().toString());
+            ks = KeyStoreProviderFactory.getKeyStore(new String(jpfClave.getPassword()));
             if (ks == null) {
                 //JOptionPane.showMessageDialog(frame, "No se encontro un token!");
                 throw new TokenNoEncontradoException("No se encontro token!");
@@ -664,7 +665,7 @@ public class Main extends javax.swing.JFrame {
     private void resetearInfoValidacionCertificado() {
         jtxRutaCertificado.setText("");
         llaveVerificar = null;
-        certClaveTXT.setText("");
+        jpfCertClaveTXT.setText("");
         resetInfoValidacionCertificado();
         //TOdo botar error si es null
     }
@@ -765,7 +766,7 @@ public class Main extends javax.swing.JFrame {
         jtxRutaCertificado = new javax.swing.JTextField();
         btnAbrirCertificado = new javax.swing.JButton();
         jlbCertificadoValidarCert = new javax.swing.JLabel();
-        certClaveTXT = new javax.swing.JPasswordField();
+        jpfCertClaveTXT = new javax.swing.JPasswordField();
         btnValidar = new javax.swing.JButton();
         btnResetValidarForm = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
@@ -1207,7 +1208,7 @@ public class Main extends javax.swing.JFrame {
 
         jlbCertificadoValidarCert.setText("Contraseña");
 
-        certClaveTXT.setEnabled(false);
+        jpfCertClaveTXT.setEnabled(false);
 
         btnValidar.setMnemonic('v');
         btnValidar.setText("Validar");
@@ -1249,7 +1250,7 @@ public class Main extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(btnResetValidarForm))
                             .addComponent(jtxRutaCertificado, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(certClaveTXT, javax.swing.GroupLayout.Alignment.LEADING))
+                            .addComponent(jpfCertClaveTXT, javax.swing.GroupLayout.Alignment.LEADING))
                         .addGap(18, 18, 18)
                         .addComponent(btnAbrirCertificado)))
                 .addContainerGap())
@@ -1271,7 +1272,7 @@ public class Main extends javax.swing.JFrame {
                     .addGroup(jplValidarLayout.createSequentialGroup()
                         .addGap(4, 4, 4)
                         .addComponent(jlbCertificadoValidarCert))
-                    .addComponent(certClaveTXT, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jpfCertClaveTXT, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jplValidarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnValidar)
@@ -1551,26 +1552,32 @@ public class Main extends javax.swing.JFrame {
         try {
             jplValidar.setEnabled(false);
             if (this.rbValidarToken.isSelected()) {
-                ks = KeyStoreProviderFactory.getKeyStore(jpfClave.getPassword().toString());
+                ks = KeyStoreProviderFactory.getKeyStore(new String(jpfCertClaveTXT.getPassword()));
                 if (ks == null) {
                     throw new TokenNoEncontradoException("No se encontro token!");
                 }
 
             } else {
                 ksp = new FileKeyStoreProvider(jtxRutaCertificado.getText());
-                ks = ksp.getKeystore(certClaveTXT.getPassword());
+                ks = ksp.getKeystore(jpfCertClaveTXT.getPassword());
 
             }
-            cert = validador.getCert(ks,jpfClave.getPassword());
+            cert = validador.getCert(ks,jpfCertClaveTXT.getPassword());
             String validez;
             try {
                 validador.validar(cert);
                 validez = "Válido";
             } catch (OcspValidationException | CRLValidationException ex) {
                 validez = "Revocado";
+				JOptionPane.showMessageDialog(getParent(), "Certificado Revocado", "Advertencia", JOptionPane.WARNING_MESSAGE);
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            } 
-            //cert = validador.validar(jpfClave.getPassword(), ks);
+            }
+			Date fechaHora = validador.getFechaHora();
+			System.out.println("fechaHora: "+fechaHora);
+			System.out.println("Antes: "+fechaHora.before(cert.getNotBefore())+" "+cert.getNotBefore());
+			System.out.println("Después: "+fechaHora.after(cert.getNotAfter())+" "+cert.getNotAfter());
+			if (fechaHora.before(cert.getNotBefore()) || fechaHora.after(cert.getNotAfter()))
+				JOptionPane.showMessageDialog(getParent(), "Certificado Caducado", "Advertencia", JOptionPane.WARNING_MESSAGE);
             setearInfoValidacionCertificado(cert);
             agregarValidezCertificado(validez);
             jplValidar.setEnabled(true);
@@ -1658,7 +1665,6 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JButton btnResetearVerificar;
     private javax.swing.JButton btnValidar;
     private javax.swing.JButton btnVerificar;
-    private javax.swing.JPasswordField certClaveTXT;
     private javax.swing.JPanel firmarVerificarDocPanel;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -1688,6 +1694,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuBar jmbMenuPrincipal;
     private javax.swing.JMenuItem jmiAcerca;
     private javax.swing.JMenuItem jmiActualizar;
+    private javax.swing.JPasswordField jpfCertClaveTXT;
     private javax.swing.JPasswordField jpfClave;
     private javax.swing.JPanel jplFirmar;
     private javax.swing.JPanel jplValidar;
