@@ -216,6 +216,7 @@ public class Main extends javax.swing.JFrame {
         jtxRutaCertificado.setEnabled(true);
         btnAbrirCertificado.setEnabled(true);
         jpfCertClaveTXT.setEnabled(true);
+        jpfCertClaveTXT.setText("");
     }
 
     private void selFirmarConToken() {
@@ -237,6 +238,7 @@ public class Main extends javax.swing.JFrame {
         jtxRutaCertificado.setEnabled(false);
         jtxRutaCertificado.setText("");
         btnAbrirCertificado.setEnabled(false);
+        jpfCertClaveTXT.setText("");
         
         if (!esWindows()) {
             this.jpfCertClaveTXT.setEnabled(true);
@@ -252,7 +254,7 @@ public class Main extends javax.swing.JFrame {
     /*
     Valida que esten los campos necesarios para firmar
      */
-    private void validacionPreFirmar() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitidoException {
+    private void validacionPreFirmar() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitidoException, CertificadoInvalidoException {
         //Revisamos si existe el documento a firmar
         // TODO no hacer un return directamente, se podria validar todos los parametros e ir aumentando los errores
         if (documento ==null )
@@ -268,10 +270,12 @@ public class Main extends javax.swing.JFrame {
         if (rbFfirmarLlave.isSelected() && !llave.exists()) {
             throw new DocumentoNoExistenteException("La llave "+llave.getAbsolutePath() + " no existe");
         }
-        // Si firma con token debe
-        if (rbFirmarToken.isSelected() && !hayToken()) {
-            throw new TokenNoConectadoException("Token no está conectado");
+        
+        if (rbFirmarToken.isSelected() && !esWindows() && jpfClave.getPassword().length == 0) {
+            throw new CertificadoInvalidoException("La contraseña no puede estar vacia");
         }
+
+
         tipoDeDocumentPermitido(documento);
     }
 
@@ -283,12 +287,6 @@ public class Main extends javax.swing.JFrame {
         File archivo = new File(jtextField.getText());
 
         return archivo.exists();
-    }
-
-    //Revisa si hay token conectado al usb
-    private boolean hayToken() {
-        // TODO conectar a rubica para validar si hay token
-        return true;
     }
 
     /*
@@ -1497,7 +1495,7 @@ public class Main extends javax.swing.JFrame {
         }catch(KeyStoreException e){
             this.setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
-            if(e.getMessage().equals("keystore password was incorrect")){
+            if(e.getMessage().equals("java.io.IOException: keystore password was incorrect")){
                 JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
             }else{
                 JOptionPane.showMessageDialog(this, "Formato inválido de llaves", "Error", JOptionPane.ERROR_MESSAGE);
