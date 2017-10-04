@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>io.rubrica</groupId>
 			<artifactId>rubrica</artifactId>
-			<version>0.1.4-SNAPSHOT</version>
+			<version>0.1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
