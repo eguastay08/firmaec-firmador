@@ -76,8 +76,8 @@ Usamos http://semver.org[SemVer] para versionar.
 
 == Autores
 
-* *Juan Diego Calle* - *Desarrollo inicial* - https://www.soportelibre.com[Soporte Libre]
-* *Ricardo Arguello* - *Desarrollo* - https://www.soportelibre.com[Soporte Libre]
+* *Juan Diego Calle* - *Desarrollo inicial* - http://www.soportelibre.com[Soporte Libre]
+* *Ricardo Arguello* - *Desarrollo* - http://www.soportelibre.com[Soporte Libre]
 
 == Licencia
 
