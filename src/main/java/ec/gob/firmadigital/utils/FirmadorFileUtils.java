@@ -16,7 +16,6 @@
  */
 package ec.gob.firmadigital.utils;
 
-import ec.gob.firmadigital.cliente.Validador;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;

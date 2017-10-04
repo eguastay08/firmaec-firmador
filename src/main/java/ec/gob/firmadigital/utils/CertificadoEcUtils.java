@@ -143,6 +143,8 @@ public class CertificadoEcUtils {
         }
 
         if (CertificadoConsejoJudicaturaDataFactory.esCertificadoDelConsejoJudicatura(certificado)) {
+            
+            
             DatosUsuario datosUsuario = new DatosUsuario();
             CertificadoConsejoJudicatura certificadoConsejoJudicatura;
             certificadoConsejoJudicatura = CertificadoConsejoJudicaturaDataFactory.construir(certificado);

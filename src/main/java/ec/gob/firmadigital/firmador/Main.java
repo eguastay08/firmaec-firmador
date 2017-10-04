@@ -310,6 +310,7 @@ public class Main extends javax.swing.JFrame {
         certs.stream().map((cert) -> {
             String[] dataCert = new String[8];
             //DatosUsuario datosUsuario = FirmaDigital.getDatosUsuarios(cert);
+            
             dataCert[0] = cert.getDatosUsuario().getCedula();
             String apellido = cert.getDatosUsuario().getApellido();
             if(cert.getDatosUsuario().getApellido()==null){
@@ -1412,14 +1413,13 @@ public class Main extends javax.swing.JFrame {
             setCursor(Cursor.getDefaultCursor());
             System.err.println("Error no se pudo conectar al servicio de OSCP para verificar el certificado ");
             JOptionPane.showMessageDialog(this, "Error no se pudo conectar al servicio de OSCP para verificar el certificado\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             jplVerificarDocumento.setEnabled(true);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             //System.err.println("Error no se pudo verificar ");
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
             jplVerificarDocumento.setEnabled(true);
         }
     }//GEN-LAST:event_btnVerificarActionPerformed
@@ -1561,8 +1561,8 @@ public class Main extends javax.swing.JFrame {
                 /*
                 * MISAEL acá le comente
                 */
-                //ks = KeyStoreProviderFactory.getKeyStore(new String(jpfCertClaveTXT.getPassword()));
-                ks = KeyStoreProviderFactory.getKeyStore(null);
+                ks = KeyStoreProviderFactory.getKeyStore(new String(jpfCertClaveTXT.getPassword()));
+                //ks = KeyStoreProviderFactory.getKeyStore(null);
                 if (ks == null) {
                     throw new TokenNoEncontradoException("No se encontro token!");
                 }

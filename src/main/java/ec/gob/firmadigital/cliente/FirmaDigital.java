@@ -55,6 +55,7 @@ import io.rubrica.sign.pdf.PDFSigner;
 import io.rubrica.core.Util;
 import io.rubrica.sign.cms.DatosUsuario;
 import io.rubrica.sign.xades.XAdESSigner;
+import java.security.cert.CertificateEncodingException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -173,6 +174,24 @@ public class FirmaDigital {
         for (SignInfo temp : firmas) {
             temp.getCerts();
             DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(temp.getCerts()[0]);
+            
+            System.out.println(CertificadoEcUtils.getNombreCA(temp.getCerts()[0]));
+            if(datosUsuario == null){
+            System.out.println("datos usuarios nulos");
+            }
+            
+            if(datosUsuario == null){
+                byte [] file;
+                try {
+                    file = temp.getCerts()[0].getEncoded();
+                    FirmadorFileUtils.saveByteArrayToDisc(file, "/tmp/certificadojudicatura.crt");
+                } catch (CertificateEncodingException ex) {
+                    Logger.getLogger(FirmaDigital.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+            }
+                
+            
             Certificado c = new Certificado(
                     Util.getCN(temp.getCerts()[0]),
                     CertificadoEcUtils.getNombreCA(temp.getCerts()[0]),
