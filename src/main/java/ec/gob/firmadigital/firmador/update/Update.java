@@ -41,15 +41,20 @@ import javax.xml.bind.DatatypeConverter;
 public class Update {
 
     private static final String JAR_BASE_URL = "https://firmadigital.ec/firmadigital.gob.ec/jar";
-    private static final String JAR_NAME = "firmador-jar-with-dependencies.jar";
-    private static final String JAR_URL = JAR_BASE_URL + "/" + JAR_NAME;
-    private static final String JAR_SHA256_URL = JAR_BASE_URL + "/" + JAR_NAME + ".sha256";
+
+    private static final String FIRMADOR_JAR_NAME = "firmador-jar-with-dependencies.jar";
+    private static final String FIRMADOR_JAR_URL = JAR_BASE_URL + "/" + FIRMADOR_JAR_NAME;
+    private static final String FIRMADOR_JAR_SHA256_URL = JAR_BASE_URL + "/" + FIRMADOR_JAR_NAME + ".sha256";
+
+    private static final String FIRMAEC_JAR_NAME = "cliente-jar-with-dependencies.jar";
+    private static final String FIRMAEC_JAR_URL = JAR_BASE_URL + "/" + FIRMAEC_JAR_NAME;
+    private static final String FIRMAEC_JAR_SHA256_URL = JAR_BASE_URL + "/" + FIRMAEC_JAR_NAME + ".sha256";
 
     private static final int BUFFER_SIZE = 8192;
 
     private static final Logger logger = Logger.getLogger(Update.class.getName());
 
-    public File sePuedeActualizar() throws IllegalArgumentException {
+    public File actualizarFirmador() throws IllegalArgumentException {
         // Se debe descargar?
         String path = rutaJar();
         logger.info("path=" + path);
@@ -65,8 +70,26 @@ public class Update {
         }
     }
 
-    public void updateCliente(File file) throws IOException {
-        String hashBajado = new String(download(JAR_SHA256_URL));
+    public File actualizarCliente() throws IllegalArgumentException {
+        // Se debe descargar?
+        String path = rutaJar();
+        logger.info("path=" + path);
+
+        File file = new File(path);
+        String firmaecJar = file.getParent() + File.separator + FIRMAEC_JAR_NAME;
+        File firmaec = new File(firmaecJar);
+        logger.info("file=" + firmaec.getAbsolutePath() + "; canWrite=" + firmaec.canWrite() + ";file.getName()="
+                + firmaec.getName());
+
+        if (firmaec.canWrite()) {
+            return firmaec;
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    public void updateFirmador(File file) throws IOException {
+        String hashBajado = new String(download(FIRMADOR_JAR_SHA256_URL));
         logger.info("hashBajado=" + hashBajado);
         String hash = hashBajado.split("\\s")[0];
 
@@ -82,7 +105,7 @@ public class Update {
         }
 
         // Descargar JAR actualizado
-        byte[] jar = download(JAR_URL);
+        byte[] jar = download(FIRMADOR_JAR_URL);
 
         if (!verifyHash(hash, jar)) {
             logger.severe("ERROR de verificacion de hash");
@@ -91,8 +114,51 @@ public class Update {
 
         logger.info("Hash comprobado OK");
 
-        if (!file.getName().equals(JAR_NAME)) {
-            logger.severe("El nombre del archivo no es " + JAR_NAME);
+        if (!file.getName().equals(FIRMADOR_JAR_NAME)) {
+            logger.severe("El nombre del archivo no es " + FIRMADOR_JAR_NAME);
+            return;
+        }
+
+        if (!file.canWrite()) {
+            logger.severe("No se puede actualizar el archivo");
+            return;
+        }
+
+        try (FileOutputStream fileOuputStream = new FileOutputStream(file)) {
+            fileOuputStream.write(jar);
+            logger.info("Actualizado con exito!!!");
+            return;
+        }
+    }
+
+    public void updateCliente(File file) throws IOException {
+        String hashBajado = new String(download(FIRMAEC_JAR_SHA256_URL));
+        logger.info("hashBajado=" + hashBajado);
+        String hash = hashBajado.split("\\s")[0];
+
+        byte[] actualJar = Files.readAllBytes(file.toPath());
+        String actualHash = generateHash(actualJar);
+        logger.info("actualHash=" + actualHash);
+
+        if (actualHash.equals(hash)) {
+            logger.info("Ya tiene el ultimo archivo!");
+            return;
+        } else {
+            logger.info("No tiene la ultima version, descargando...");
+        }
+
+        // Descargar JAR actualizado
+        byte[] jar = download(FIRMAEC_JAR_URL);
+
+        if (!verifyHash(hash, jar)) {
+            logger.severe("ERROR de verificacion de hash");
+            return;
+        }
+
+        logger.info("Hash comprobado OK");
+
+        if (!file.getName().equals(FIRMAEC_JAR_NAME)) {
+            logger.severe("El nombre del archivo no es " + FIRMAEC_JAR_NAME);
             return;
         }
 
