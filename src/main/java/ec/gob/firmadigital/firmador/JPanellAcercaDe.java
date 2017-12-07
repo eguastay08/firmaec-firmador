@@ -70,7 +70,7 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
         btnActualizarAcerdaDe = new javax.swing.JButton();
         jlbUrlGobiernoDigitalAcercaDe = new javax.swing.JLabel();
 
-        jlbCopyrightAcercaDe.setText("<html><div style='text-align: center;'>© Copyright MINTEL 2017</div></html>");
+        jlbCopyrightAcercaDe.setText("<html><div style='text-align: center;'>Versión 0.9.2 - © Copyright MINTEL 2017</div></html>");
 
         jlbLicenciaAcercaDe.setText("<html><div style='text-align: center;'>Licencia GPLv3</div></html>");
 
