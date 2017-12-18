@@ -629,11 +629,17 @@ public class Main extends javax.swing.JFrame {
         return null;
     }
 
-    private void setearInfoValidacionCertificado(X509Certificate cert) {
+    private void setearInfoValidacionCertificado(X509Certificate cert) throws CertificadoInvalidoException {
         if (cert != null) {
             String emisor = CertificadoEcUtils.getNombreCA(cert);
 
             DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(cert);
+            
+            if(datosUsuario == null && (jpfCertClaveTXT.getPassword() == null || jpfCertClaveTXT.getPassword().length == 0))
+                throw new CertificadoInvalidoException("No se pudo extraer los datos del certificados.  Si la contraseña esta vacía prueba ingresando una contraseña");
+            
+            if(datosUsuario == null)
+                throw new CertificadoInvalidoException("No se pudo extraer los datos del certificados.");
 
             DefaultTableModel tableModel = (DefaultTableModel) tblDatosCertificadosValidar.getModel();
 
