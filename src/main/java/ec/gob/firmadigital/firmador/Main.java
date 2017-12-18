@@ -114,9 +114,25 @@ public class Main extends javax.swing.JFrame {
 
     /**
      * Creates new form Main
+     * @param args
      */
-    public Main() {
+    public Main(String[] args) {
 //TODO if arg0 para update
+        if(args != null && args.length > 0 && ("--update".equals(args[0]) || "--actualizar".equals(args[0]) )){
+            try {
+                    Update update = new Update();
+                    File jar = update.actualizarFirmador();
+                    update.updateFirmador(jar);
+
+                    File clienteJar = update.actualizarCliente();
+                    update.updateCliente(clienteJar);
+                    System.exit(0);
+                } catch (IllegalArgumentException | IOException e) {
+                    logger.log(Level.SEVERE, "Error al actualizar:", e);
+                    System.exit(0);
+                }
+        }
+
         try {
             cargarPropiedades();
         } catch (IOException ex) {
@@ -782,7 +798,6 @@ public class Main extends javax.swing.JFrame {
 
                     File clienteJar = update.actualizarCliente();
                     update.updateCliente(clienteJar);
-
                     
                     JOptionPane.showOptionDialog(getParent(), prop.getProperty("mensaje.actualizado"), "Mensaje",
                             JOptionPane.OK_OPTION,
@@ -1803,21 +1818,34 @@ public class Main extends javax.swing.JFrame {
 
     private void jmiAcercaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiAcercaActionPerformed
         JPanellAcercaDe jplAcercaDe = new JPanellAcercaDe();
+        JButton btnOkAcercaDe = new JButton();
+        btnOkAcercaDe.setText("Aceptar");
+        btnOkAcercaDe.setMnemonic(KeyEvent.VK_A);
         
-        JButton btnAcercaDeOk = new JButton("OK");
-        btnAcercaDeOk.setMnemonic(KeyEvent.VK_O);
-        
-        Object[] params = {jplAcercaDe};
-        JOptionPane.showMessageDialog(this, params, "Acerca de FirmaEC", JOptionPane.PLAIN_MESSAGE);
-        
-        /*
-        Component[] c = jplAcercaDe.getComponents();
-        for(int i=0; i< c.length; i++){
-            if(c[i] instanceof JButton){
-                JButton boton = (JButton) c[i];
-                System.out.println("C: " + boton.getText());
+        btnOkAcercaDe.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Component component = (Component) evt.getSource();
+                JDialog dialog = (JDialog) SwingUtilities.getRoot(component);
+                dialog.dispose();
             }
-        }*/
+        });
+        
+        
+        Object[] options = {btnOkAcercaDe};
+        //JOptionPane.showMessageDialog(this, params, "Acerca de FirmaEC", JOptionPane.NO_OPTION);
+        //JOptionPane.showM
+        btnOkAcercaDe.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Component component = (Component) evt.getSource();
+                JDialog dialog = (JDialog) SwingUtilities.getRoot(component);
+                dialog.dispose();
+            }
+        });
+        
+        JOptionPane.showOptionDialog(getParent(), jplAcercaDe, "Acerca de FirmaEC",
+                JOptionPane.OK_OPTION,
+                JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+        
     }//GEN-LAST:event_jmiAcercaActionPerformed
 
     private void jmiActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiActualizarActionPerformed
@@ -1852,8 +1880,9 @@ public class Main extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
+        
         java.awt.EventQueue.invokeLater(() -> {
-            new Main().setVisible(true);
+            new Main(null).setVisible(true);
         });
     }
 
