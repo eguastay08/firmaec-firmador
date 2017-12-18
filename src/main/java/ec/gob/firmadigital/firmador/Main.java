@@ -320,9 +320,8 @@ public class Main extends javax.swing.JFrame {
             throw new CertificadoInvalidoException(prop.getProperty("mensaje.error.certificado_clave_vacia"));
         }
         
-        System.out.println("Tam: " + documento.length());
         if(documento.length() == 0){
-            throw new DocumentoException("Documento vacío, no se puede firmar");
+            throw new DocumentoException(prop.getProperty("mensaje.error.documento_vacio"));
         }
 
         tipoDeDocumentPermitido(documento);
@@ -395,8 +394,12 @@ public class Main extends javax.swing.JFrame {
     // Talvez eliminar el if
     private void tipoDeDocumentPermitido(File documento) throws DocumentoNoPermitidoException {
         String extDocumento = FirmadorFileUtils.getFileExtension(documento);
+        if(!documento.getName().contains(".")){
+            throw new DocumentoNoPermitidoException(prop.getProperty("mensaje.error.extension_vacia"));
+        }
+        
         if (!extensionesPermitidas.stream().anyMatch((extension) -> (extension.equals(extDocumento)))) {
-            throw new DocumentoNoPermitidoException(MessageFormat.format(prop.getProperty("mensaje.error.certificado_inexistente"), extDocumento));
+            throw new DocumentoNoPermitidoException(MessageFormat.format(prop.getProperty("mensaje.error.extension_no_permitida"), extDocumento));
         }
     }
 
