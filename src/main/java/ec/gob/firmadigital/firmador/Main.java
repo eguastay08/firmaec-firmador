@@ -237,6 +237,7 @@ public class Main extends javax.swing.JFrame {
         this.llave = null;
         this.jtxRutaLlaveFirmar.setEnabled(false);
         this.jtxRutaLlaveFirmar.setText("");
+        this.jtxArchivoFirmado.setText("");
         //this.certificadosJTR.getModel().
         resetDatosTabladeFirmante();
         resetDatosTablaCertificadoFirmador();
@@ -450,10 +451,7 @@ public class Main extends javax.swing.JFrame {
         String nuevoNombre = nombreArchivo;
         if (archivo.exists()) {
             String nombreCompleto = archivo.getAbsolutePath();
-
             String nombre = nombreCompleto.replaceFirst("[.][^.]+$", "");
-
-            //String extension = getFileExtension(documento);
             String extension = FirmadorFileUtils.getFileExtension(archivo);
             
             nuevoNombre = nombre + "_1." + extension;
