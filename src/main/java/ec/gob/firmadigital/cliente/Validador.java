@@ -186,7 +186,7 @@ public class Validador {
         int responseCode = urlConnection.getResponseCode();
 
         if (responseCode != HttpURLConnection.HTTP_OK) {
-            logger.severe(CERTIFICADO_URL + " Response Code: " + responseCode);
+            logger.severe(CERTIFICADO_URL + "/" + serial + ": Response Code: " + responseCode);
             //return false;
             throw new ConexionFirmadorApiException("No se pudo conectar API. "+CERTIFICADO_URL + " Response Code: " + responseCode);
         }

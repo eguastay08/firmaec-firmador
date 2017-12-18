@@ -733,8 +733,11 @@ public class Main extends javax.swing.JFrame {
 
             try {
                 Update update = new Update();
-                File jar = update.sePuedeActualizar();
-                update.updateCliente(jar);
+                File jar = update.actualizarFirmador();
+                update.updateFirmador(jar);
+
+                File clienteJar = update.actualizarCliente();
+                update.updateCliente(clienteJar);
 
                 JOptionPane.showMessageDialog(this, "Actualizado con éxito, se cerrará la ventana");
                 System.exit(0);
