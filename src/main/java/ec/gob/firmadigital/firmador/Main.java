@@ -1585,9 +1585,11 @@ public class Main extends javax.swing.JFrame {
             } else {
                 JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.certificado_formato_invalido"), "Error", JOptionPane.ERROR_MESSAGE);
             }
+            this.jtxArchivoFirmado.setText("");
             jplValidar.setEnabled(true);
         } catch (Exception ex) {
             this.setCursor(Cursor.getDefaultCursor());
+            this.jtxArchivoFirmado.setText("");
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Error no se pudo firmar ");
