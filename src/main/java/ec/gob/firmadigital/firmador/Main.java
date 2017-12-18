@@ -58,13 +58,11 @@ import io.rubrica.keystore.Alias;
 import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
-import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.sign.cms.DatosUsuario;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.FocusTraversalPolicy;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
@@ -309,7 +307,7 @@ public class Main extends javax.swing.JFrame {
         }
 
         if (llave == null && rbFfirmarLlave.isSelected()) {
-            throw new DocumentoNoExistenteException(prop.getProperty("mensaje.error.documento_inexistente"));
+            throw new DocumentoNoExistenteException(prop.getProperty("mensaje.error.certificado_sin_seleccionar"));
         }
 
         if (rbFfirmarLlave.isSelected() && !llave.exists()) {
@@ -643,6 +641,8 @@ public class Main extends javax.swing.JFrame {
 
             //Actualizamos los datos del archivo
             String[] data = new String[1];
+            
+            //Si el certificado es null
 
             data[0] = MessageFormat.format(prop.getProperty("tabla.certificado.emitido_por"), CertificadoEcUtils.getNombreCA(cert));;
             tableModel.addRow(data);
@@ -1585,11 +1585,17 @@ public class Main extends javax.swing.JFrame {
             } else {
                 JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.certificado_formato_invalido"), "Error", JOptionPane.ERROR_MESSAGE);
             }
+            //Reseteamos el campo de archivo firmado y las tablas de informacion para que no hay confusión
             this.jtxArchivoFirmado.setText("");
+            resetDatosTabladeFirmante();
+            resetDatosTablaCertificadoFirmador();
             jplValidar.setEnabled(true);
         } catch (Exception ex) {
             this.setCursor(Cursor.getDefaultCursor());
+            //Reseteamos el campo de archivo firmado y las tablas de informacion para que no hay confusión
             this.jtxArchivoFirmado.setText("");
+            resetDatosTabladeFirmante();
+            resetDatosTablaCertificadoFirmador();
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Error no se pudo firmar ");
