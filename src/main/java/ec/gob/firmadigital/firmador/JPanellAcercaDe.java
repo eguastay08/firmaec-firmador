@@ -74,6 +74,7 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
 
         jlbLicenciaAcercaDe.setText("<html><div style='text-align: center;'>Licencia GPLv3</div></html>");
 
+        btnActualizarAcerdaDe.setMnemonic('z');
         btnActualizarAcerdaDe.setText("Actualizar");
         btnActualizarAcerdaDe.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -95,11 +96,6 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
                     .addComponent(jlbCopyrightAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jlbLicenciaAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                .addComponent(jlbLicenciaAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jlbCopyrightAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(btnActualizarAcerdaDe)
-                .addComponent(jlbUrlGobiernoDigitalAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

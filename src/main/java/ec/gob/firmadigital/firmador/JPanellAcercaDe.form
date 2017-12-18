@@ -55,6 +55,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="btnActualizarAcerdaDe">
       <Properties>
+        <Property name="mnemonic" type="int" value="122"/>
         <Property name="text" type="java.lang.String" value="Actualizar"/>
       </Properties>
       <Events>

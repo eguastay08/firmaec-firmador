@@ -60,15 +60,22 @@ import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.sign.cms.DatosUsuario;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Desktop;
+import java.awt.FocusTraversalPolicy;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
+import java.io.FileNotFoundException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Properties;
 import javax.swing.JCheckBox;
 import javax.swing.table.DefaultTableModel;
-
 
 /**
  *
@@ -85,23 +92,31 @@ public class Main extends javax.swing.JFrame {
     private static final String RUTA_IMG = "images/";
     private static final String CHECK_IMG = "CheckIcon.png";
     private static final String NOTCHECK_IMG = "DeleteIcon.png";
+    private static final String PROPIEDADES = "mensajes.properties";
     private final List<String> extensionesPermitidas;
-    private final FileNameExtensionFilter filtros = new FileNameExtensionFilter("Documentos de Oficina", "pdf", "p7m", "docx", "xlsx", "pptx", "odt", "ods", "odp","xml");
+    private final FileNameExtensionFilter filtros = new FileNameExtensionFilter("Documentos de Oficina", "pdf", "p7m", "docx", "xlsx", "pptx", "odt", "ods", "odp", "xml");
     private static final String OS = System.getProperty("os.name").toLowerCase();
     //private final ImageIcon checkIcon = new ImageIcon(ClassLoader.getSystemResource(RUTA_IMG + CHECK_IMG));
     //private final ImageIcon notCheckIcon = new ImageIcon(ClassLoader.getSystemResource(RUTA_IMG + NOTCHECK_IMG));
     private PDDocument pdfDocument;
     private PDFRenderer pdfRenderer;
     private static final String URL_GOBIERNO_DIGITAL = "http://www.gobiernoelectronico.gob.ec";
-    
+
     private static final Logger logger = Logger.getLogger(Main.class.getName());
-    
+
+    private Properties prop;
 
     /**
      * Creates new form Main
      */
     public Main() {
-        
+
+        try {
+            cargarPropiedades();
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         extensionesPermitidas = new ArrayList<>();
         // Extensiones permitidas"pdf","p7m","docx","xlsx","pptx","odt","ods","odp"
         extensionesPermitidas.add("pdf");
@@ -119,13 +134,13 @@ public class Main extends javax.swing.JFrame {
         // Filtro para archivos   
 
         initComponents();
-        
+
         tblDatosDelFirmanteFirmador.getColumnModel().getColumn(0).setCellRenderer(new WordWrapCellRenderer());
         tblDatosDelFirmanteFirmador.getColumnModel().getColumn(1).setCellRenderer(new WordWrapCellRenderer());
         tblDatosDelFirmanteFirmador.getColumnModel().getColumn(2).setCellRenderer(new WordWrapCellRenderer());
         tblDatosDelFirmanteFirmador.getColumnModel().getColumn(3).setCellRenderer(new WordWrapCellRenderer());
         tblDatosDelFirmanteFirmador.getColumnModel().getColumn(4).setCellRenderer(new WordWrapCellRenderer());
-        
+
         tblDatosFirmanteVerificar.getColumnModel().getColumn(0).setCellRenderer(new WordWrapCellRenderer());
         tblDatosFirmanteVerificar.getColumnModel().getColumn(1).setCellRenderer(new WordWrapCellRenderer());
         tblDatosFirmanteVerificar.getColumnModel().getColumn(2).setCellRenderer(new WordWrapCellRenderer());
@@ -134,16 +149,43 @@ public class Main extends javax.swing.JFrame {
         tblDatosFirmanteVerificar.getColumnModel().getColumn(5).setCellRenderer(new WordWrapCellRenderer());
         tblDatosFirmanteVerificar.getColumnModel().getColumn(6).setCellRenderer(new WordWrapCellRenderer());
         tblDatosFirmanteVerificar.getColumnModel().getColumn(7).setCellRenderer(new WordWrapCellRenderer());
-        
+
         //nemoics
         jblCertificadoEnFimador.setLabelFor(jblCertificadoEnFimador);
         btnAbrirArchivoFirmar.setMnemonic(java.awt.event.KeyEvent.VK_E);
         btnAbrirArchivoPSKFirmar.setMnemonic(java.awt.event.KeyEvent.VK_X);
         btnFirmar.setMnemonic(java.awt.event.KeyEvent.VK_F);
         btnResetear.setMnemonic(java.awt.event.KeyEvent.VK_R);
-        
+
         btnExaminarVerificar.setMnemonic(java.awt.event.KeyEvent.VK_E);
         btnResetearVerificar.setMnemonic(java.awt.event.KeyEvent.VK_R);
+        //mainPanel
+        mainPanel.setMnemonicAt(0, KeyEvent.VK_1);
+        mainPanel.setMnemonicAt(1, KeyEvent.VK_2);
+        mainPanel.setMnemonicAt(2, KeyEvent.VK_3);
+       // mainPanel.setNm
+        //this.firmarVerificarDocPanel.setMnemonic(KeyEvent.VK_1);
+
+        
+    }
+
+    public static Component findPrevFocus() {
+        Component c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        Container root = c.getFocusCycleRootAncestor();
+
+        FocusTraversalPolicy policy = root.getFocusTraversalPolicy();
+        Component prevFocus = policy.getComponentBefore(root, c);
+        if (prevFocus == null) {
+            prevFocus = policy.getDefaultComponent(root);
+        }
+        System.out.println("xxx");
+        return prevFocus;
+    }
+
+    private void cargarPropiedades() throws FileNotFoundException, IOException {
+        prop = new Properties();
+        // load a properties file
+        prop.load(getClass().getClassLoader().getResourceAsStream(PROPIEDADES));
         
     }
 
@@ -162,7 +204,7 @@ public class Main extends javax.swing.JFrame {
             if (archivo.exists()) {
                 System.out.println("existe");
             }
-   
+
             ultimaCarpeta = fileChooser.getCurrentDirectory();
             return archivo;
         }
@@ -207,11 +249,11 @@ public class Main extends javax.swing.JFrame {
         this.jtxRutaLlaveFirmar.setEnabled(true);
         this.btnAbrirArchivoPSKFirmar.setEnabled(true);
         // Si es windows no hay que habilitar el campo de contraseña
-        
+
         this.jpfClave.setEnabled(true);
-        
+
     }
-    
+
     private void selValidarArchivo() {
         jtxRutaCertificado.setEnabled(true);
         btnAbrirCertificado.setEnabled(true);
@@ -226,20 +268,20 @@ public class Main extends javax.swing.JFrame {
         this.jpfClave.setEnabled(false);
         this.jpfClave.setText("");
         this.btnAbrirArchivoPSKFirmar.setEnabled(false);
-        
+
         if (!esWindows()) {
             this.jpfClave.setEnabled(true);
         } else {
             this.jpfClave.setEnabled(false);
         }
     }
-    
+
     private void selValidarToken() {
         jtxRutaCertificado.setEnabled(false);
         jtxRutaCertificado.setText("");
         btnAbrirCertificado.setEnabled(false);
         jpfCertClaveTXT.setText("");
-        
+
         if (!esWindows()) {
             this.jpfCertClaveTXT.setEnabled(true);
         } else {
@@ -257,24 +299,25 @@ public class Main extends javax.swing.JFrame {
     private void validacionPreFirmar() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitidoException, CertificadoInvalidoException {
         //Revisamos si existe el documento a firmar
         // TODO no hacer un return directamente, se podria validar todos los parametros e ir aumentando los errores
-        if (documento ==null )
-            throw new DocumentoNoExistenteException("Documento "+this.jtxRutaDocumentoFirmar.getText() + " no existe");
+        if (documento == null) {
+            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensajes.error.documento_inexistente"), this.jtxRutaDocumentoFirmar.getText()));
+        }
 
-        if(!documento.exists()) 
-            throw new DocumentoNoExistenteException("Documento "+documento.getAbsolutePath() + " no existe");
-        
-        if(llave == null && rbFfirmarLlave.isSelected()){
-            throw new DocumentoNoExistenteException("No hay llave seleccionada");
-        }    
-        
+        if (!documento.exists()) {
+            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensajes.error.certificado_sin_seleccionar"), documento.getAbsolutePath()));
+        }
+
+        if (llave == null && rbFfirmarLlave.isSelected()) {
+            throw new DocumentoNoExistenteException(prop.getProperty("mensajes.error.documento_inexistente"));
+        }
+
         if (rbFfirmarLlave.isSelected() && !llave.exists()) {
-            throw new DocumentoNoExistenteException("La llave "+llave.getAbsolutePath() + " no existe");
-        }
-        
-        if (rbFirmarToken.isSelected() && !esWindows() && jpfClave.getPassword().length == 0) {
-            throw new CertificadoInvalidoException("La contraseña no puede estar vacia");
+            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensajes.error.certificado_inexistente"), llave.getAbsolutePath()));
         }
 
+        if (rbFirmarToken.isSelected() && !esWindows() && jpfClave.getPassword().length == 0) {
+            throw new CertificadoInvalidoException(prop.getProperty("mensajes.error.certificado_clave_vacia"));
+        }
 
         tipoDeDocumentPermitido(documento);
     }
@@ -296,13 +339,13 @@ public class Main extends javax.swing.JFrame {
         // Vemos si existe
         System.out.println("Verificando Docs");
         tipoDeDocumentPermitido(documento);
-        
+
         FirmaDigital firmaDigital = new FirmaDigital();
-        
+
         List<Certificado> certs = firmaDigital.verificar(documento);
-        
+
         SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        
+
         jtxDocumentoVerificado.setText(documento.getAbsolutePath());
 
         DefaultTableModel tableModelCertificados = (DefaultTableModel) tblDatosFirmanteVerificar.getModel();
@@ -310,70 +353,71 @@ public class Main extends javax.swing.JFrame {
         certs.stream().map((cert) -> {
             String[] dataCert = new String[8];
             //DatosUsuario datosUsuario = FirmaDigital.getDatosUsuarios(cert);
-            
+
             dataCert[0] = cert.getDatosUsuario().getCedula();
             String apellido = cert.getDatosUsuario().getApellido();
-            if(cert.getDatosUsuario().getApellido()==null){
+            if (cert.getDatosUsuario().getApellido() == null) {
                 apellido = "";
             }
             String nombre = cert.getDatosUsuario().getNombre();
-            if(cert.getDatosUsuario().getNombre()==null){
+            if (cert.getDatosUsuario().getNombre() == null) {
                 nombre = "";
             }
-            dataCert[1] = nombre + " " +apellido;
+            dataCert[1] = nombre + " " + apellido;
             dataCert[2] = cert.getDatosUsuario().getInstitucion();
             dataCert[3] = cert.getDatosUsuario().getCargo();
             dataCert[4] = format1.format(cert.getValidFrom().getTime());
             dataCert[5] = format1.format(cert.getValidTo().getTime());
             dataCert[6] = format1.format(cert.getGenerated().getTime());
-            String revocadoStr = "No ha sido revocado";
-            if(cert.getRevocated()==null){
-                revocadoStr = "No se pudo verificar el certificado por el Servicio API, OSCP o CRL";
-            }else if(cert.getRevocated()){
-                revocadoStr = "Revocado";
+            String revocadoStr = prop.getProperty("mensaje.certificado.no_revocado");
+            if (cert.getRevocated() == null) {
+                revocadoStr = prop.getProperty("mensaje.certificado.no_se_pudo_verificar");
+            } else if (cert.getRevocated()) {
+                revocadoStr = prop.getProperty("mensaje.certificado.revocado");
             }
             dataCert[7] = revocadoStr;
             return dataCert;
         }).forEachOrdered((dataCert) -> {
             tableModelCertificados.addRow(dataCert);
         });
-        
+
         tblDatosFirmanteVerificar.setModel(tableModelCertificados);
         tableModelCertificados.fireTableDataChanged();
     }
-    
+
     // Se podria verificar el mimetype
     // Talvez eliminar el if
     private void tipoDeDocumentPermitido(File documento) throws DocumentoNoPermitidoException {
         String extDocumento = FirmadorFileUtils.getFileExtension(documento);
-        if(!extensionesPermitidas.stream().anyMatch((extension) -> (extension.equals(extDocumento))))
-            throw new DocumentoNoPermitidoException("Extensión ." + extDocumento + " no permitida");
+        if (!extensionesPermitidas.stream().anyMatch((extension) -> (extension.equals(extDocumento)))) {
+            throw new DocumentoNoPermitidoException(MessageFormat.format(prop.getProperty("mensajes.error.certificado_inexistente"), extDocumento));
+        }
     }
 
     //TODO botar exceptions en vez de return false
-    private boolean firmarDocumento() throws Exception  {
+    private boolean firmarDocumento() throws Exception {
         // Vemos si es un documento permitido primero
         validacionPreFirmar();
 
         KeyStore ks;
-        
+
         if (this.rbFirmarToken.isSelected()) {
             ks = KeyStoreProviderFactory.getKeyStore(new String(jpfClave.getPassword()));
             if (ks == null) {
                 //JOptionPane.showMessageDialog(frame, "No se encontro un token!");
-                throw new TokenNoEncontradoException("No se encontro token!");
+                throw new TokenNoEncontradoException(prop.getProperty("mensajes.error.token_no_encontrado"));
             }
 
         } else {
             KeyStoreProvider ksp = new FileKeyStoreProvider(jtxRutaLlaveFirmar.getText());
             ks = ksp.getKeystore(jpfClave.getPassword());
-            
+
         }
-        
+
         Boolean validacion = validarFirma(ks);
 
         FirmaDigital firmaDigital = new FirmaDigital();
-        
+
         byte[] docSigned = firmaDigital.firmar(ks, documento, jpfClave.getPassword());
         String nombreDocFirmado = FirmadorFileUtils.crearNombreFirmado(documento);
 
@@ -381,29 +425,28 @@ public class Main extends javax.swing.JFrame {
         List<Alias> aliases = KeyStoreUtils.getSigningAliases(ks, TiempoUtils.getFechaHora());
         Alias alias = aliases.get(0);
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
-        
+
         String nombre = CertificadoEcUtils.getNombreCA(cert);
-        
-        System.out.println("Nombre: " +nombre);
-        
-        DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(cert);        
-        
+
+        System.out.println("Nombre: " + nombre);
+
+        DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(cert);
+
         agregarDatosTabladeFirmante(datosUsuario);
-        
+
         agregarDatosTablaCertificadoFirmador(cert, datosUsuario);
-        
+
         //Si todo va bien creamos el arschivo
         FirmadorFileUtils.saveByteArrayToDisc(docSigned, nombreDocFirmado);
         jtxArchivoFirmado.setText(nombreDocFirmado);
 
         return true;
     }
-    
-    
+
     private void agregarDatosTabladeFirmante(DatosUsuario datosUsuario) {
         DefaultTableModel tableModel = (DefaultTableModel) tblDatosDelFirmanteFirmador.getModel();
-        
-        if(datosUsuario == null){
+
+        if (datosUsuario == null) {
             System.out.println("datos usuarios es nulo");
             datosUsuario = new DatosUsuario();
         }
@@ -413,60 +456,59 @@ public class Main extends javax.swing.JFrame {
         //Actualizamos los datos del archivo
         String[] data = new String[5];
         data[0] = datosUsuario.getCedula();
-        String nombres = datosUsuario.getNombre()+ " " +datosUsuario.getApellido();
+        String nombres = datosUsuario.getNombre() + " " + datosUsuario.getApellido();
         data[1] = nombres;
         data[2] = datosUsuario.getInstitucion();
         data[3] = datosUsuario.getCargo();
         data[4] = LocalDateTime.now().toString();
-        
-        
+
         tableModel.addRow(data);
-        
+
         tblDatosDelFirmanteFirmador.setModel(tableModel);
         tableModel.fireTableDataChanged();
-        
+
     }
-    
-    private void agregarDatosTablaCertificadoFirmador(X509Certificate cert, DatosUsuario datosUsuario){
-        DefaultTableModel tableModel = (DefaultTableModel) tblDatosDelCertificadoFirmador.getModel(); 
+
+    private void agregarDatosTablaCertificadoFirmador(X509Certificate cert, DatosUsuario datosUsuario) {
+        DefaultTableModel tableModel = (DefaultTableModel) tblDatosDelCertificadoFirmador.getModel();
 
         tableModel.setRowCount(0);
 
         //Actualizamos los datos del archivo
         String[] data = new String[5];
-        data[0] = "Certificado Emitido por: "+CertificadoEcUtils.getNombreCA(cert);
-        tableModel.addRow(data);
-        
-        data[0] = "Cédula: "+datosUsuario.getCedula();
-        tableModel.addRow(data);
-        
-        data[0] = "Nombres: "+datosUsuario.getNombre();
+        data[0] = MessageFormat.format(prop.getProperty("tabla.certificado.emitido_por"), CertificadoEcUtils.getNombreCA(cert));
+
         tableModel.addRow(data);
 
-        data[0] = "Apellidos: "+datosUsuario.getApellido();
+        data[0] = prop.getProperty("tabla.certificado.cedula") + " " + datosUsuario.getCedula();
         tableModel.addRow(data);
 
-        data[0] = "Institución: "+datosUsuario.getInstitucion();
-        tableModel.addRow(data);
-        
-        data[0] = "Cargo: "+datosUsuario.getCargo();
+        data[0] = prop.getProperty("tabla.certificado.nombres") + " " + datosUsuario.getNombre();
         tableModel.addRow(data);
 
-        data[0] = "Fecha de Emisión: "+cert.getNotBefore();
-        tableModel.addRow(data);
-        
-        data[0] = "Fecha de Expiración: "+ cert.getNotAfter();
+        data[0] = prop.getProperty("tabla.certificado.apelldios") + " " + datosUsuario.getApellido();
         tableModel.addRow(data);
 
-        
+        data[0] = prop.getProperty("tabla.certificado.institucion") + " " + datosUsuario.getInstitucion();
+        tableModel.addRow(data);
+
+        data[0] = prop.getProperty("tabla.certificado.cargo") + " " + datosUsuario.getCargo();
+        tableModel.addRow(data);
+
+        data[0] = prop.getProperty("tabla.certificado.fecha_de_emision") + " " + cert.getNotBefore();
+        tableModel.addRow(data);
+
+        data[0] = prop.getProperty("tabla.certificado.fecha_de_expiracion") + " " + cert.getNotAfter();
+        tableModel.addRow(data);
+
         tblDatosDelCertificadoFirmador.setModel(tableModel);
         tableModel.fireTableDataChanged();
-        
+
     }
-   
+
     private void resetDatosTabladeFirmante() {
         DefaultTableModel tableModel = (DefaultTableModel) tblDatosDelFirmanteFirmador.getModel();
-        
+
         DatosUsuario datosUsuario = new DatosUsuario();
 
         tableModel.setRowCount(0);
@@ -474,29 +516,29 @@ public class Main extends javax.swing.JFrame {
         //Actualizamos los datos del archivo
         String[] data = new String[5];
         data[0] = datosUsuario.getCedula();
-        
+
         String nombres = datosUsuario.getNombre();
-        if(nombres == null){
+        if (nombres == null) {
             nombres = "";
         }
-        
+
         String apellidos = datosUsuario.getApellido();
-        if(apellidos == null){
+        if (apellidos == null) {
             apellidos = "";
         }
-        data[1] = nombres +" "+ apellidos;
+        data[1] = nombres + " " + apellidos;
         data[2] = datosUsuario.getInstitucion();
         data[3] = datosUsuario.getCargo();
         data[4] = ""; //LocalDateTime.now().toString();
-        
+
         tableModel.addRow(data);
-        
+
         tblDatosDelFirmanteFirmador.setModel(tableModel);
-        tableModel.fireTableDataChanged();    
+        tableModel.fireTableDataChanged();
     }
-    
-    private void resetDatosTablaCertificadoFirmador(){
-        DefaultTableModel tableModel = (DefaultTableModel) tblDatosDelCertificadoFirmador.getModel(); 
+
+    private void resetDatosTablaCertificadoFirmador() {
+        DefaultTableModel tableModel = (DefaultTableModel) tblDatosDelCertificadoFirmador.getModel();
 
         tableModel.setRowCount(0);
 
@@ -504,10 +546,10 @@ public class Main extends javax.swing.JFrame {
         String[] data = new String[5];
         data[0] = "";
         tableModel.addRow(data);
-        
-        data[0] = ""; 
+
+        data[0] = "";
         tableModel.addRow(data);
-        
+
         data[0] = "";
         tableModel.addRow(data);
 
@@ -516,24 +558,24 @@ public class Main extends javax.swing.JFrame {
 
         data[0] = "";
         tableModel.addRow(data);
-        
+
         data[0] = "";
         tableModel.addRow(data);
 
         data[0] = "";
         tableModel.addRow(data);
-        
+
         data[0] = "";
         tableModel.addRow(data);
 
         data[0] = "";
         tableModel.addRow(data);
-        
+
         tblDatosDelCertificadoFirmador.setModel(tableModel);
         tableModel.fireTableDataChanged();
     }
 
-     private boolean validarFirma(KeyStore ks) throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
+    private boolean validarFirma(KeyStore ks) throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
         System.out.println("Validar Firma");
 
         Validador validador = new Validador();
@@ -546,27 +588,26 @@ public class Main extends javax.swing.JFrame {
             return true;
         } catch (CertificateExpiredException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            throw new CertificadoInvalidoException("Certificado caducó en " + cert.getNotAfter());
+            throw new CertificadoInvalidoException(MessageFormat.format(prop.getProperty("mensajes.error.certificado_caduco"), cert.getNotAfter()));
         } catch (CertificateNotYetValidException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            throw new CertificadoInvalidoException("Certificado aún no está vigente. Valido desde: " + cert.getNotBefore());
+            throw new CertificadoInvalidoException(MessageFormat.format(prop.getProperty("mensajes.error.certificado_caduco"), cert.getNotBefore()));
         }
     }
-    
-    
-    
-    private String obtenerUrlCRL(List<String> urls){
-        for(String url : urls){
-            if(url.toLowerCase().contains("crl"))
+
+    private String obtenerUrlCRL(List<String> urls) {
+        for (String url : urls) {
+            if (url.toLowerCase().contains("crl")) {
                 return url;
+            }
         }
         return null;
     }
-    
-    private void setearInfoValidacionCertificado(X509Certificate cert){
-        if(cert != null){
+
+    private void setearInfoValidacionCertificado(X509Certificate cert) {
+        if (cert != null) {
             String emisor = CertificadoEcUtils.getNombreCA(cert);
-            
+
             DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(cert);
 
             DefaultTableModel tableModel = (DefaultTableModel) tblDatosCertificadosValidar.getModel();
@@ -575,28 +616,29 @@ public class Main extends javax.swing.JFrame {
 
             //Actualizamos los datos del archivo
             String[] data = new String[1];
-            data[0] = "Certificado Emitido por: " + CertificadoEcUtils.getNombreCA(cert);
+
+            data[0] = MessageFormat.format(prop.getProperty("tabla.certificado.emitido_por"), CertificadoEcUtils.getNombreCA(cert));;
             tableModel.addRow(data);
 
-            data[0] = "Cédula: " + datosUsuario.getCedula();
+            data[0] = prop.getProperty("tabla.certificado.cedula") + " " + datosUsuario.getCedula();
             tableModel.addRow(data);
 
-            data[0] = "Nombres: " + datosUsuario.getNombre();
+            data[0] = prop.getProperty("tabla.certificado.nombres") + " " + datosUsuario.getNombre();
             tableModel.addRow(data);
 
-            data[0] = "Apellidos: " + datosUsuario.getApellido();
+            data[0] = prop.getProperty("tabla.certificado.apellidos") + " " + datosUsuario.getApellido();
             tableModel.addRow(data);
 
-            data[0] = "Institución: " + datosUsuario.getInstitucion();
+            data[0] = prop.getProperty("tabla.certificado.institucion") + " " + datosUsuario.getInstitucion();
             tableModel.addRow(data);
 
-            data[0] = "Cargo: " + datosUsuario.getCargo();
+            data[0] = prop.getProperty("tabla.certificado.cargo") + " " + datosUsuario.getCargo();
             tableModel.addRow(data);
 
-            data[0] = "Fecha de Emisión: " + cert.getNotBefore();
+            data[0] = prop.getProperty("tabla.certificado.fecha_de_emision") + " " + cert.getNotBefore();
             tableModel.addRow(data);
 
-            data[0] = "Fecha de Expiración: " + cert.getNotAfter();
+            data[0] = prop.getProperty("tabla.certificado.fecha_de_expiracion") + " " + cert.getNotAfter();
             tableModel.addRow(data);
 
             tblDatosCertificadosValidar.setModel(tableModel);
@@ -604,29 +646,26 @@ public class Main extends javax.swing.JFrame {
         }
         //TOdo botar error si es null
     }
-    
-    private void abrirDocumento() throws IOException{
+
+    private void abrirDocumento() throws IOException {
         FirmadorFileUtils.abrirDocumento(jtxArchivoFirmado.getText());
     }
-    
-    private void agregarValidezCertificado(String validez, String estado){
+
+    private void agregarValidezCertificado(String validez, String estado) {
         DefaultTableModel tableModel = (DefaultTableModel) tblDatosCertificadosValidar.getModel();
-            //Actualizamos los datos del archivo
-            String[] data = new String[1];
-            data[0] = "Validez: "+validez;
-            tableModel.addRow(data);
-            
-            data[0] = "Estado: "+estado;
-            tableModel.addRow(data);
-            
-            
-            tblDatosCertificadosValidar.setModel(tableModel);
-            tableModel.fireTableDataChanged();
+        //Actualizamos los datos del archivo
+        String[] data = new String[1];
+        data[0] = prop.getProperty("tabla.certificado.validez") + " " + validez;
+        tableModel.addRow(data);
+
+        data[0] = prop.getProperty("tabla.certificado.estado") + estado;
+        tableModel.addRow(data);
+
+        tblDatosCertificadosValidar.setModel(tableModel);
+        tableModel.fireTableDataChanged();
     }
-    
-    
-    
-    private void resetInfoValidacionCertificado(){
+
+    private void resetInfoValidacionCertificado() {
         DefaultTableModel tableModel = (DefaultTableModel) tblDatosCertificadosValidar.getModel();
 
         tableModel.setRowCount(0);
@@ -663,7 +702,7 @@ public class Main extends javax.swing.JFrame {
         tblDatosCertificadosValidar.setModel(tableModel);
         tableModel.fireTableDataChanged();
     }
-    
+
     private void resetearInfoValidacionCertificado() {
         jtxRutaCertificado.setText("");
         llaveVerificar = null;
@@ -671,16 +710,18 @@ public class Main extends javax.swing.JFrame {
         resetInfoValidacionCertificado();
         //TOdo botar error si es null
     }
-    
+
     private String resultadosCRL(ValidationResult result) {
-        if(result == result.CANNOT_DOWNLOAD_CRL)
-            return "No se pudo descargar el archivo CRL\nRevisar conexión de Internet";
-        if(result.isValid())
-            return "Válido";        
-        return "Inválido";
+        if (result == result.CANNOT_DOWNLOAD_CRL) {
+            return prop.getProperty("mensaje.resultadoscrl.no_se_pudo_descargar");
+        }
+        if (result.isValid()) {
+            return prop.getProperty("mensaje.resultadoscrl.valido");
+        }
+        return prop.getProperty("mensaje.resultadoscrl.invalido");
     }
-    
-    public void actualizar(){
+
+    public void actualizar() {
         Object[] options = {"Si", "No"};
         int n = JOptionPane.showOptionDialog(getParent(), "Desea actualizar el cliente?", "Confirmar",
                 JOptionPane.OK_CANCEL_OPTION,
@@ -1026,7 +1067,7 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        mainPanel.addTab("<html><b>FIRMAR DOCUMENTO</b></html>", firmarVerificarDocPanel);
+        mainPanel.addTab("<html><b>FIRMAR DOCUMENTO </b>(<u>1</u>)</html>", firmarVerificarDocPanel);
 
         jlbArchivoFirmadoVerficar.setText("Archivo Firmado:");
 
@@ -1039,6 +1080,7 @@ public class Main extends javax.swing.JFrame {
             }
         });
 
+        btnVerificar.setMnemonic('v');
         btnVerificar.setText("Verificar Archivo");
         btnVerificar.setEnabled(false);
         btnVerificar.addActionListener(new java.awt.event.ActionListener() {
@@ -1172,7 +1214,7 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        mainPanel.addTab("<html><b>VERIFICAR DOCUMENTO</b></html>", verificarDocumentoPanel);
+        mainPanel.addTab("<html><b>VERIFICAR DOCUMENTO </b>(<u>2</u>)</html>", verificarDocumentoPanel);
 
         validarCertificadoPanel.setName(""); // NOI18N
 
@@ -1355,13 +1397,15 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        mainPanel.addTab("<html><b>VALIDAR CERTIFICADO DE FIRMA ELECTRÓNICA</b></html>", validarCertificadoPanel);
+        mainPanel.addTab("<html><b>VALIDAR CERTIFICADO DE FIRMA ELECTRÓNICA </b>(<u>3</u>)</html>", validarCertificadoPanel);
 
+        jmAyuda.setMnemonic('a');
         jmAyuda.setText("Ayuda");
         jmAyuda.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jmAyuda.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         jmAyuda.setInheritsPopupMenu(true);
 
+        jmiAcerca.setMnemonic('d');
         jmiAcerca.setText("Acerca de");
         jmiAcerca.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1370,6 +1414,7 @@ public class Main extends javax.swing.JFrame {
         });
         jmAyuda.add(jmiAcerca);
 
+        jmiActualizar.setMnemonic('z');
         jmiActualizar.setText("Actualizar");
         jmiActualizar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1399,9 +1444,10 @@ public class Main extends javax.swing.JFrame {
     private void btnVerificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVerificarActionPerformed
         // Si lo del documento es distinto a lo de la ruta seteamos la ruta
         // del documento a la del textfield
-        if (!documento.getAbsolutePath().equals(jtxArchivoFirmadoVerificar.getText())) 
+        if (!documento.getAbsolutePath().equals(jtxArchivoFirmadoVerificar.getText())) {
             documento = new File(jtxArchivoFirmadoVerificar.getText());
-        
+        }
+
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         try {
@@ -1409,7 +1455,7 @@ public class Main extends javax.swing.JFrame {
             verificarDocumento();
             jplVerificarDocumento.setEnabled(true);
             setCursor(Cursor.getDefaultCursor());
-        }catch(RubricaException ex){
+        } catch (RubricaException ex) {
             setCursor(Cursor.getDefaultCursor());
             System.err.println("Error no se pudo conectar al servicio de OSCP para verificar el certificado ");
             JOptionPane.showMessageDialog(this, "Error no se pudo conectar al servicio de OSCP para verificar el certificado\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -1426,7 +1472,7 @@ public class Main extends javax.swing.JFrame {
 
     private void btnExaminarVerificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExaminarVerificarActionPerformed
         //filtros
-        FileNameExtensionFilter filtrosVerificar = new FileNameExtensionFilter("Documentos de Oficina", "pdf", "p7m", "docx", "xlsx", "pptx", "odt", "ods", "odp","xml","p7m");
+        FileNameExtensionFilter filtrosVerificar = new FileNameExtensionFilter("Documentos de Oficina", "pdf", "p7m", "docx", "xlsx", "pptx", "odt", "ods", "odp", "xml", "p7m");
         documento = abrirArchivo(filtros);
         if (documento != null) {
             jtxArchivoFirmadoVerificar.setText(documento.getAbsolutePath());
@@ -1437,15 +1483,15 @@ public class Main extends javax.swing.JFrame {
     private void btnResetearVerificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetearVerificarActionPerformed
         System.out.println("resetear campos");
         jtxArchivoFirmadoVerificar.setText("");
-        documento=null;
-        
+        documento = null;
+
         jtxDocumentoVerificado.setText("");
         //datosFirmanteVerificarTbl
-        
+
         DefaultTableModel tableModelCert = (DefaultTableModel) tblDatosFirmanteVerificar.getModel();
-        
+
         tableModelCert.setRowCount(0);
-       
+
         //Actualizamos los datos del archivo
         String[] dataCert = new String[7];
         dataCert[0] = "";
@@ -1458,7 +1504,9 @@ public class Main extends javax.swing.JFrame {
         tableModelCert.addRow(dataCert);
         tblDatosFirmanteVerificar.setModel(tableModelCert);
         tableModelCert.fireTableDataChanged();
-        
+
+        btnVerificar.setEnabled(false);
+
     }//GEN-LAST:event_btnResetearVerificarActionPerformed
 
     private void btnResetearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetearActionPerformed
@@ -1466,8 +1514,9 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_btnResetearActionPerformed
 
     private void btnFirmarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFirmarActionPerformed
-        if (documento == null || !documento.getAbsolutePath().equals(jtxRutaDocumentoFirmar.getText()))
-        documento = new File(jtxRutaDocumentoFirmar.getText());
+        if (documento == null || !documento.getAbsolutePath().equals(jtxRutaDocumentoFirmar.getText())) {
+            documento = new File(jtxRutaDocumentoFirmar.getText());
+        }
         //Cambiamos el cursor a que se ponga en loading
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
@@ -1483,22 +1532,22 @@ public class Main extends javax.swing.JFrame {
             Object[] params = {mensaje, jcbAbrirDocumento};
             JOptionPane.showMessageDialog(this, params, "Documento Firmado", JOptionPane.INFORMATION_MESSAGE);
 
-            if (jcbAbrirDocumento.isSelected()){
+            if (jcbAbrirDocumento.isSelected()) {
                 abrirDocumento();
             }
             jplFirmar.setEnabled(true);
-            
+
             //Borramos la ruta y la clave una vez que esta firmado
             this.jpfClave.setText("");
             this.jtxRutaLlaveFirmar.setText("");
             setCursor(Cursor.getDefaultCursor());
-        }catch(KeyStoreException e){
+        } catch (KeyStoreException e) {
             this.setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
-            if(e.getMessage().equals("java.io.IOException: keystore password was incorrect")){
+            if (e.getMessage().equals("java.io.IOException: keystore password was incorrect")) {
                 JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
-            }else{
-                JOptionPane.showMessageDialog(this, "Formato inválido de llaves", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.certificado_formato_invalido"), "Error", JOptionPane.ERROR_MESSAGE);
             }
             jplValidar.setEnabled(true);
         } catch (Exception ex) {
@@ -1507,7 +1556,7 @@ public class Main extends javax.swing.JFrame {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Error no se pudo firmar ");
             jplFirmar.setEnabled(true);
-        } 
+        }
     }//GEN-LAST:event_btnFirmarActionPerformed
 
     private void btnAbrirArchivoPSKFirmarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAbrirArchivoPSKFirmarActionPerformed
@@ -1560,7 +1609,7 @@ public class Main extends javax.swing.JFrame {
             if (this.rbValidarToken.isSelected()) {
                 /*
                 * MISAEL acá le comente
-                */
+                 */
                 ks = KeyStoreProviderFactory.getKeyStore(new String(jpfCertClaveTXT.getPassword()));
                 //ks = KeyStoreProviderFactory.getKeyStore(null);
                 if (ks == null) {
@@ -1572,7 +1621,7 @@ public class Main extends javax.swing.JFrame {
                 ks = ksp.getKeystore(jpfCertClaveTXT.getPassword());
 
             }
-            cert = validador.getCert(ks,jpfCertClaveTXT.getPassword());
+            cert = validador.getCert(ks, jpfCertClaveTXT.getPassword());
             String revocado;
             try {
                 validador.validar(cert);
@@ -1582,40 +1631,40 @@ public class Main extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(getParent(), "Certificado Revocado", "Advertencia", JOptionPane.WARNING_MESSAGE);
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+
             Date fechaHora = TiempoUtils.getFechaHora();
             System.out.println("fechaHora: " + fechaHora);
             System.out.println("Antes: " + fechaHora.before(cert.getNotBefore()) + " " + cert.getNotBefore());
             System.out.println("Después: " + fechaHora.after(cert.getNotAfter()) + " " + cert.getNotAfter());
-            
+
             String validez = "Certificado válido";
             if (fechaHora.before(cert.getNotBefore()) || fechaHora.after(cert.getNotAfter())) {
                 validez = "Certificado caducado";
                 JOptionPane.showMessageDialog(getParent(), "Certificado Caducado", "Advertencia", JOptionPane.WARNING_MESSAGE);
             }
             setearInfoValidacionCertificado(cert);
-            
+
             agregarValidezCertificado(validez, revocado);
             jpfCertClaveTXT.setText("");
             jplValidar.setEnabled(true);
             setCursor(Cursor.getDefaultCursor());
-        }catch(KeyStoreException e){
+        } catch (KeyStoreException e) {
             setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
-            if(e.getMessage().equals("java.io.IOException: keystore password was incorrect")){
+            if (e.getMessage().equals("java.io.IOException: keystore password was incorrect")) {
                 JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
-            }else{
+            } else {
                 JOptionPane.showMessageDialog(this, "Formato inválido de llaves", "Error", JOptionPane.ERROR_MESSAGE);
             }
             jpfCertClaveTXT.setText("");
             jplValidar.setEnabled(true);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             jpfCertClaveTXT.setText("");
             jplValidar.setEnabled(true);
-        } 
+        }
     }//GEN-LAST:event_btnValidarActionPerformed
 
     private void btnAbrirCertificadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAbrirCertificadoActionPerformed

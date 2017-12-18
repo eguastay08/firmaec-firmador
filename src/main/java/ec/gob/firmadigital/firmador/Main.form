@@ -8,6 +8,7 @@
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="jmAyuda">
           <Properties>
+            <Property name="mnemonic" type="int" value="97"/>
             <Property name="text" type="java.lang.String" value="Ayuda"/>
             <Property name="horizontalAlignment" type="int" value="4"/>
             <Property name="horizontalTextPosition" type="int" value="4"/>
@@ -16,6 +17,7 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="jmiAcerca">
               <Properties>
+                <Property name="mnemonic" type="int" value="100"/>
                 <Property name="text" type="java.lang.String" value="Acerca de"/>
               </Properties>
               <Events>
@@ -24,6 +26,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="jmiActualizar">
               <Properties>
+                <Property name="mnemonic" type="int" value="122"/>
                 <Property name="text" type="java.lang.String" value="Actualizar"/>
               </Properties>
               <Events>
@@ -79,8 +82,8 @@
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="&lt;html&gt;&lt;b&gt;FIRMAR DOCUMENTO&lt;/b&gt;&lt;/html&gt;">
-                <Property name="tabTitle" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;FIRMAR DOCUMENTO&lt;/b&gt;&lt;/html&gt;"/>
+              <JTabbedPaneConstraints tabName="&lt;html&gt;&lt;b&gt;FIRMAR DOCUMENTO &lt;/b&gt;(&lt;u&gt;1&lt;/u&gt;)&lt;/html&gt;">
+                <Property name="tabTitle" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;FIRMAR DOCUMENTO &lt;/b&gt;(&lt;u&gt;1&lt;/u&gt;)&lt;/html&gt;"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -445,8 +448,8 @@
         <Container class="javax.swing.JPanel" name="verificarDocumentoPanel">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="&lt;html&gt;&lt;b&gt;VERIFICAR DOCUMENTO&lt;/b&gt;&lt;/html&gt;">
-                <Property name="tabTitle" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;VERIFICAR DOCUMENTO&lt;/b&gt;&lt;/html&gt;"/>
+              <JTabbedPaneConstraints tabName="&lt;html&gt;&lt;b&gt;VERIFICAR DOCUMENTO &lt;/b&gt;(&lt;u&gt;2&lt;/u&gt;)&lt;/html&gt;">
+                <Property name="tabTitle" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;VERIFICAR DOCUMENTO &lt;/b&gt;(&lt;u&gt;2&lt;/u&gt;)&lt;/html&gt;"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -545,6 +548,7 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="btnVerificar">
                   <Properties>
+                    <Property name="mnemonic" type="int" value="118"/>
                     <Property name="text" type="java.lang.String" value="Verificar Archivo"/>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
@@ -710,8 +714,8 @@
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="&lt;html&gt;&lt;b&gt;VALIDAR CERTIFICADO DE FIRMA ELECTR&#xd3;NICA&lt;/b&gt;&lt;/html&gt;">
-                <Property name="tabTitle" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;VALIDAR CERTIFICADO DE FIRMA ELECTR&#xd3;NICA&lt;/b&gt;&lt;/html&gt;"/>
+              <JTabbedPaneConstraints tabName="&lt;html&gt;&lt;b&gt;VALIDAR CERTIFICADO DE FIRMA ELECTR&#xd3;NICA &lt;/b&gt;(&lt;u&gt;3&lt;/u&gt;)&lt;/html&gt;">
+                <Property name="tabTitle" type="java.lang.String" value="&lt;html&gt;&lt;b&gt;VALIDAR CERTIFICADO DE FIRMA ELECTR&#xd3;NICA &lt;/b&gt;(&lt;u&gt;3&lt;/u&gt;)&lt;/html&gt;"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
