@@ -39,6 +39,7 @@ import ec.gob.firmadigital.cliente.Validador;
 import ec.gob.firmadigital.exceptions.CRLValidationException;
 import ec.gob.firmadigital.exceptions.CertificadoInvalidoException;
 import ec.gob.firmadigital.exceptions.ConexionValidarCRLException;
+import ec.gob.firmadigital.exceptions.DocumentoException;
 import ec.gob.firmadigital.exceptions.DocumentoNoExistenteException;
 import ec.gob.firmadigital.exceptions.DocumentoNoPermitidoException;
 import ec.gob.firmadigital.exceptions.EntidadCertificadoraNoValidaException;
@@ -296,7 +297,7 @@ public class Main extends javax.swing.JFrame {
     /*
     Valida que esten los campos necesarios para firmar
      */
-    private void validacionPreFirmar() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitidoException, CertificadoInvalidoException {
+    private void validacionPreFirmar() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitidoException, CertificadoInvalidoException, DocumentoException {
         //Revisamos si existe el documento a firmar
         // TODO no hacer un return directamente, se podria validar todos los parametros e ir aumentando los errores
         if (documento == null) {
@@ -317,6 +318,11 @@ public class Main extends javax.swing.JFrame {
 
         if (rbFirmarToken.isSelected() && !esWindows() && jpfClave.getPassword().length == 0) {
             throw new CertificadoInvalidoException(prop.getProperty("mensaje.error.certificado_clave_vacia"));
+        }
+        
+        System.out.println("Tam: " + documento.length());
+        if(documento.length() == 0){
+            throw new DocumentoException("Documento vacío, no se puede firmar");
         }
 
         tipoDeDocumentPermitido(documento);
