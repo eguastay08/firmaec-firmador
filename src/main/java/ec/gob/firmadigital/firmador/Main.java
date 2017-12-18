@@ -435,11 +435,32 @@ public class Main extends javax.swing.JFrame {
 
         agregarDatosTablaCertificadoFirmador(cert, datosUsuario);
 
-        //Si todo va bien creamos el arschivo
+        
+        // Revisamos si el archivo existe
+        nombreDocFirmado = verificarNombre(nombreDocFirmado);
+
         FirmadorFileUtils.saveByteArrayToDisc(docSigned, nombreDocFirmado);
         jtxArchivoFirmado.setText(nombreDocFirmado);
 
         return true;
+    }
+    
+    private String verificarNombre(String nombreArchivo){
+        File archivo = new File(nombreArchivo);
+        String nuevoNombre = nombreArchivo;
+        if (archivo.exists()) {
+            String nombreCompleto = archivo.getAbsolutePath();
+
+            String nombre = nombreCompleto.replaceFirst("[.][^.]+$", "");
+
+            //String extension = getFileExtension(documento);
+            String extension = FirmadorFileUtils.getFileExtension(archivo);
+            
+            nuevoNombre = nombre + "_1." + extension;
+            nuevoNombre = verificarNombre(nuevoNombre);
+        }
+   
+        return nuevoNombre;
     }
 
     private void agregarDatosTabladeFirmante(DatosUsuario datosUsuario) {
