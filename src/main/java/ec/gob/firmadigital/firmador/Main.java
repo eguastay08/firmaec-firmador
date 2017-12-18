@@ -178,7 +178,6 @@ public class Main extends javax.swing.JFrame {
         if (prevFocus == null) {
             prevFocus = policy.getDefaultComponent(root);
         }
-        System.out.println("xxx");
         return prevFocus;
     }
 
@@ -300,23 +299,23 @@ public class Main extends javax.swing.JFrame {
         //Revisamos si existe el documento a firmar
         // TODO no hacer un return directamente, se podria validar todos los parametros e ir aumentando los errores
         if (documento == null) {
-            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensajes.error.documento_inexistente"), this.jtxRutaDocumentoFirmar.getText()));
+            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensaje.error.documento_inexistente"), this.jtxRutaDocumentoFirmar.getText()));
         }
 
         if (!documento.exists()) {
-            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensajes.error.certificado_sin_seleccionar"), documento.getAbsolutePath()));
+            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensaje.error.certificado_sin_seleccionar"), documento.getAbsolutePath()));
         }
 
         if (llave == null && rbFfirmarLlave.isSelected()) {
-            throw new DocumentoNoExistenteException(prop.getProperty("mensajes.error.documento_inexistente"));
+            throw new DocumentoNoExistenteException(prop.getProperty("mensaje.error.documento_inexistente"));
         }
 
         if (rbFfirmarLlave.isSelected() && !llave.exists()) {
-            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensajes.error.certificado_inexistente"), llave.getAbsolutePath()));
+            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensaje.error.certificado_inexistente"), llave.getAbsolutePath()));
         }
 
         if (rbFirmarToken.isSelected() && !esWindows() && jpfClave.getPassword().length == 0) {
-            throw new CertificadoInvalidoException(prop.getProperty("mensajes.error.certificado_clave_vacia"));
+            throw new CertificadoInvalidoException(prop.getProperty("mensaje.error.certificado_clave_vacia"));
         }
 
         tipoDeDocumentPermitido(documento);
@@ -390,7 +389,7 @@ public class Main extends javax.swing.JFrame {
     private void tipoDeDocumentPermitido(File documento) throws DocumentoNoPermitidoException {
         String extDocumento = FirmadorFileUtils.getFileExtension(documento);
         if (!extensionesPermitidas.stream().anyMatch((extension) -> (extension.equals(extDocumento)))) {
-            throw new DocumentoNoPermitidoException(MessageFormat.format(prop.getProperty("mensajes.error.certificado_inexistente"), extDocumento));
+            throw new DocumentoNoPermitidoException(MessageFormat.format(prop.getProperty("mensaje.error.certificado_inexistente"), extDocumento));
         }
     }
 
@@ -405,7 +404,7 @@ public class Main extends javax.swing.JFrame {
             ks = KeyStoreProviderFactory.getKeyStore(new String(jpfClave.getPassword()));
             if (ks == null) {
                 //JOptionPane.showMessageDialog(frame, "No se encontro un token!");
-                throw new TokenNoEncontradoException(prop.getProperty("mensajes.error.token_no_encontrado"));
+                throw new TokenNoEncontradoException(prop.getProperty("mensaje.error.token_no_encontrado"));
             }
 
         } else {
@@ -588,10 +587,10 @@ public class Main extends javax.swing.JFrame {
             return true;
         } catch (CertificateExpiredException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            throw new CertificadoInvalidoException(MessageFormat.format(prop.getProperty("mensajes.error.certificado_caduco"), cert.getNotAfter()));
+            throw new CertificadoInvalidoException(MessageFormat.format(prop.getProperty("mensaje.error.certificado_caduco"), cert.getNotAfter()));
         } catch (CertificateNotYetValidException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            throw new CertificadoInvalidoException(MessageFormat.format(prop.getProperty("mensajes.error.certificado_caduco"), cert.getNotBefore()));
+            throw new CertificadoInvalidoException(MessageFormat.format(prop.getProperty("mensaje.error.certificado_caduco"), cert.getNotBefore()));
         }
     }
 
@@ -723,7 +722,7 @@ public class Main extends javax.swing.JFrame {
 
     public void actualizar() {
         Object[] options = {"Si", "No"};
-        int n = JOptionPane.showOptionDialog(getParent(), "Desea actualizar el cliente?", "Confirmar",
+        int n = JOptionPane.showOptionDialog(getParent(), prop.getProperty("mensaje.desea_actualizar"), prop.getProperty("mensaje.confirmar"),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
 
@@ -739,13 +738,13 @@ public class Main extends javax.swing.JFrame {
                 File clienteJar = update.actualizarCliente();
                 update.updateCliente(clienteJar);
 
-                JOptionPane.showMessageDialog(this, "Actualizado con éxito, se cerrará la ventana");
+                JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.actualizar"));
                 System.exit(0);
             } catch (IllegalArgumentException e) {
-                JOptionPane.showMessageDialog(this, "No se puede actualizar, inicie la aplicación como Administrador");
+                JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.actualizar_administracion"));
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Error al actualizar:", e);
-                JOptionPane.showMessageDialog(this, "Error al actualizar: " + e.getMessage());
+                JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.actualizar") + ": " + e.getMessage());
             }
 
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -1461,7 +1460,8 @@ public class Main extends javax.swing.JFrame {
         } catch (RubricaException ex) {
             setCursor(Cursor.getDefaultCursor());
             System.err.println("Error no se pudo conectar al servicio de OSCP para verificar el certificado ");
-            JOptionPane.showMessageDialog(this, "Error no se pudo conectar al servicio de OSCP para verificar el certificado\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, 
+                    "Error no se pudo conectar al servicio de OSCP para verificar el certificado\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             jplVerificarDocumento.setEnabled(true);
         } catch (Exception ex) {
@@ -1530,10 +1530,15 @@ public class Main extends javax.swing.JFrame {
             System.out.println("Documento firmado");
 
             JCheckBox jcbAbrirDocumento = new JCheckBox("Abrir documento");
-            String mensaje = "Documento firmado: " + this.jtxArchivoFirmado.getText();
+            String nombreArchivoFirmado = this.jtxArchivoFirmado.getText();
+            int tamNombre = this.jtxArchivoFirmado.getText().length();
+            if (nombreArchivoFirmado.length() > 30) {
+                nombreArchivoFirmado = this.jtxArchivoFirmado.getText().substring(0, 15) + "..." + this.jtxArchivoFirmado.getText().substring((tamNombre - 10), tamNombre );
+            }
+            String mensaje = prop.getProperty("mensaje.firmar.documento_firmado")+": " + nombreArchivoFirmado;
 
             Object[] params = {mensaje, jcbAbrirDocumento};
-            JOptionPane.showMessageDialog(this, params, "Documento Firmado", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, params, prop.getProperty("mensaje.firmar.documento_firmado"), JOptionPane.INFORMATION_MESSAGE);
 
             if (jcbAbrirDocumento.isSelected()) {
                 abrirDocumento();
@@ -1548,7 +1553,7 @@ public class Main extends javax.swing.JFrame {
             this.setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
             if (e.getMessage().equals("java.io.IOException: keystore password was incorrect")) {
-                JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.clave_incorrecta"), "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.certificado_formato_invalido"), "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -1616,7 +1621,7 @@ public class Main extends javax.swing.JFrame {
                 ks = KeyStoreProviderFactory.getKeyStore(new String(jpfCertClaveTXT.getPassword()));
                 //ks = KeyStoreProviderFactory.getKeyStore(null);
                 if (ks == null) {
-                    throw new TokenNoEncontradoException("No se encontro token!");
+                    throw new TokenNoEncontradoException(prop.getProperty("mensaje.error.token_no_encontrado"));
                 }
 
             } else {
@@ -1631,7 +1636,7 @@ public class Main extends javax.swing.JFrame {
                 revocado = "No ha sido revocado";
             } catch (OcspValidationException | CRLValidationException ex) {
                 revocado = "Revocado";
-                JOptionPane.showMessageDialog(getParent(), "Certificado Revocado", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.error.certificado_revocado"), "Advertencia", JOptionPane.WARNING_MESSAGE);
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
 
@@ -1643,7 +1648,7 @@ public class Main extends javax.swing.JFrame {
             String validez = "Certificado válido";
             if (fechaHora.before(cert.getNotBefore()) || fechaHora.after(cert.getNotAfter())) {
                 validez = "Certificado caducado";
-                JOptionPane.showMessageDialog(getParent(), "Certificado Caducado", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.error.certificado_caducado"), "Advertencia", JOptionPane.WARNING_MESSAGE);
             }
             setearInfoValidacionCertificado(cert);
 
@@ -1655,9 +1660,9 @@ public class Main extends javax.swing.JFrame {
             setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);
             if (e.getMessage().equals("java.io.IOException: keystore password was incorrect")) {
-                JOptionPane.showMessageDialog(this, "Contraseña Incorrecta", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.clave_incorrecta"), "Error", JOptionPane.ERROR_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(this, "Formato inválido de llaves", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.certificado_formato_invalido"), "Error", JOptionPane.ERROR_MESSAGE);
             }
             jpfCertClaveTXT.setText("");
             jplValidar.setEnabled(true);
