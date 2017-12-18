@@ -783,11 +783,10 @@ public class Main extends javax.swing.JFrame {
                     File clienteJar = update.actualizarCliente();
                     update.updateCliente(clienteJar);
 
-                    //JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.actualizar"));
                     
-                    JOptionPane.showOptionDialog(getParent(), prop.getProperty("mensaje.actualizar"), prop.getProperty("mensaje.confirmar"),
-                            JOptionPane.OK_CANCEL_OPTION,
-                            JOptionPane.QUESTION_MESSAGE, null, optionsAceptar, btnAceptar);
+                    JOptionPane.showOptionDialog(getParent(), prop.getProperty("mensaje.actualizado"), "Mensaje",
+                            JOptionPane.OK_OPTION,
+                            JOptionPane.INFORMATION_MESSAGE, null, optionsAceptar, btnAceptar);
 
                     System.exit(0);
                 } catch (IllegalArgumentException e) {
