@@ -73,7 +73,10 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Properties;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -104,12 +107,16 @@ public class Main extends javax.swing.JFrame {
     private static final Logger logger = Logger.getLogger(Main.class.getName());
 
     private Properties prop;
+    
+    private JButton btnSi = new JButton();
+    private JButton btnNo = new JButton();
+    private JButton btnAceptar = new JButton();
 
     /**
      * Creates new form Main
      */
     public Main() {
-
+//TODO if arg0 para update
         try {
             cargarPropiedades();
         } catch (IOException ex) {
@@ -636,7 +643,7 @@ public class Main extends javax.swing.JFrame {
             DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(cert);
             
             if(datosUsuario == null && (jpfCertClaveTXT.getPassword() == null || jpfCertClaveTXT.getPassword().length == 0))
-                throw new CertificadoInvalidoException("No se pudo extraer los datos del certificados.  Si la contraseña esta vacía prueba ingresando una contraseña");
+                throw new CertificadoInvalidoException(prop.getProperty("mensaje.error.extraer_datos_certificados"));
             
             if(datosUsuario == null)
                 throw new CertificadoInvalidoException("No se pudo extraer los datos del certificados.");
@@ -755,12 +762,73 @@ public class Main extends javax.swing.JFrame {
     }
 
     public void actualizar() {
-        Object[] options = {"Si", "No"};
+        btnSi.setText("Sí");
+        btnSi.setMnemonic(KeyEvent.VK_S);
+        btnNo.setText("No");
+        btnNo.setMnemonic(KeyEvent.VK_N);
+        btnAceptar.setText("Aceptar");
+        btnAceptar.setMnemonic(KeyEvent.VK_A);
+        
+        btnSi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println("Entrar");
+                logger.info("Se solicita actualización...");
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                Object[] optionsAceptar = {btnAceptar};
+                try {
+                    Update update = new Update();
+                    File jar = update.actualizarFirmador();
+                    update.updateFirmador(jar);
+
+                    File clienteJar = update.actualizarCliente();
+                    update.updateCliente(clienteJar);
+
+                    //JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.actualizar"));
+                    
+                    JOptionPane.showOptionDialog(getParent(), prop.getProperty("mensaje.actualizar"), prop.getProperty("mensaje.confirmar"),
+                            JOptionPane.OK_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE, null, optionsAceptar, btnAceptar);
+
+                    System.exit(0);
+                } catch (IllegalArgumentException e) {
+                    //JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.error.actualizar_administracion"));
+                    JOptionPane.showOptionDialog(getParent(), prop.getProperty("mensaje.error.actualizar_administracion"), "Error",
+                            JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, optionsAceptar, btnAceptar);
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, "Error al actualizar:", e);
+                    //JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.error.actualizar") + ": " + e.getMessage());
+                    JOptionPane.showOptionDialog(getParent(),prop.getProperty("mensaje.error.actualizar") + ": " + e.getMessage(),  "Error",
+                            JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, optionsAceptar, btnAceptar);
+                }
+
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
+        
+        btnNo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logger.info("Salir...");
+                Component component = (Component) evt.getSource();
+                JDialog dialog = (JDialog) SwingUtilities.getRoot(component);
+                dialog.dispose();
+            }
+        });
+        
+        btnAceptar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Component component = (Component) evt.getSource();
+                JDialog dialog = (JDialog) SwingUtilities.getRoot(component);
+                dialog.dispose();
+            }
+        });
+        
+        Object[] options = {btnNo, btnSi }; //{"Si", "No"};
         int n = JOptionPane.showOptionDialog(getParent(), prop.getProperty("mensaje.desea_actualizar"), prop.getProperty("mensaje.confirmar"),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
 
-        if (n == 0) {
+        
+        /*if (n == 0) {
             logger.info("Se solicita actualización...");
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
@@ -782,7 +850,7 @@ public class Main extends javax.swing.JFrame {
             }
 
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
+        }*/
     }
 
     /**
@@ -1494,8 +1562,9 @@ public class Main extends javax.swing.JFrame {
         } catch (RubricaException ex) {
             setCursor(Cursor.getDefaultCursor());
             System.err.println("Error no se pudo conectar al servicio de OSCP para verificar el certificado ");
+            
             JOptionPane.showMessageDialog(this, 
-                    "Error no se pudo conectar al servicio de OSCP para verificar el certificado\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    prop.getProperty("mensaje.error.no_se_pudo_conectar_ocsp")+"\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             jplVerificarDocumento.setEnabled(true);
         } catch (Exception ex) {
@@ -1735,8 +1804,21 @@ public class Main extends javax.swing.JFrame {
 
     private void jmiAcercaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiAcercaActionPerformed
         JPanellAcercaDe jplAcercaDe = new JPanellAcercaDe();
+        
+        JButton btnAcercaDeOk = new JButton("OK");
+        btnAcercaDeOk.setMnemonic(KeyEvent.VK_O);
+        
         Object[] params = {jplAcercaDe};
         JOptionPane.showMessageDialog(this, params, "Acerca de FirmaEC", JOptionPane.PLAIN_MESSAGE);
+        
+        /*
+        Component[] c = jplAcercaDe.getComponents();
+        for(int i=0; i< c.length; i++){
+            if(c[i] instanceof JButton){
+                JButton boton = (JButton) c[i];
+                System.out.println("C: " + boton.getText());
+            }
+        }*/
     }//GEN-LAST:event_jmiAcercaActionPerformed
 
     private void jmiActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiActualizarActionPerformed
