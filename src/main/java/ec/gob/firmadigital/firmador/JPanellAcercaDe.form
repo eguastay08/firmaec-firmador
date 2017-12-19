@@ -16,26 +16,16 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace max="32767" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="jlbCopyrightAcercaDe" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="45" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="btnActualizarAcerdaDe" min="-2" max="-2" attributes="0"/>
-                          <Component id="jlbLicenciaAcercaDe" alignment="1" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="80" max="-2" attributes="0"/>
-                  </Group>
-              </Group>
-          </Group>
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-              <Component id="jlbUrlGobiernoDigitalAcercaDe" min="-2" pref="196" max="-2" attributes="0"/>
-              <EmptySpace min="0" pref="35" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="jlbCopyrightAcercaDe" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="jlbLicenciaAcercaDe" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="jlbUrlGobiernoDigitalAcercaDe" alignment="2" min="-2" pref="196" max="-2" attributes="0"/>
+                  <Component id="jlbVersion" alignment="2" min="-2" pref="196" max="-2" attributes="0"/>
+                  <Component id="btnActualizarAcerdaDe" alignment="2" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace pref="37" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -46,11 +36,13 @@
               <Component id="jlbCopyrightAcercaDe" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Component id="jlbLicenciaAcercaDe" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="24" max="32767" attributes="0"/>
-              <Component id="jlbUrlGobiernoDigitalAcercaDe" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jlbUrlGobiernoDigitalAcercaDe" pref="23" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jlbVersion" pref="24" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="btnActualizarAcerdaDe" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -76,6 +68,8 @@
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jlbUrlGobiernoDigitalAcercaDe">
+    </Component>
+    <Component class="javax.swing.JLabel" name="jlbVersion">
     </Component>
   </SubComponents>
 </Form>

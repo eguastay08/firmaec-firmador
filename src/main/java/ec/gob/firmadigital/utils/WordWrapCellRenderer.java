@@ -16,6 +16,7 @@
  */
 package ec.gob.firmadigital.utils;
 
+import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -38,6 +39,17 @@ public class WordWrapCellRenderer extends JTextArea implements TableCellRenderer
             setText(value.toString());
         }else{
             setText("");
+        }
+        Color colorOriginal = new Color(214,217,223,100);
+        Color colorFocus = new Color(160,162,172,100);
+        
+        
+        if(hasFocus){
+            //System.out.println("esta seleccionado "+ this.getBackground());
+            this.setBackground(colorFocus);
+            
+        }else{
+            this.setBackground(colorOriginal);
         }
       /*  if(column == 2){
             System.out.println("Alto: " + getPreferredSize().height+ " " +table.getRowHeight(row));

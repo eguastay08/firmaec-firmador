@@ -24,6 +24,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
@@ -37,6 +38,7 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
     
     private static final Logger logger = Logger.getLogger(JPanellAcercaDe.class.getName());
     private static final String URL_GOBIERNO_DIGITAL = "http://www.gobiernoelectronico.gob.ec";
+    private Properties prop;
 
     /**
      * Creates new form jplAcercaDe
@@ -57,6 +59,14 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
                 }
             }
         });
+        prop = new Properties();
+        try {
+            prop.load(getClass().getClassLoader().getResourceAsStream("config.properties"));
+            this.jlbVersion.setText("Versión: " +prop.getProperty("version")+ " - " +prop.getProperty("fecha"));
+        } catch (IOException ex) {
+            Logger.getLogger(JPanellAcercaDe.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
 
     /**
@@ -72,6 +82,7 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
         jlbLicenciaAcercaDe = new javax.swing.JLabel();
         btnActualizarAcerdaDe = new javax.swing.JButton();
         jlbUrlGobiernoDigitalAcercaDe = new javax.swing.JLabel();
+        jlbVersion = new javax.swing.JLabel();
 
         jlbCopyrightAcercaDe.setText("<html><div style='text-align: center;'>© Copyright MINTEL 2017</div></html>");
 
@@ -90,20 +101,14 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jlbCopyrightAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(45, 45, 45))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(btnActualizarAcerdaDe)
-                            .addComponent(jlbLicenciaAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(80, 80, 80))))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(37, 37, 37)
-                .addComponent(jlbUrlGobiernoDigitalAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 35, Short.MAX_VALUE))
+                .addGap(34, 34, 34)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(jlbCopyrightAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jlbLicenciaAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jlbUrlGobiernoDigitalAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jlbVersion, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnActualizarAcerdaDe))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -112,11 +117,13 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
                 .addComponent(jlbCopyrightAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(12, 12, 12)
                 .addComponent(jlbLicenciaAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
-                .addComponent(jlbUrlGobiernoDigitalAcercaDe)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jlbUrlGobiernoDigitalAcercaDe, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jlbVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnActualizarAcerdaDe)
-                .addGap(26, 26, 26))
+                .addGap(8, 8, 8))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -131,5 +138,6 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
     private javax.swing.JLabel jlbCopyrightAcercaDe;
     private javax.swing.JLabel jlbLicenciaAcercaDe;
     private javax.swing.JLabel jlbUrlGobiernoDigitalAcercaDe;
+    private javax.swing.JLabel jlbVersion;
     // End of variables declaration//GEN-END:variables
 }

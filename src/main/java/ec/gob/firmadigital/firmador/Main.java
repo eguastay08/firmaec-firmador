@@ -67,6 +67,7 @@ import java.awt.FocusTraversalPolicy;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
+import java.nio.file.NoSuchFileException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.text.MessageFormat;
@@ -95,6 +96,7 @@ public class Main extends javax.swing.JFrame {
     private static final String CHECK_IMG = "CheckIcon.png";
     private static final String NOTCHECK_IMG = "DeleteIcon.png";
     private static final String PROPIEDADES = "mensajes.properties";
+    private static final String CONFIGURACIONES = "config.properties";
     private final List<String> extensionesPermitidas;
     private final FileNameExtensionFilter filtros = new FileNameExtensionFilter("Documentos de Oficina", "pdf", "p7m", "docx", "xlsx", "pptx", "odt", "ods", "odp", "xml");
     private static final String OS = System.getProperty("os.name").toLowerCase();
@@ -107,6 +109,7 @@ public class Main extends javax.swing.JFrame {
     private static final Logger logger = Logger.getLogger(Main.class.getName());
 
     private Properties prop;
+    private Properties config;
     
     private JButton btnSi = new JButton();
     private JButton btnNo = new JButton();
@@ -207,6 +210,9 @@ public class Main extends javax.swing.JFrame {
         prop = new Properties();
         // load a properties file
         prop.load(getClass().getClassLoader().getResourceAsStream(PROPIEDADES));
+        config = new Properties();
+        // load a properties file
+        config.load(getClass().getClassLoader().getResourceAsStream(CONFIGURACIONES));
         
     }
 
@@ -326,7 +332,7 @@ public class Main extends javax.swing.JFrame {
         }
 
         if (!documento.exists()) {
-            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensaje.error.certificado_sin_seleccionar"), documento.getAbsolutePath()));
+            throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensaje.error.documento_inexistente"), documento.getAbsolutePath()));
         }
 
         if (llave == null && rbFfirmarLlave.isSelected()) {
@@ -836,8 +842,11 @@ public class Main extends javax.swing.JFrame {
             }
         });
         
-        Object[] options = {btnNo, btnSi }; //{"Si", "No"};
-        int n = JOptionPane.showOptionDialog(getParent(), prop.getProperty("mensaje.desea_actualizar"), prop.getProperty("mensaje.confirmar"),
+        Object[] options = {btnNo, btnSi }; 
+        
+        String version = "La versión actual es " + config.getProperty("version");
+        version = version +" de la fecha " + config.getProperty("fecha")+". ";
+        int n = JOptionPane.showOptionDialog(getParent(), version+ prop.getProperty("mensaje.desea_actualizar"), prop.getProperty("mensaje.confirmar"),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
 
@@ -1573,12 +1582,18 @@ public class Main extends javax.swing.JFrame {
             verificarDocumento();
             jplVerificarDocumento.setEnabled(true);
             setCursor(Cursor.getDefaultCursor());
+        } catch (NoSuchFileException ex){
+            setCursor(Cursor.getDefaultCursor());
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            //System.err.println("Error no se pudo verificar ");
+            JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.archivo_no_encontrado")+": "+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            jplVerificarDocumento.setEnabled(true);
         } catch (RubricaException ex) {
             setCursor(Cursor.getDefaultCursor());
             System.err.println("Error no se pudo conectar al servicio de OSCP para verificar el certificado ");
             
             JOptionPane.showMessageDialog(this, 
-                    prop.getProperty("mensaje.error.no_se_pudo_conectar_ocsp")+"\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             jplVerificarDocumento.setEnabled(true);
         } catch (Exception ex) {
@@ -1685,7 +1700,15 @@ public class Main extends javax.swing.JFrame {
             this.jtxArchivoFirmado.setText("");
             resetDatosTabladeFirmante();
             resetDatosTablaCertificadoFirmador();
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            String mensaje = ex.getMessage();
+            if(mensaje.contains("org.xml.sax.SAXParseException")){
+                mensaje = prop.getProperty("mensaje.error.documento_corrupto");
+            }
+            
+            if(mensaje.contains("IllegalStateException") && mensaje.contains("Content_Types")){
+                mensaje = prop.getProperty("mensaje.error.documento_corrupto");
+            }
+            JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Error no se pudo firmar ");
             jplFirmar.setEnabled(true);
@@ -1732,17 +1755,20 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_btnResetValidarFormActionPerformed
 
     private void btnValidarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnValidarActionPerformed
+               
         Validador validador = new Validador();
         KeyStoreProvider ksp;
         X509Certificate cert = null;
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         KeyStore ks;
         try {
+            // Si es linux y quiere validar token debe tener por lo menos una clave 
+            if(OS.equals("linux") && this.rbValidarToken.isSelected() && jpfCertClaveTXT.getPassword().length==0 ){
+                throw new CertificadoInvalidoException(prop.getProperty("mensaje.error.linux_clave"));
+            } 
+            
             jplValidar.setEnabled(false);
             if (this.rbValidarToken.isSelected()) {
-                /*
-                * MISAEL acá le comente
-                 */
                 ks = KeyStoreProviderFactory.getKeyStore(new String(jpfCertClaveTXT.getPassword()));
                 //ks = KeyStoreProviderFactory.getKeyStore(null);
                 if (ks == null) {
@@ -1835,6 +1861,7 @@ public class Main extends javax.swing.JFrame {
         //JOptionPane.showMessageDialog(this, params, "Acerca de FirmaEC", JOptionPane.NO_OPTION);
         //JOptionPane.showM
         btnOkAcercaDe.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 Component component = (Component) evt.getSource();
                 JDialog dialog = (JDialog) SwingUtilities.getRoot(component);
