@@ -1669,7 +1669,9 @@ public class Main extends javax.swing.JFrame {
             }
             String mensaje = prop.getProperty("mensaje.firmar.documento_firmado")+": " + nombreArchivoFirmado;
 
+            jcbAbrirDocumento.setMnemonic(KeyEvent.VK_D);
             Object[] params = {mensaje, jcbAbrirDocumento};
+            
             JOptionPane.showMessageDialog(this, params, prop.getProperty("mensaje.firmar.documento_firmado"), JOptionPane.INFORMATION_MESSAGE);
 
             if (jcbAbrirDocumento.isSelected()) {
