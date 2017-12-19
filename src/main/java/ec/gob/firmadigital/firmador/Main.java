@@ -1591,9 +1591,18 @@ public class Main extends javax.swing.JFrame {
         } catch (RubricaException ex) {
             setCursor(Cursor.getDefaultCursor());
             System.err.println("Error no se pudo conectar al servicio de OSCP para verificar el certificado ");
+            String msgError = ex.getMessage();
+            
+            if(msgError.contains("Los datos indicados no se corresponden ")){
+                msgError = "El archivo puede que este corrupto o que no contenga una firma";
+            }
+            
+            if(msgError.contains("Los datos indicados no son una firma")){
+                msgError = "El archivo puede que este corrupto o que no contenga una firma";
+            }            
             
             JOptionPane.showMessageDialog(this, 
-                    ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    msgError, "Error", JOptionPane.ERROR_MESSAGE);
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             jplVerificarDocumento.setEnabled(true);
         } catch (Exception ex) {
