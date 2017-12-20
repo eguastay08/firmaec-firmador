@@ -350,6 +350,10 @@ public class Main extends javax.swing.JFrame {
         if(documento.length() == 0){
             throw new DocumentoException(prop.getProperty("mensaje.error.documento_vacio"));
         }
+        
+        if("p7m".equals(FirmadorFileUtils.getFileExtension(documento).toLowerCase())){
+            throw new DocumentoException(prop.getProperty("mensaje.error.documento_p7m"));
+        }
 
         tipoDeDocumentPermitido(documento);
     }
@@ -1711,7 +1715,9 @@ public class Main extends javax.swing.JFrame {
             this.jtxArchivoFirmado.setText("");
             resetDatosTabladeFirmante();
             resetDatosTablaCertificadoFirmador();
-            String mensaje = ex.getMessage();
+            String mensaje = ex.getMessage()+"";
+
+
             if(mensaje.contains("org.xml.sax.SAXParseException")){
                 mensaje = prop.getProperty("mensaje.error.documento_corrupto");
             }
