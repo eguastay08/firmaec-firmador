@@ -80,21 +80,12 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
 
         jlbCopyrightAcercaDe = new javax.swing.JLabel();
         jlbLicenciaAcercaDe = new javax.swing.JLabel();
-        btnActualizarAcerdaDe = new javax.swing.JButton();
         jlbUrlGobiernoDigitalAcercaDe = new javax.swing.JLabel();
         jlbVersion = new javax.swing.JLabel();
 
         jlbCopyrightAcercaDe.setText("<html><div style='text-align: center;'>© Copyright MINTEL 2017</div></html>");
 
         jlbLicenciaAcercaDe.setText("<html><div style='text-align: center;'>Licencia GPLv3</div></html>");
-
-        btnActualizarAcerdaDe.setMnemonic('z');
-        btnActualizarAcerdaDe.setText("Actualizar");
-        btnActualizarAcerdaDe.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnActualizarAcerdaDeActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -106,8 +97,7 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
                     .addComponent(jlbCopyrightAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jlbLicenciaAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jlbUrlGobiernoDigitalAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jlbVersion, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnActualizarAcerdaDe))
+                    .addComponent(jlbVersion, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(37, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -121,20 +111,12 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
                 .addComponent(jlbUrlGobiernoDigitalAcercaDe, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jlbVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnActualizarAcerdaDe)
-                .addGap(8, 8, 8))
+                .addGap(41, 41, 41))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnActualizarAcerdaDeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarAcerdaDeActionPerformed
-        Main main = new Main(null);
-        main.actualizar();
-    }//GEN-LAST:event_btnActualizarAcerdaDeActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnActualizarAcerdaDe;
     private javax.swing.JLabel jlbCopyrightAcercaDe;
     private javax.swing.JLabel jlbLicenciaAcercaDe;
     private javax.swing.JLabel jlbUrlGobiernoDigitalAcercaDe;

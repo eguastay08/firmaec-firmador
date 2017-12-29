@@ -54,6 +54,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -169,14 +170,9 @@ public class Validador {
         return cert;
     }
     
-    public X509Certificate getCert(KeyStore ks, char [] clave) throws KeyStoreException, CertificadoInvalidoException, HoraServidorException{
-        List<Alias> aliases = KeyStoreUtils.getSigningAliases(ks);
-        
-        if(aliases == null || aliases.size() == 0)
-            throw new CertificadoInvalidoException("No se pudo encontrar los Aliases en el Certificado");
-        
-        Alias alias = aliases.get(0);
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
+    public X509Certificate getCert(KeyStore ks, char [] clave) throws KeyStoreException, CertificadoInvalidoException, HoraServidorException, RubricaException{
+		String alias = seleccionarAlias(ks);		
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
         return cert;
     }
     
@@ -223,5 +219,24 @@ public class Validador {
             return "Válido";        
         return "Inválido";
     }
-    
+	
+	public String seleccionarAlias(KeyStore keyStore) throws RubricaException {
+		String aliasString = null;
+		// Con que certificado firmar?
+        List<Alias> signingAliases = KeyStoreUtilities.getSigningAliases(keyStore);
+
+        if (signingAliases.isEmpty()) {
+            throw new RubricaException("No se encontró un certificado para firmar");
+        }
+
+        if (signingAliases.size() == 1) {
+            aliasString = signingAliases.get(0).getAlias();
+        } else {
+			Alias alias = (Alias) JOptionPane.showInputDialog(null, "Escoja...", "Certificado para firmar",
+					JOptionPane.QUESTION_MESSAGE, null, signingAliases.toArray(), signingAliases.get(0));
+			System.out.println("Alias { name: " + alias.getName() + ", alias: " + alias.getAlias());
+			aliasString = alias.getAlias();
+        }
+        return aliasString;
+    }
 }
