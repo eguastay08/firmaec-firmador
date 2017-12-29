@@ -16,6 +16,7 @@
  */
 package ec.gob.firmadigital.utils;
 
+import ec.gob.firmadigital.exceptions.DocumentoException;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,6 +67,15 @@ public class FirmadorFileUtils {
     public static void saveByteArrayToDisc(byte[] archivo,String rutaNombre) throws FileNotFoundException, IOException {
         // TODO validar si hay otro archivo de momento lo sobre escribe
         FileOutputStream fos = new FileOutputStream(rutaNombre);
+        File arc = new File(rutaNombre);
+        
+        Long espacio = arc.getFreeSpace();
+        System.out.println("bytes: " + archivo.length+" espacio " +espacio);
+        
+        if(espacio < archivo.length){
+            throw new IOException("No se puede crear el archivo firmado.  No hay espacio suficiente en el disco");
+        }
+        
         fos.write(archivo);
         fos.close();
     }
