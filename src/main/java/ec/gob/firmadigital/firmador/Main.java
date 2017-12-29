@@ -120,26 +120,7 @@ public class Main extends javax.swing.JFrame {
      * Creates new form Main
      * @param args
      */
-    public  Main(String[] args) {
-//TODO if arg0 para update
-        for (String s: args) {
-            System.out.println(s);
-        }
-        if(args != null && args.length > 0 && ("--update".equals(args[0]) || "--actualizar".equals(args[0]) )){
-            try {
-                    Update update = new Update();
-                    File jar = update.actualizarFirmador();
-                    update.updateFirmador(jar);
-
-                    File clienteJar = update.actualizarCliente();
-                    update.updateCliente(clienteJar);
-                    System.exit(0);
-                } catch (IllegalArgumentException | IOException e) {
-                    logger.log(Level.SEVERE, "Error al actualizar:", e);
-                    System.exit(0);
-                }
-        }
-
+    public Main(String[] args) {
         try {
             cargarPropiedades();
         } catch (IOException ex) {
@@ -1925,6 +1906,27 @@ public class Main extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        if (args != null) {
+            System.out.println("si hay arg");
+        } else {
+            System.out.println("no hay arg");
+
+        }
+        if (args != null && args.length > 0 && ("--update".equals(args[0]) || "--actualizar".equals(args[0]))) {
+            try {
+                Update update = new Update();
+                File jar = update.actualizarFirmador();
+                update.updateFirmador(jar);
+
+                File clienteJar = update.actualizarCliente();
+                update.updateCliente(clienteJar);
+                System.exit(0);
+            } catch (IllegalArgumentException | IOException e) {
+                logger.log(Level.SEVERE, "Error al actualizar:", e);
+                System.exit(0);
+            }
+        }
+
         //</editor-fold>
 
         /* Create and display the form */
