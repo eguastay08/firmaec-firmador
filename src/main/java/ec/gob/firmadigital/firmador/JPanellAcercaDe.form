@@ -23,7 +23,6 @@
                   <Component id="jlbLicenciaAcercaDe" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="jlbUrlGobiernoDigitalAcercaDe" alignment="2" min="-2" pref="196" max="-2" attributes="0"/>
                   <Component id="jlbVersion" alignment="2" min="-2" pref="196" max="-2" attributes="0"/>
-                  <Component id="btnActualizarAcerdaDe" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="37" max="32767" attributes="0"/>
           </Group>
@@ -40,9 +39,7 @@
               <Component id="jlbUrlGobiernoDigitalAcercaDe" pref="23" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jlbVersion" pref="24" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="btnActualizarAcerdaDe" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -57,15 +54,6 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;div style=&apos;text-align: center;&apos;&gt;Licencia GPLv3&lt;/div&gt;&lt;/html&gt;"/>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="btnActualizarAcerdaDe">
-      <Properties>
-        <Property name="mnemonic" type="int" value="122"/>
-        <Property name="text" type="java.lang.String" value="Actualizar"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnActualizarAcerdaDeActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jlbUrlGobiernoDigitalAcercaDe">
     </Component>

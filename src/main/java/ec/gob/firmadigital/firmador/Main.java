@@ -58,6 +58,7 @@ import io.rubrica.keystore.Alias;
 import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
+import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.sign.cms.DatosUsuario;
 import java.awt.Component;
@@ -461,10 +462,10 @@ public class Main extends javax.swing.JFrame {
         byte[] docSigned = firmaDigital.firmar(ks, documento, jpfClave.getPassword());
         String nombreDocFirmado = FirmadorFileUtils.crearNombreFirmado(documento);
 
-        // Obtenemos el certificado firmante para obtener los datos de usuarios
-        List<Alias> aliases = KeyStoreUtils.getSigningAliases(ks, TiempoUtils.getFechaHora());
-        Alias alias = aliases.get(0);
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias.getAlias());
+		Validador validador = new Validador();
+		String alias = validador.seleccionarAlias(ks);
+		
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
 
         String nombre = CertificadoEcUtils.getNombreCA(cert);
 
@@ -485,7 +486,7 @@ public class Main extends javax.swing.JFrame {
 
         return true;
     }
-    
+	    
     private String verificarNombre(String nombreArchivo){
         File archivo = new File(nombreArchivo);
         String nuevoNombre = nombreArchivo;
