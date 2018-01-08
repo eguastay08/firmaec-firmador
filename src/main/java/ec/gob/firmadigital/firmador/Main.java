@@ -253,6 +253,8 @@ public class Main extends javax.swing.JFrame {
         this.jtxRutaLlaveFirmar.setEnabled(false);
         this.jtxRutaLlaveFirmar.setText("");
         this.jtxArchivoFirmado.setText("");
+        
+        this.btnAbrirArchivoPSKFirmar.setEnabled(false);
         //this.certificadosJTR.getModel().
         resetDatosTabladeFirmante();
         resetDatosTablaCertificadoFirmador();
@@ -314,6 +316,13 @@ public class Main extends javax.swing.JFrame {
     private void validacionPreFirmar() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitidoException, CertificadoInvalidoException, DocumentoException {
         //Revisamos si existe el documento a firmar
         // TODO no hacer un return directamente, se podria validar todos los parametros e ir aumentando los errores
+        if(jtxRutaDocumentoFirmar.getText() == null || jtxRutaDocumentoFirmar.getText().equals(""))
+            throw new DocumentoNoExistenteException(prop.getProperty("mensaje.error.documento_pathvacio"));
+        
+        if(jtxRutaLlaveFirmar.getText() == null || jtxRutaLlaveFirmar.getText().equals("")){
+            throw new DocumentoNoExistenteException(prop.getProperty("mensaje.error.seleccionar_certificado"));
+        }
+        
         if (documento == null) {
             throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensaje.error.documento_inexistente"), this.jtxRutaDocumentoFirmar.getText()));
         }
@@ -1775,7 +1784,7 @@ public class Main extends javax.swing.JFrame {
             String revocado;
             try {
                 validador.validar(cert);
-                revocado = "No ha sido revocado";
+                revocado = prop.getProperty("mensaje.certificado.no_revocado");
             } catch (OcspValidationException | CRLValidationException ex) {
                 revocado = "Revocado";
                 JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.error.certificado_revocado"), "Advertencia", JOptionPane.WARNING_MESSAGE);
