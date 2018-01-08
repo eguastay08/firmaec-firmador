@@ -876,6 +876,7 @@ public class Main extends javax.swing.JFrame {
     private void initComponents() {
 
         tipoFirmaBtnGRP = new javax.swing.ButtonGroup();
+        jScrollPane1 = new javax.swing.JScrollPane();
         mainPanel = new javax.swing.JTabbedPane();
         firmarVerificarDocPanel = new javax.swing.JPanel();
         jSeparator2 = new javax.swing.JSeparator();
@@ -1022,7 +1023,9 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jplFirmarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jblCertificadoFirmar)
-                    .addComponent(jblClave)
+                    .addGroup(jplFirmarLayout.createSequentialGroup()
+                        .addGap(112, 112, 112)
+                        .addComponent(jblClave))
                     .addComponent(jblCertificadoEnFimador)
                     .addComponent(jblDocumento, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(32, 32, 32)
@@ -1072,7 +1075,7 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(jplFirmarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnFirmar)
                     .addComponent(btnResetear))
-                .addGap(8, 8, 8))
+                .addGap(62, 62, 62))
         );
 
         jLabel11.setText("<html><b>DATOS DEL FIRMANTE</b></html>");
@@ -1153,7 +1156,7 @@ public class Main extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
                 .addGap(14, 14, 14))
         );
 
@@ -1516,6 +1519,8 @@ public class Main extends javax.swing.JFrame {
 
         mainPanel.addTab("<html><b>VALIDAR CERTIFICADO DE FIRMA ELECTRÓNICA </b>(<u>3</u>)</html>", validarCertificadoPanel);
 
+        jScrollPane1.setViewportView(mainPanel);
+
         jmAyuda.setMnemonic('a');
         jmAyuda.setText("Ayuda");
         jmAyuda.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -1548,11 +1553,11 @@ public class Main extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mainPanel)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 973, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mainPanel)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 599, Short.MAX_VALUE)
         );
 
         pack();
@@ -1958,6 +1963,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
