@@ -61,6 +61,7 @@ import io.rubrica.keystore.KeyStoreProviderFactory;
 import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.sign.cms.DatosUsuario;
+import io.rubrica.sign.xades.InvalidXMLException;
 import io.rubrica.util.OsUtils;
 import java.awt.Component;
 import java.awt.Container;
@@ -839,31 +840,6 @@ public class Main extends javax.swing.JFrame {
         int n = JOptionPane.showOptionDialog(getParent(), version+ prop.getProperty("mensaje.desea_actualizar"), prop.getProperty("mensaje.confirmar"),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
-
-        
-        /*if (n == 0) {
-            logger.info("Se solicita actualización...");
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-            try {
-                Update update = new Update();
-                File jar = update.actualizarFirmador();
-                update.updateFirmador(jar);
-
-                File clienteJar = update.actualizarCliente();
-                update.updateCliente(clienteJar);
-
-                JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.actualizar"));
-                System.exit(0);
-            } catch (IllegalArgumentException e) {
-                JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.actualizar_administracion"));
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Error al actualizar:", e);
-                JOptionPane.showMessageDialog(this, prop.getProperty("mensaje.error.actualizar") + ": " + e.getMessage());
-            }
-
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }*/
     }
 
     /**
@@ -1707,6 +1683,8 @@ public class Main extends javax.swing.JFrame {
             resetDatosTabladeFirmante();
             resetDatosTablaCertificadoFirmador();
             String mensaje = ex.getMessage()+"";
+            
+            System.out.println("Exception Normal "+mensaje);
 
 
             if(mensaje.contains("org.xml.sax.SAXParseException")){
@@ -1716,6 +1694,11 @@ public class Main extends javax.swing.JFrame {
             if(mensaje.contains("IllegalStateException") && mensaje.contains("Content_Types")){
                 mensaje = prop.getProperty("mensaje.error.documento_corrupto");
             }
+            
+            if(mensaje.contains("Las firmas XAdES Enveloped solo pueden realizarse sobre datos XML")){
+                mensaje = prop.getProperty("mensaje.error.documento_xml");
+            }
+            
             JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println("Error no se pudo firmar ");
