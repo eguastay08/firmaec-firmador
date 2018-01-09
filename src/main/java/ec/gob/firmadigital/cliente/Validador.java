@@ -102,7 +102,6 @@ public class Validador {
             try {
                 cert = validarOCSP( cert);
             } catch ( IOException |RubricaException ex1) {
-               // cert = getCert( ks, clave );
                 System.out.println("Fallo la validacion por OCSP, Ahora intentamos por CRL");
                 Logger.getLogger(Validador.class.getName()).log(Level.SEVERE, null, ex1);
                 cert = validarCRL(cert);
@@ -133,7 +132,6 @@ public class Validador {
     public X509Certificate validarCRL(X509Certificate cert) throws IOException, RubricaException, CRLValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException{
         System.out.println("Validar CRL");
 
-        //X509Certificate cert = getCert( ks, clave );
 
         for (String url : CertificateUtils.getCrlDistributionPoints(cert)) {
             System.out.println("url=" + url);
@@ -170,8 +168,13 @@ public class Validador {
         return cert;
     }
     
-    public X509Certificate getCert(KeyStore ks, char [] clave) throws KeyStoreException, CertificadoInvalidoException, HoraServidorException, RubricaException{
-		String alias = seleccionarAlias(ks);		
+    public X509Certificate getCert(KeyStore ks, char[] clave) throws KeyStoreException, CertificadoInvalidoException, HoraServidorException, RubricaException {
+        String alias = seleccionarAlias(ks);
+        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+        return cert;
+    }
+    
+    public X509Certificate getCert(KeyStore ks, char[] clave, String alias) throws KeyStoreException, CertificadoInvalidoException, HoraServidorException, RubricaException {
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
         return cert;
     }
@@ -219,10 +222,10 @@ public class Validador {
             return "Válido";        
         return "Inválido";
     }
-	
-	public String seleccionarAlias(KeyStore keyStore) throws RubricaException {
-		String aliasString = null;
-		// Con que certificado firmar?
+
+    public String seleccionarAlias(KeyStore keyStore) throws RubricaException {
+        String aliasString = null;
+        // Con que certificado firmar?
         List<Alias> signingAliases = KeyStoreUtilities.getSigningAliases(keyStore);
 
         if (signingAliases.isEmpty()) {
@@ -232,10 +235,10 @@ public class Validador {
         if (signingAliases.size() == 1) {
             aliasString = signingAliases.get(0).getAlias();
         } else {
-			Alias alias = (Alias) JOptionPane.showInputDialog(null, "Escoja...", "Certificado para firmar",
-					JOptionPane.QUESTION_MESSAGE, null, signingAliases.toArray(), signingAliases.get(0));
-			System.out.println("Alias { name: " + alias.getName() + ", alias: " + alias.getAlias());
-			aliasString = alias.getAlias();
+            Alias alias = (Alias) JOptionPane.showInputDialog(null, "Escoja...", "Certificado para firmar",
+                    JOptionPane.QUESTION_MESSAGE, null, signingAliases.toArray(), signingAliases.get(0));
+            System.out.println("Alias { name: " + alias.getName() + ", alias: " + alias.getAlias());
+            aliasString = alias.getAlias();
         }
         return aliasString;
     }

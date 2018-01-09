@@ -451,6 +451,9 @@ public class Main extends javax.swing.JFrame {
         }
 
         Boolean validacion = validarFirma(ks);
+        
+        if(!validacion)
+            return false; 
 
         FirmaDigital firmaDigital = new FirmaDigital();
 
@@ -633,10 +636,15 @@ public class Main extends javax.swing.JFrame {
         System.out.println("Validar Firma");
 
         Validador validador = new Validador();
-        X509Certificate cert = validador.getCert(ks, jpfClave.getPassword());
+        String alias = validador.seleccionarAlias(ks);
+        
+        // Si no se selecciona ningun certificado o se pone cancelar
+        if(alias == null  || alias.equals(""))
+            return false; 
+        
+        X509Certificate cert = validador.getCert(ks, jpfClave.getPassword(), alias);
 
         try {
-
             cert.checkValidity(TiempoUtils.getFechaHora());
             validador.validar(cert);
             return true;
@@ -1646,28 +1654,30 @@ public class Main extends javax.swing.JFrame {
 
         try {
             jplFirmar.setEnabled(false);
-            this.firmarDocumento();
-            // JOptionPane.showMessageDialog(this, "Documento firmado "+ this.documentoFirmadoTXT.getText(), "Firmador", JOptionPane.INFORMATION_MESSAGE, checkIcon);
-            System.out.println("Documento firmado");
+            // Si retorna falso significa que se puso cancelar en el alias
+            // si es verdadero se procede a firmar
+            if (this.firmarDocumento()) {
+                // JOptionPane.showMessageDialog(this, "Documento firmado "+ this.documentoFirmadoTXT.getText(), "Firmador", JOptionPane.INFORMATION_MESSAGE, checkIcon);
+                System.out.println("Documento firmado");
 
-            JCheckBox jcbAbrirDocumento = new JCheckBox("Abrir documento");
-            String nombreArchivoFirmado = this.jtxArchivoFirmado.getText();
-            int tamNombre = this.jtxArchivoFirmado.getText().length();
-            if (nombreArchivoFirmado.length() > 30) {
-                nombreArchivoFirmado = this.jtxArchivoFirmado.getText().substring(0, 15) + "..." + this.jtxArchivoFirmado.getText().substring((tamNombre - 10), tamNombre );
-            }
-            String mensaje = prop.getProperty("mensaje.firmar.documento_firmado")+": " + nombreArchivoFirmado;
+                JCheckBox jcbAbrirDocumento = new JCheckBox("Abrir documento");
+                String nombreArchivoFirmado = this.jtxArchivoFirmado.getText();
+                int tamNombre = this.jtxArchivoFirmado.getText().length();
+                if (nombreArchivoFirmado.length() > 30) {
+                    nombreArchivoFirmado = this.jtxArchivoFirmado.getText().substring(0, 15) + "..." + this.jtxArchivoFirmado.getText().substring((tamNombre - 10), tamNombre);
+                }
+                String mensaje = prop.getProperty("mensaje.firmar.documento_firmado") + ": " + nombreArchivoFirmado;
 
-            jcbAbrirDocumento.setMnemonic(KeyEvent.VK_D);
-            Object[] params = {mensaje, jcbAbrirDocumento};
-            
-            JOptionPane.showMessageDialog(this, params, prop.getProperty("mensaje.firmar.documento_firmado"), JOptionPane.INFORMATION_MESSAGE);
+                jcbAbrirDocumento.setMnemonic(KeyEvent.VK_D);
+                Object[] params = {mensaje, jcbAbrirDocumento};
 
-            if (jcbAbrirDocumento.isSelected()) {
-                abrirDocumento();
+                JOptionPane.showMessageDialog(this, params, prop.getProperty("mensaje.firmar.documento_firmado"), JOptionPane.INFORMATION_MESSAGE);
+
+                if (jcbAbrirDocumento.isSelected()) {
+                    abrirDocumento();
+                }
             }
             jplFirmar.setEnabled(true);
-
             //Borramos la ruta y la clave una vez que esta firmado
             this.jpfClave.setText("");
             this.jtxRutaLlaveFirmar.setText("");
@@ -1780,6 +1790,7 @@ public class Main extends javax.swing.JFrame {
                 ks = ksp.getKeystore(jpfCertClaveTXT.getPassword());
 
             }
+            
             cert = validador.getCert(ks, jpfCertClaveTXT.getPassword());
             String revocado;
             try {
