@@ -40,7 +40,7 @@ import javax.xml.bind.DatatypeConverter;
  */
 public class Update {
 
-    private static final String JAR_BASE_URL = "https://firmadigital.ec/firmadigital.gob.ec/jar";
+    private static final String JAR_BASE_URL = "https://dl.bintray.com/firmadigital/firmaec";
 
     private static final String FIRMADOR_JAR_NAME = "firmador-jar-with-dependencies.jar";
     private static final String FIRMADOR_JAR_URL = JAR_BASE_URL + "/" + FIRMADOR_JAR_NAME;

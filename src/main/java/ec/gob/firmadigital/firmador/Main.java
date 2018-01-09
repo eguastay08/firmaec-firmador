@@ -1768,7 +1768,6 @@ public class Main extends javax.swing.JFrame {
                
         Validador validador = new Validador();
         KeyStoreProvider ksp;
-        X509Certificate cert = null;
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         KeyStore ks;
         try {
@@ -1791,7 +1790,7 @@ public class Main extends javax.swing.JFrame {
 
             }
             
-            cert = validador.getCert(ks, jpfCertClaveTXT.getPassword());
+            X509Certificate cert = validador.getCert(ks, jpfCertClaveTXT.getPassword());
             String revocado;
             try {
                 validador.validar(cert);
@@ -1894,36 +1893,7 @@ public class Main extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-		if(OsUtils.getOs().contains("WINDOWS")){
-			try {
-				for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-					if ("Nimbus".equals(info.getName())) {
-						javax.swing.UIManager.setLookAndFeel(info.getClassName());
-						break;
-					}
-				}
-			} catch (ClassNotFoundException ex) {
-				java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-			} catch (InstantiationException ex) {
-				java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-			} catch (IllegalAccessException ex) {
-				java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-			} catch (javax.swing.UnsupportedLookAndFeelException ex) {
-				java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-			}
-		}
-        if (args != null) {
-            System.out.println("si hay arg");
-        } else {
-            System.out.println("no hay arg");
-
-        }
-        if (args != null && args.length > 0 && ("--update".equals(args[0]) || "--actualizar".equals(args[0]))) {
+		if (args != null && args.length > 0 && ("--update".equals(args[0]) || "--actualizar".equals(args[0]))) {
             try {
                 Update update = new Update();
                 File jar = update.actualizarFirmador();
@@ -1937,7 +1907,27 @@ public class Main extends javax.swing.JFrame {
                 System.exit(0);
             }
         }
-
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+		try {
+			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+				if ("Nimbus".equals(info.getName())) {
+					javax.swing.UIManager.setLookAndFeel(info.getClassName());
+					break;
+				}
+			}
+		} catch (ClassNotFoundException ex) {
+			java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+		} catch (InstantiationException ex) {
+			java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+		} catch (IllegalAccessException ex) {
+			java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+		} catch (javax.swing.UnsupportedLookAndFeelException ex) {
+			java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+		}
         //</editor-fold>
 
         /* Create and display the form */
