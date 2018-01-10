@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ec.gob.firmadigital.firmador;
 
 import java.io.File;
@@ -49,20 +50,15 @@ import ec.gob.firmadigital.exceptions.TokenNoEncontradoException;
 import ec.gob.firmadigital.firmador.update.Update;
 import ec.gob.firmadigital.utils.CertificadoEcUtils;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
-import ec.gob.firmadigital.utils.KeyStoreUtils;
 import ec.gob.firmadigital.utils.TiempoUtils;
 import ec.gob.firmadigital.utils.WordWrapCellRenderer;
 import io.rubrica.certificate.ValidationResult;
 import io.rubrica.core.RubricaException;
-import io.rubrica.keystore.Alias;
 import io.rubrica.keystore.FileKeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProvider;
 import io.rubrica.keystore.KeyStoreProviderFactory;
-import io.rubrica.keystore.KeyStoreUtilities;
 import io.rubrica.ocsp.OcspValidationException;
 import io.rubrica.sign.cms.DatosUsuario;
-import io.rubrica.sign.xades.InvalidXMLException;
-import io.rubrica.util.OsUtils;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -810,9 +806,11 @@ public class Main extends javax.swing.JFrame {
                     File jar = update.actualizarFirmador();
                     update.updateFirmador(jar);
 
-                    File clienteJar = update.actualizarCliente();
-                    update.updateCliente(clienteJar);
-                    
+                    if (!isMac()) {
+                        File clienteJar = update.actualizarCliente();
+                        update.updateCliente(clienteJar);
+                    }
+
                     JOptionPane.showOptionDialog(getParent(), prop.getProperty("mensaje.actualizado"), "Mensaje",
                             JOptionPane.OK_OPTION,
                             JOptionPane.INFORMATION_MESSAGE, null, optionsAceptar, btnAceptar);
@@ -1889,6 +1887,11 @@ public class Main extends javax.swing.JFrame {
         actualizar();
     }//GEN-LAST:event_jmiActualizarActionPerformed
 
+    private static boolean isMac() {
+        String osName = System.getProperty("os.name");
+        return osName.toUpperCase().contains("MAC");
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -1899,14 +1902,18 @@ public class Main extends javax.swing.JFrame {
                 File jar = update.actualizarFirmador();
                 update.updateFirmador(jar);
 
-                File clienteJar = update.actualizarCliente();
-                update.updateCliente(clienteJar);
+                if (!isMac()) {
+                    File clienteJar = update.actualizarCliente();
+                    update.updateCliente(clienteJar);
+                }
+
                 System.exit(0);
             } catch (IllegalArgumentException | IOException e) {
                 logger.log(Level.SEVERE, "Error al actualizar:", e);
-                System.exit(0);
+                System.exit(1);
             }
         }
+
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
