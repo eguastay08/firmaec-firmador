@@ -107,14 +107,13 @@ public class FirmadorFileUtils {
         
         String nombre = nombreSinP7m.replaceFirst("[.][^.]+$", "");
 
-        //String extension = getFileExtension(documento);
-        String extension =  FirmadorFileUtils.getFileExtension(nombreSinP7m);
+        String extension =  getFileExtension(nombreSinP7m);
         
         String hora = TiempoUtils.getFechaHoraServidor();
         hora = hora.replace(":", "").replace(" ", "").replace(".", "").replace("-","");
         hora = hora.substring(0,20);
         
-        //System.out.println(nombre + "-verified-"+hora+"." + extension);
+        extension = extension.length()>5?"pdf":extension;
         return nombre + "-verified-"+hora+"." + extension;
     }
     
