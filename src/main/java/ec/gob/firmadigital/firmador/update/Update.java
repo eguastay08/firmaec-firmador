@@ -31,8 +31,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
-import javax.xml.bind.DatatypeConverter;
-
 /**
  * Permite actualizar el JAR de la aplicacion.
  *
@@ -40,7 +38,7 @@ import javax.xml.bind.DatatypeConverter;
  */
 public class Update {
 
-    private static final String JAR_BASE_URL = "https://dl.bintray.com/firmadigital/firmaec";
+    private static final String JAR_BASE_URL = "https://firmadigital.ec/firmadigital.gob.ec/jar";
 
     private static final String FIRMADOR_JAR_NAME = "firmador-jar-with-dependencies.jar";
     private static final String FIRMADOR_JAR_URL = JAR_BASE_URL + "/" + FIRMADOR_JAR_NAME;
@@ -53,6 +51,8 @@ public class Update {
     private static final int BUFFER_SIZE = 8192;
 
     private static final Logger logger = Logger.getLogger(Update.class.getName());
+
+    private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
 
     public File actualizarFirmador() throws IllegalArgumentException {
         // Se debe descargar?
@@ -205,11 +205,10 @@ public class Update {
     private String generateHash(byte[] jar) {
         try {
             logger.info("Hashing...");
-            MessageDigest md;
-            md = MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(jar);
             byte[] digest = md.digest();
-            return DatatypeConverter.printHexBinary(digest).toLowerCase();
+            return printHexBinary(digest).toLowerCase();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
@@ -222,10 +221,18 @@ public class Update {
      */
     private String rutaJar() {
         try {
-            String path = Update.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-            return path;
+            return Update.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static String printHexBinary(byte[] data) {
+        StringBuilder r = new StringBuilder(data.length * 2);
+        for (byte b : data) {
+            r.append(hexCode[(b >> 4) & 0xF]);
+            r.append(hexCode[(b & 0xF)]);
+        }
+        return r.toString();
     }
 }
