@@ -67,28 +67,47 @@ import java.util.logging.Logger;
 public class FirmaDigital {
 
     
-    public byte[] firmar(KeyStore keyStore, File documento, char[] clave) throws Exception {
+//    public byte[] firmar(KeyStore keyStore, File documento, char[] clave) throws Exception {
+//        System.out.println("Firmando ");
+//        byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
+//
+//        List<Alias> signingAliases = KeyStoreUtilities.getSigningAliases(keyStore);
+//
+//        byte[] signedDoc = null;
+//        
+//        Properties params = new Properties();
+//        params.setProperty("signingTime", TiempoUtils.getFechaHoraServidor());
+//
+//        for (Alias alias : signingAliases) {
+//
+//            PrivateKey pk = (PrivateKey) keyStore.getKey(alias.getAlias(), clave);
+//            Certificate[] chain = keyStore.getCertificateChain(alias.getAlias());
+//            // (byte[] data, String algorithm, PrivateKey key, Certificate[] certChain, Properties xParams)
+//            Signer docSigner = documentSigner(documento);
+//            
+//            signedDoc = docSigner.sign(docByteArry, SignConstants.SIGN_ALGORITHM_SHA1WITHRSA, pk, chain, params);  //(documento, pk, chain, null);
+//
+//        }
+//        return signedDoc;
+//    }
+    public byte[] firmar(KeyStore keyStore, String alias, File documento, char[] clave) throws Exception {
         System.out.println("Firmando ");
         byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
+		PDFSigner signer = new PDFSigner();
 
-        List<Alias> signingAliases = KeyStoreUtilities.getSigningAliases(keyStore);
-
-        byte[] signedDoc = null;
-        
+        // Propiedades para personalizar la firma
         Properties params = new Properties();
-        params.setProperty("signingTime", TiempoUtils.getFechaHoraServidor());
+        params.setProperty(PDFSigner.SIGNING_LOCATION, "");
+        params.setProperty(PDFSigner.SIGNING_REASON, "Firmado digitalmente por FirmaEC");
+        params.setProperty(PDFSigner.SIGN_TIME, TiempoUtils.getFechaHoraServidor());
+		
+		// Buscar el PrivateKey en el KeyStore:
+        PrivateKey key = (PrivateKey) keyStore.getKey(alias, clave);
 
-        for (Alias alias : signingAliases) {
+        // Obtener el certificate chain:
+        Certificate[] certChain = keyStore.getCertificateChain(alias);
 
-            PrivateKey pk = (PrivateKey) keyStore.getKey(alias.getAlias(), clave);
-            Certificate[] chain = keyStore.getCertificateChain(alias.getAlias());
-            // (byte[] data, String algorithm, PrivateKey key, Certificate[] certChain, Properties xParams)
-            Signer docSigner = documentSigner(documento);
-            
-            signedDoc = docSigner.sign(docByteArry, SignConstants.SIGN_ALGORITHM_SHA1WITHRSA, pk, chain, params);  //(documento, pk, chain, null);
-
-        }
-        return signedDoc;
+		return signer.sign(docByteArry, SignConstants.SIGN_ALGORITHM_SHA1WITHRSA, key, certChain, params);
     }
 
     public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException, HoraServidorException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException, SignatureVerificationException, DocumentoException {

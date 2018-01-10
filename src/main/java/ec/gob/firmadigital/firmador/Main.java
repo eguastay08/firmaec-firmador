@@ -91,6 +91,7 @@ public class Main extends javax.swing.JFrame {
     private File llaveVerificar;
     private File ultimaCarpeta;
     private String mensajeError;
+	private String alias;
     private static final String RUTA_IMG = "images/";
     private static final String CHECK_IMG = "CheckIcon.png";
     private static final String NOTCHECK_IMG = "DeleteIcon.png";
@@ -312,13 +313,6 @@ public class Main extends javax.swing.JFrame {
     private void validacionPreFirmar() throws DocumentoNoExistenteException, TokenNoConectadoException, DocumentoNoPermitidoException, CertificadoInvalidoException, DocumentoException {
         //Revisamos si existe el documento a firmar
         // TODO no hacer un return directamente, se podria validar todos los parametros e ir aumentando los errores
-        if(jtxRutaDocumentoFirmar.getText() == null || jtxRutaDocumentoFirmar.getText().equals(""))
-            throw new DocumentoNoExistenteException(prop.getProperty("mensaje.error.documento_pathvacio"));
-        
-        if(jtxRutaLlaveFirmar.getText() == null || jtxRutaLlaveFirmar.getText().equals("")){
-            throw new DocumentoNoExistenteException(prop.getProperty("mensaje.error.seleccionar_certificado"));
-        }
-        
         if (documento == null) {
             throw new DocumentoNoExistenteException(MessageFormat.format(prop.getProperty("mensaje.error.documento_inexistente"), this.jtxRutaDocumentoFirmar.getText()));
         }
@@ -446,39 +440,35 @@ public class Main extends javax.swing.JFrame {
 
         }
 
-        Boolean validacion = validarFirma(ks);
-        
-        if(!validacion)
-            return false; 
+        X509Certificate cert = validarFirma(ks);
+		if(cert!=null && this.alias!=null){
+			FirmaDigital firmaDigital = new FirmaDigital();
 
-        FirmaDigital firmaDigital = new FirmaDigital();
+			byte[] docSigned = firmaDigital.firmar(ks, this.alias, documento, jpfClave.getPassword());
+			String nombreDocFirmado = FirmadorFileUtils.crearNombreFirmado(documento);
 
-        byte[] docSigned = firmaDigital.firmar(ks, documento, jpfClave.getPassword());
-        String nombreDocFirmado = FirmadorFileUtils.crearNombreFirmado(documento);
+			String nombre = CertificadoEcUtils.getNombreCA(cert);
 
-		Validador validador = new Validador();
-		String alias = validador.seleccionarAlias(ks);
-		
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+			System.out.println("Nombre: " + nombre);
 
-        String nombre = CertificadoEcUtils.getNombreCA(cert);
+			DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(cert);
 
-        System.out.println("Nombre: " + nombre);
+			agregarDatosTabladeFirmante(datosUsuario);
 
-        DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(cert);
+			agregarDatosTablaCertificadoFirmador(cert, datosUsuario);
+			
+			// Revisamos si el archivo existe
+			nombreDocFirmado = verificarNombre(nombreDocFirmado);
 
-        agregarDatosTabladeFirmante(datosUsuario);
-
-        agregarDatosTablaCertificadoFirmador(cert, datosUsuario);
-
-        
-        // Revisamos si el archivo existe
-        nombreDocFirmado = verificarNombre(nombreDocFirmado);
-
-        FirmadorFileUtils.saveByteArrayToDisc(docSigned, nombreDocFirmado);
-        jtxArchivoFirmado.setText(nombreDocFirmado);
-
-        return true;
+			FirmadorFileUtils.saveByteArrayToDisc(docSigned, nombreDocFirmado);
+			
+			jtxArchivoFirmado.setText(nombreDocFirmado);
+			
+			this.alias = null;
+			
+			return true;
+		}else
+			return false;
     }
 	    
     private String verificarNombre(String nombreArchivo){
@@ -628,22 +618,21 @@ public class Main extends javax.swing.JFrame {
         tableModel.fireTableDataChanged();
     }
 
-    private boolean validarFirma(KeyStore ks) throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
-        System.out.println("Validar Firma");
-
+    private X509Certificate validarFirma(KeyStore ks) throws TokenNoEncontradoException, KeyStoreException, IOException, RubricaException, HoraServidorException, CertificadoInvalidoException, CRLValidationException, OcspValidationException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
+        this.alias = null;
+		System.out.println("Validar Firma");
         Validador validador = new Validador();
-        String alias = validador.seleccionarAlias(ks);
-        
-        // Si no se selecciona ningun certificado o se pone cancelar
-        if(alias == null  || alias.equals(""))
-            return false; 
-        
-        X509Certificate cert = validador.getCert(ks, jpfClave.getPassword(), alias);
+		this.alias = validador.seleccionarAlias(ks);
+		X509Certificate cert = null;
+		if (alias != null)
+			cert = (X509Certificate) ks.getCertificate(this.alias);
 
         try {
-            cert.checkValidity(TiempoUtils.getFechaHora());
-            validador.validar(cert);
-            return true;
+			if(cert!=null){
+				cert.checkValidity(TiempoUtils.getFechaHora());
+				validador.validar(cert);
+			}
+			return cert;
         } catch (CertificateExpiredException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             throw new CertificadoInvalidoException(MessageFormat.format(prop.getProperty("mensaje.error.certificado_caduco"), cert.getNotAfter()));
@@ -1014,20 +1003,18 @@ public class Main extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jplFirmarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jblCertificadoFirmar)
-                    .addGroup(jplFirmarLayout.createSequentialGroup()
-                        .addGap(112, 112, 112)
-                        .addComponent(jblClave))
                     .addComponent(jblCertificadoEnFimador)
-                    .addComponent(jblDocumento, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(32, 32, 32)
-                .addGroup(jplFirmarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jblDocumento, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jblClave))
+                .addGap(42, 42, 42)
+                .addGroup(jplFirmarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jplFirmarLayout.createSequentialGroup()
                         .addComponent(btnFirmar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 522, Short.MAX_VALUE)
                         .addComponent(btnResetear))
                     .addComponent(jpfClave)
                     .addComponent(jtxRutaLlaveFirmar)
-                    .addComponent(jtxRutaDocumentoFirmar))
+                    .addComponent(jtxRutaDocumentoFirmar, javax.swing.GroupLayout.Alignment.LEADING))
                 .addGap(18, 18, 18)
                 .addGroup(jplFirmarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnAbrirArchivoPSKFirmar, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -1066,7 +1053,7 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(jplFirmarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnFirmar)
                     .addComponent(btnResetear))
-                .addGap(62, 62, 62))
+                .addContainerGap())
         );
 
         jLabel11.setText("<html><b>DATOS DEL FIRMANTE</b></html>");
@@ -1147,7 +1134,7 @@ public class Main extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
                 .addGap(14, 14, 14))
         );
 
@@ -1160,7 +1147,7 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(firmarVerificarDocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
                         .addGap(12, 12, 12)
-                        .addComponent(jplFirmar, javax.swing.GroupLayout.PREFERRED_SIZE, 944, Short.MAX_VALUE))
+                        .addComponent(jplFirmar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(firmarVerificarDocPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -1544,7 +1531,7 @@ public class Main extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 973, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1789,32 +1776,34 @@ public class Main extends javax.swing.JFrame {
             }
             
             X509Certificate cert = validador.getCert(ks, jpfCertClaveTXT.getPassword());
-            String revocado;
-            try {
-                validador.validar(cert);
-                revocado = prop.getProperty("mensaje.certificado.no_revocado");
-            } catch (OcspValidationException | CRLValidationException ex) {
-                revocado = "Revocado";
-                JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.error.certificado_revocado"), "Advertencia", JOptionPane.WARNING_MESSAGE);
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            }
+			if(cert!=null){
+				String revocado;
+				try {
+					validador.validar(cert);
+					revocado = prop.getProperty("mensaje.certificado.no_revocado");
+				} catch (OcspValidationException | CRLValidationException ex) {
+					revocado = "Revocado";
+					JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.error.certificado_revocado"), "Advertencia", JOptionPane.WARNING_MESSAGE);
+					Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+				}
 
-            Date fechaHora = TiempoUtils.getFechaHora();
-            System.out.println("fechaHora: " + fechaHora);
-            System.out.println("Antes: " + fechaHora.before(cert.getNotBefore()) + " " + cert.getNotBefore());
-            System.out.println("Después: " + fechaHora.after(cert.getNotAfter()) + " " + cert.getNotAfter());
+				Date fechaHora = TiempoUtils.getFechaHora();
+				System.out.println("fechaHora: " + fechaHora);
+				System.out.println("Antes: " + fechaHora.before(cert.getNotBefore()) + " " + cert.getNotBefore());
+				System.out.println("Después: " + fechaHora.after(cert.getNotAfter()) + " " + cert.getNotAfter());
 
-            String validez = "Certificado válido";
-            if (fechaHora.before(cert.getNotBefore()) || fechaHora.after(cert.getNotAfter())) {
-                validez = "Certificado caducado";
-                JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.error.certificado_caducado"), "Advertencia", JOptionPane.WARNING_MESSAGE);
-            }
-            setearInfoValidacionCertificado(cert);
+				String validez = "Certificado válido";
+				if (fechaHora.before(cert.getNotBefore()) || fechaHora.after(cert.getNotAfter())) {
+					validez = "Certificado caducado";
+					JOptionPane.showMessageDialog(getParent(), prop.getProperty("mensaje.error.certificado_caducado"), "Advertencia", JOptionPane.WARNING_MESSAGE);
+				}
+				setearInfoValidacionCertificado(cert);
 
-            agregarValidezCertificado(validez, revocado);
-            jpfCertClaveTXT.setText("");
-            jplValidar.setEnabled(true);
-            setCursor(Cursor.getDefaultCursor());
+				agregarValidezCertificado(validez, revocado);
+				jpfCertClaveTXT.setText("");
+				jplValidar.setEnabled(true);
+				setCursor(Cursor.getDefaultCursor());
+			}
         } catch (KeyStoreException e) {
             setCursor(Cursor.getDefaultCursor());
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, e);

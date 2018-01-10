@@ -170,13 +170,11 @@ public class Validador {
     
     public X509Certificate getCert(KeyStore ks, char[] clave) throws KeyStoreException, CertificadoInvalidoException, HoraServidorException, RubricaException {
         String alias = seleccionarAlias(ks);
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        return cert;
-    }
-    
-    public X509Certificate getCert(KeyStore ks, char[] clave, String alias) throws KeyStoreException, CertificadoInvalidoException, HoraServidorException, RubricaException {
-        X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        return cert;
+		if (alias != null){
+			X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+			return cert;
+		}else
+			return null;
     }
     
     public boolean validarCrlServidorAPI(BigInteger serial) throws IOException, ConexionFirmadorApiException {
@@ -237,8 +235,8 @@ public class Validador {
         } else {
             Alias alias = (Alias) JOptionPane.showInputDialog(null, "Escoja...", "Certificado para firmar",
                     JOptionPane.QUESTION_MESSAGE, null, signingAliases.toArray(), signingAliases.get(0));
-            System.out.println("Alias { name: " + alias.getName() + ", alias: " + alias.getAlias());
-            aliasString = alias.getAlias();
+			if (alias != null)
+				aliasString = alias.getAlias();
         }
         return aliasString;
     }

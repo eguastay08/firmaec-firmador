@@ -62,7 +62,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jScrollPane1" alignment="0" pref="973" max="32767" attributes="0"/>
+          <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -100,7 +100,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" attributes="0">
                                   <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
-                                  <Component id="jplFirmar" pref="944" max="32767" attributes="0"/>
+                                  <Component id="jplFirmar" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
@@ -116,7 +116,7 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jplFirmar" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Component id="jSeparator2" min="-2" pref="2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jPanel2" max="32767" attributes="0"/>
@@ -137,22 +137,19 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jblCertificadoFirmar" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="-2" pref="112" max="-2" attributes="0"/>
-                                      <Component id="jblClave" min="-2" max="-2" attributes="0"/>
-                                  </Group>
                                   <Component id="jblCertificadoEnFimador" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="jblDocumento" alignment="0" min="-2" pref="100" max="-2" attributes="0"/>
+                                  <Component id="jblClave" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <Component id="btnFirmar" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
+                                      <EmptySpace pref="522" max="32767" attributes="0"/>
                                       <Component id="btnResetear" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="jpfClave" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="jtxRutaLlaveFirmar" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jpfClave" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="jtxRutaLlaveFirmar" alignment="1" max="32767" attributes="0"/>
                                   <Component id="jtxRutaDocumentoFirmar" alignment="0" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -202,7 +199,7 @@
                                   <Component id="btnFirmar" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="btnResetear" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="62" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -342,7 +339,7 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="jScrollPane6" min="-2" pref="98" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="jScrollPane7" pref="101" max="32767" attributes="0"/>
+                              <Component id="jScrollPane7" pref="168" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                           </Group>
                       </Group>
