@@ -93,7 +93,7 @@ public class FirmaDigital {
     public byte[] firmar(KeyStore keyStore, String alias, File documento, char[] clave) throws Exception {
         System.out.println("Firmando ");
         byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
-		PDFSigner signer = new PDFSigner();
+		Signer signer = this.documentSigner(documento);
 
         // Propiedades para personalizar la firma
         Properties params = new Properties();
