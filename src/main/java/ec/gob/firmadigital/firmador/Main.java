@@ -296,7 +296,7 @@ public class Main extends javax.swing.JFrame {
         btnAbrirCertificado.setEnabled(false);
         jpfCertClaveTXT.setText("");
 
-        if (!esWindows()) {
+        if (esLinux()) {
             this.jpfCertClaveTXT.setEnabled(true);
         } else {
             this.jpfCertClaveTXT.setEnabled(false);
@@ -304,7 +304,11 @@ public class Main extends javax.swing.JFrame {
     }
 
     private boolean esWindows() {
-        return (OS.contains("win"));// .indexOf("win") >= 0);
+        return (OS.contains("win"));
+    }
+    
+    private boolean esLinux() {
+        return (OS.contains("linux"));
     }
 
     /*
