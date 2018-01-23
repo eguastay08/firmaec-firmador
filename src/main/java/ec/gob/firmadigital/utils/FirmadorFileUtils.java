@@ -102,19 +102,13 @@ public class FirmadorFileUtils {
         // TODO validar si hay otro archivo de momento lo sobre escribe
         // USAR solo getAbsolutPath, talvez sin ruta
         String nombreCompleto = documento.getAbsolutePath();
-        
         String nombreSinP7m = nombreCompleto.replaceFirst("[.][^.]+$", "");
-        
-        String nombre = nombreSinP7m.replaceFirst("[.][^.]+$", "");
-
         String extension =  getFileExtension(nombreSinP7m);
-        
         String hora = TiempoUtils.getFechaHoraServidor();
         hora = hora.replace(":", "").replace(" ", "").replace(".", "").replace("-","");
         hora = hora.substring(0,20);
-        
         extension = extension.length()>5?"pdf":extension;
-        return nombre + "-verified-"+hora+"." + extension;
+        return nombreSinP7m + "-verified-"+hora+"." + extension;
     }
     
     public static void abrirDocumento(String documento) throws IOException{
