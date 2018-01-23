@@ -38,8 +38,7 @@ import java.util.logging.Logger;
  */
 public class Update {
 
-    private static final String JAR_BASE_URL = "https://firmadigital.ec/firmadigital.gob.ec/jar";
-
+    private static final String JAR_BASE_URL = "http://www.firmadigital.gob.ec/firmaec";
     private static final String FIRMADOR_JAR_NAME = "firmador-jar-with-dependencies.jar";
     private static final String FIRMADOR_JAR_URL = JAR_BASE_URL + "/" + FIRMADOR_JAR_NAME;
     private static final String FIRMADOR_JAR_SHA256_URL = JAR_BASE_URL + "/" + FIRMADOR_JAR_NAME + ".sha256";

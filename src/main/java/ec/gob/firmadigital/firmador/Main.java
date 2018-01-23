@@ -533,7 +533,7 @@ public class Main extends javax.swing.JFrame {
         data[0] = prop.getProperty("tabla.certificado.nombres") + " " + datosUsuario.getNombre();
         tableModel.addRow(data);
 
-        data[0] = prop.getProperty("tabla.certificado.apelldios") + " " + datosUsuario.getApellido();
+        data[0] = prop.getProperty("tabla.certificado.apellidos") + " " + datosUsuario.getApellido();
         tableModel.addRow(data);
 
         data[0] = prop.getProperty("tabla.certificado.institucion") + " " + datosUsuario.getInstitucion();
