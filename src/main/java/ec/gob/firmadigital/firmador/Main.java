@@ -414,7 +414,7 @@ public class Main extends javax.swing.JFrame {
     // Se podria verificar el mimetype
     // Talvez eliminar el if
     private void tipoDeDocumentPermitido(File documento) throws DocumentoNoPermitidoException {
-        String extDocumento = FirmadorFileUtils.getFileExtension(documento);
+        String extDocumento = FirmadorFileUtils.getFileExtension(documento).toLowerCase();
         if(!documento.getName().contains(".")){
             throw new DocumentoNoPermitidoException(prop.getProperty("mensaje.error.extension_vacia"));
         }
