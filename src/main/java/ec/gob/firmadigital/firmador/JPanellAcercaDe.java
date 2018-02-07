@@ -17,7 +17,6 @@
 package ec.gob.firmadigital.firmador;
 
 
-import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -27,8 +26,6 @@ import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 
 /**
  *
@@ -37,7 +34,7 @@ import javax.swing.SwingUtilities;
 public class JPanellAcercaDe extends javax.swing.JPanel {
     
     private static final Logger logger = Logger.getLogger(JPanellAcercaDe.class.getName());
-    private static final String URL_GOBIERNO_DIGITAL = "http://www.gobiernoelectronico.gob.ec";
+    private static final String URL_GOBIERNO_DIGITAL = "http://www.firmadigital.gob.ec/";
     private Properties prop;
 
     /**
@@ -83,7 +80,7 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
         jlbUrlGobiernoDigitalAcercaDe = new javax.swing.JLabel();
         jlbVersion = new javax.swing.JLabel();
 
-        jlbCopyrightAcercaDe.setText("<html><div style='text-align: center;'>© Copyright MINTEL 2017</div></html>");
+        jlbCopyrightAcercaDe.setText("<html><div style='text-align: center;'>© Copyright MINTEL 2018</div></html>");
 
         jlbLicenciaAcercaDe.setText("<html><div style='text-align: center;'>Licencia GPLv3</div></html>");
 
@@ -96,9 +93,9 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(jlbCopyrightAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jlbLicenciaAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jlbUrlGobiernoDigitalAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jlbVersion, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(37, Short.MAX_VALUE))
+                    .addComponent(jlbUrlGobiernoDigitalAcercaDe, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jlbVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE))
+                .addGap(37, 37, 37))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

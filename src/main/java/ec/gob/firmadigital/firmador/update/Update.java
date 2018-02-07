@@ -42,10 +42,12 @@ public class Update {
     private static final String FIRMADOR_JAR_NAME = "firmador-jar-with-dependencies.jar";
     private static final String FIRMADOR_JAR_URL = JAR_BASE_URL + "/" + FIRMADOR_JAR_NAME;
     private static final String FIRMADOR_JAR_SHA256_URL = JAR_BASE_URL + "/" + FIRMADOR_JAR_NAME + ".sha256";
+    //private static final String FIRMADOR_JAR_SHA256_URL = "https://dl.bintray.com/firmadigital/firmaec/firmador-jar-with-dependencies.jar.sha256";
 
     private static final String FIRMAEC_JAR_NAME = "cliente-jar-with-dependencies.jar";
     private static final String FIRMAEC_JAR_URL = JAR_BASE_URL + "/" + FIRMAEC_JAR_NAME;
     private static final String FIRMAEC_JAR_SHA256_URL = JAR_BASE_URL + "/" + FIRMAEC_JAR_NAME + ".sha256";
+    //private static final String FIRMAEC_JAR_SHA256_URL = "https://dl.bintray.com/firmadigital/firmaec/cliente-jar-with-dependencies.jar.sha256";
 
     private static final int BUFFER_SIZE = 8192;
 
@@ -179,7 +181,13 @@ public class Update {
         con.connect();
 
         int responseCode = con.getResponseCode();
-        if (responseCode != 200) {
+        if (responseCode >= 300 && responseCode < 400) {
+            con = (HttpURLConnection) new URL(con.getHeaderField("Location")).openConnection();
+            con.connect();
+            
+            responseCode = con.getResponseCode();
+        }
+        if (responseCode >= 400) {
             throw new RuntimeException("Failed : HTTP error code : " + responseCode);
         }
 

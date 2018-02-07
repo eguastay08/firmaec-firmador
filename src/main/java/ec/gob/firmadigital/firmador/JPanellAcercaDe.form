@@ -21,10 +21,10 @@
               <Group type="103" groupAlignment="2" attributes="0">
                   <Component id="jlbCopyrightAcercaDe" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="jlbLicenciaAcercaDe" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="jlbUrlGobiernoDigitalAcercaDe" alignment="2" min="-2" pref="196" max="-2" attributes="0"/>
-                  <Component id="jlbVersion" alignment="2" min="-2" pref="196" max="-2" attributes="0"/>
+                  <Component id="jlbUrlGobiernoDigitalAcercaDe" alignment="2" max="32767" attributes="0"/>
+                  <Component id="jlbVersion" alignment="2" pref="196" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace pref="37" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -47,7 +47,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jlbCopyrightAcercaDe">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;div style=&apos;text-align: center;&apos;&gt;&#xa9; Copyright MINTEL 2017&lt;/div&gt;&lt;/html&gt;"/>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;div style=&apos;text-align: center;&apos;&gt;&#xa9; Copyright MINTEL 2018&lt;/div&gt;&lt;/html&gt;"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jlbLicenciaAcercaDe">
