@@ -17,49 +17,74 @@
 package ec.gob.firmadigital.firmador;
 
 
-import java.awt.Desktop;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
 /**
  *
  * @author FirmaEC
+ * @author Asamblea Nacional
  */
-public class JPanellAcercaDe extends javax.swing.JPanel {
+public class JPanellAcercaDe extends JPanel {
     
-    private static final Logger logger = Logger.getLogger(JPanellAcercaDe.class.getName());
-    private static final String URL_GOBIERNO_DIGITAL = "http://www.firmadigital.gob.ec/";
-    private Properties prop;
+    //private static final Logger logger = Logger.getLogger(JPanellAcercaDe.class.getName());
+    private static final String URL_GOBIERNO_DIGITAL = "http://www.gobiernoelectronico.gob.ec";
+    private static final String URL_ASAMBLEA = "http://www.asambleanacional.gob.ec";
 
     /**
      * Creates new form jplAcercaDe
      */
     public JPanellAcercaDe() {
         initComponents();
-        jlbUrlGobiernoDigitalAcercaDe.setText("<HTML><u>"+URL_GOBIERNO_DIGITAL+"</u></HTML>");
-        
+
         jlbUrlGobiernoDigitalAcercaDe.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
                     Desktop.getDesktop().browse(new URI(URL_GOBIERNO_DIGITAL));
-                } catch (URISyntaxException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
+                } catch (URISyntaxException | IOException ex) {
                     Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
-        prop = new Properties();
+
+        lblUrlAsamblea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI(URL_ASAMBLEA));
+                } catch (IOException | URISyntaxException e1) {
+                    Logger.getLogger(JPanellAcercaDe.class.getName()).log(Level.SEVERE, null, e);
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if(Cursor.DEFAULT_CURSOR==getCursor().getType()) {
+                    setCursor(new Cursor(Cursor.HAND_CURSOR));
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                setCursor(Cursor.getDefaultCursor());
+            }
+        });
+
+        Properties prop = new Properties();
         try {
             prop.load(getClass().getClassLoader().getResourceAsStream("config.properties"));
-            this.jlbVersion.setText("Versión: " +prop.getProperty("version")+ " - " +prop.getProperty("fecha"));
+            this.jlbVersion.setText("Versión: " + prop.getProperty("version")+ " - " + prop.getProperty("fecha"));
         } catch (IOException ex) {
             Logger.getLogger(JPanellAcercaDe.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -74,49 +99,59 @@ public class JPanellAcercaDe extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        JLabel jlbCopyrightAcercaDe = new JLabel("Powered by: FirmaEC © Copyright MINTEL 2017");
+        JLabel jlbLicenciaAcercaDe = new JLabel("Licencia GPLv3");
+        jlbUrlGobiernoDigitalAcercaDe = new JLabel(URL_GOBIERNO_DIGITAL);
+        jlbVersion = new JLabel();
 
         jlbCopyrightAcercaDe = new javax.swing.JLabel();
         jlbLicenciaAcercaDe = new javax.swing.JLabel();
         jlbUrlGobiernoDigitalAcercaDe = new javax.swing.JLabel();
         jlbVersion = new javax.swing.JLabel();
 
-        jlbCopyrightAcercaDe.setText("<html><div style='text-align: center;'>© Copyright MINTEL 2018</div></html>");
+        lblUrlAsamblea= new JLabel(URL_ASAMBLEA);
+        JLabel lblCopyrightAsamblea = new JLabel("© Asamblea Nacional 2018");
 
-        jlbLicenciaAcercaDe.setText("<html><div style='text-align: center;'>Licencia GPLv3</div></html>");
+        BufferedImage bim = null;
+        try {
+            bim= ImageIO.read(ClassLoader.getSystemResource("images/logoAN.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ImageIcon imgIcoLogo = new ImageIcon(bim);
+        JLabel lblLogo = new JLabel(imgIcoLogo);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+
+        BoxLayout layout = new BoxLayout(this, BoxLayout.Y_AXIS);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(34, 34, 34)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(jlbCopyrightAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jlbLicenciaAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jlbUrlGobiernoDigitalAcercaDe, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jlbVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE))
-                .addGap(37, 37, 37))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(6, 6, 6)
-                .addComponent(jlbCopyrightAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
-                .addComponent(jlbLicenciaAcercaDe, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jlbUrlGobiernoDigitalAcercaDe, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jlbVersion, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
-                .addGap(41, 41, 41))
-        );
+
+        lblLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(lblLogo);
+
+        add(Box.createRigidArea(new Dimension(0,20)));
+        lblCopyrightAsamblea.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(lblCopyrightAsamblea);
+        lblUrlAsamblea.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(lblUrlAsamblea);
+
+        add(Box.createRigidArea(new Dimension(0,20)));
+
+        jlbCopyrightAcercaDe.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(jlbCopyrightAcercaDe);
+
+        jlbLicenciaAcercaDe.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(jlbLicenciaAcercaDe);
+
+        jlbUrlGobiernoDigitalAcercaDe.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(jlbUrlGobiernoDigitalAcercaDe);
+
+        jlbVersion.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(jlbVersion);
     }// </editor-fold>//GEN-END:initComponents
 
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jlbCopyrightAcercaDe;
-    private javax.swing.JLabel jlbLicenciaAcercaDe;
     private javax.swing.JLabel jlbUrlGobiernoDigitalAcercaDe;
     private javax.swing.JLabel jlbVersion;
+    private JLabel lblUrlAsamblea;
     // End of variables declaration//GEN-END:variables
 }
