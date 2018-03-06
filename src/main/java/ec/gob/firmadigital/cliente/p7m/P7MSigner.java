@@ -30,13 +30,14 @@ import java.util.logging.Logger;
 /**
  *
  * @author FirmaEC
+ * @author Asamblea Nacional
  */
 public class P7MSigner implements Signer{
     
     private static final Logger logger = Logger.getLogger(P7MSigner.class.getName());
 
     @Override
-    public byte[] sign(byte[] data, String algorithm, PrivateKey key, Certificate[] certChain, Properties extraParams) throws RubricaException, IOException {
+    public byte[] sign(byte[] data, String algorithm, PrivateKey key, Certificate[] certChain, Properties extraParams, Boolean visibleInfo) throws RubricaException, IOException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

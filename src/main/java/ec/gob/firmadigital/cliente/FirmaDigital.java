@@ -27,6 +27,8 @@ import ec.gob.firmadigital.firmador.Certificado;
 import ec.gob.firmadigital.utils.CertificadoEcUtils;
 import ec.gob.firmadigital.utils.FirmadorFileUtils;
 import ec.gob.firmadigital.utils.TiempoUtils;
+
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -64,43 +66,50 @@ import java.util.logging.Logger;
 /**
  *
  * @author jdc
+ * @author Asamblea Nacional
+ *
  */
 public class FirmaDigital {
-
-//    public byte[] firmar(KeyStore keyStore, File documento, char[] clave) throws Exception {
-//        System.out.println("Firmando ");
-//        byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
-//
-//        List<Alias> signingAliases = KeyStoreUtilities.getSigningAliases(keyStore);
-//
-//        byte[] signedDoc = null;
-//        
-//        Properties params = new Properties();
-//        params.setProperty("signingTime", TiempoUtils.getFechaHoraServidor());
-//
-//        for (Alias alias : signingAliases) {
-//
-//            PrivateKey pk = (PrivateKey) keyStore.getKey(alias.getAlias(), clave);
-//            Certificate[] chain = keyStore.getCertificateChain(alias.getAlias());
-//            // (byte[] data, String algorithm, PrivateKey key, Certificate[] certChain, Properties xParams)
-//            Signer docSigner = documentSigner(documento);
-//            
-//            signedDoc = docSigner.sign(docByteArry, SignConstants.SIGN_ALGORITHM_SHA1WITHRSA, pk, chain, params);  //(documento, pk, chain, null);
-//
-//        }
-//        return signedDoc;
-//    }
-    public byte[] firmar(KeyStore keyStore, String alias, File documento, char[] clave) throws Exception {
+    //Position and page fields to visualize the signature was added
+    public byte[] firmar(KeyStore keyStore, String alias, byte[] documento, File pathFile, char[] clave
+            , Rectangle position, int page) throws Exception {
         System.out.println("Firmando ");
-        byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
-        Signer signer = this.documentSigner(documento);
+        Signer signer = this.documentSigner(pathFile);
 
         // Propiedades para personalizar la firma
         Properties params = new Properties();
         params.setProperty(PDFSigner.SIGNING_LOCATION, "");
-        params.setProperty(PDFSigner.SIGNING_REASON, "Firmado digitalmente por FirmaEC");
+        params.setProperty(PDFSigner.SIGNING_REASON, "Firmado digitalmente Asamblea Nacional & firmaEC");
         params.setProperty(PDFSigner.SIGN_TIME, TiempoUtils.getFechaHoraServidor());
-        
+
+        //Set page number
+        params.setProperty(PDFSigner.LAST_PAGE,String.valueOf(page));
+        //Set position
+        params.setProperty(PdfUtil.positionOnPageLowerLeftX,String.valueOf(position.x));
+        params.setProperty(PdfUtil.positionOnPageLowerLeftY,String.valueOf(position.y));
+        params.setProperty(PdfUtil.positionOnPageUpperRightX,String.valueOf(position.width));
+        params.setProperty(PdfUtil.positionOnPageUpperRightY,String.valueOf(position.height));
+
+        // Buscar el PrivateKey en el KeyStore:
+        PrivateKey key = (PrivateKey) keyStore.getKey(alias, clave);
+
+        // Obtener el certificate chain:
+        Certificate[] certChain = keyStore.getCertificateChain(alias);
+
+        return signer.sign(documento, SignConstants.SIGN_ALGORITHM_SHA1WITHRSA, key, certChain, params, false);
+    }
+
+    public byte[] firmar(KeyStore keyStore, String alias, File documento, char[] clave) throws Exception {
+        byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
+		Signer signer = this.documentSigner(documento);
+
+        // Propiedades para personalizar la firma
+        Properties params = new Properties();
+        params.setProperty(PDFSigner.SIGNING_LOCATION, "");
+        //Credits modified
+        params.setProperty(PDFSigner.SIGNING_REASON, "Firmado digitalmente Asamblea Nacional & FirmaEC");
+        params.setProperty(PDFSigner.SIGN_TIME, TiempoUtils.getFechaHoraServidor());
+
         // Posicion firma
         params.setProperty(PDFSigner.LAST_PAGE, "1");
         params.setProperty(PdfUtil.positionOnPageLowerLeftX, "10");
@@ -112,7 +121,7 @@ public class FirmaDigital {
         // Obtener el certificate chain:
         Certificate[] certChain = keyStore.getCertificateChain(alias);
 
-        return signer.sign(docByteArry, SignConstants.SIGN_ALGORITHM_SHA1WITHRSA, key, certChain, params);
+		return signer.sign(docByteArry, SignConstants.SIGN_ALGORITHM_SHA1WITHRSA, key, certChain, params,true);
     }
 
     public List<Certificado> verificar(File documento) throws IOException, KeyStoreException, OcspValidationException, SignatureException, InvalidFormatException, RubricaException, ConexionInvalidaOCSPException, HoraServidorException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException, SignatureVerificationException, DocumentoException {
@@ -120,17 +129,17 @@ public class FirmaDigital {
         byte[] docByteArry = FirmadorFileUtils.fileConvertToByteArray(documento);
         // para P7m, ya que p7m no tiene signer
         String extDocumento = FirmadorFileUtils.getFileExtension(documento);
-        if (extDocumento.toLowerCase().equals("p7m")) {
+        if(extDocumento.toLowerCase().equals("p7m")){
             VerificadorP7M verificador = new VerificadorP7M();
             byte[] archivoOriginal = verificador.verify(docByteArry);
-
+            
             String nombreArchivo = FirmadorFileUtils.crearNombreArchivoP7M(documento);
-
+            
             FirmadorFileUtils.saveByteArrayToDisc(archivoOriginal, nombreArchivo);
             //System.out.println(nombreArchivo);
-
+            
             FirmadorFileUtils.abrirDocumento(nombreArchivo);
-
+                
             return datosP7MACertificado(verificador.certificados, verificador.fechasFirmados);
         } else {
             Signer docSigner = documentSigner(documento);
@@ -141,14 +150,14 @@ public class FirmaDigital {
             return certificados;
         }
     }
-
-    private List<Certificado> datosP7MACertificado(List<X509Certificate> certificados, List<Date> fechasFirmados) throws RubricaException, HoraServidorException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
+    
+    private List<Certificado> datosP7MACertificado(List<X509Certificate> certificados,List<Date> fechasFirmados) throws RubricaException, HoraServidorException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
         List<Certificado> certs = new ArrayList<>();
         /*
         if(fechasFirmados.size() != certificados.size()){
             throw error;
         }*/
-        for (int i = 0; i < certificados.size(); i++) {
+        for(int i=0; i<certificados.size(); i++){
             X509Certificate temp = certificados.get(i);
             Date fechaFirmado = fechasFirmados.get(i);
             DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(temp);
@@ -161,7 +170,7 @@ public class FirmaDigital {
                     esValido(temp, fechaFirmado),
                     esRevocado(temp),
                     datosUsuario);
-
+            
             certs.add(c);
         }
         return certs;
@@ -190,31 +199,32 @@ public class FirmaDigital {
     private List<Certificado> firmasToCertificados(List<SignInfo> firmas) throws RubricaException, ConexionInvalidaOCSPException, HoraServidorException, KeyStoreException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException, DocumentoException {
         List<Certificado> certs = new ArrayList<>();
         System.out.println("firmas a certificados");
-
-        if (firmas == null || firmas.size() == 0) {
+        
+        if(firmas == null || firmas.size()==0){
             throw new DocumentoException("Documento sin firmas");
         }
 
         for (SignInfo temp : firmas) {
             temp.getCerts();
             DatosUsuario datosUsuario = CertificadoEcUtils.getDatosUsuarios(temp.getCerts()[0]);
-
+            
             System.out.println(CertificadoEcUtils.getNombreCA(temp.getCerts()[0]));
-            if (datosUsuario == null) {
-                System.out.println("datos usuarios nulos");
+            if(datosUsuario == null){
+            System.out.println("datos usuarios nulos");
             }
-
-            if (datosUsuario == null) {
-                byte[] file;
+            
+            if(datosUsuario == null){
+                byte [] file;
                 try {
                     file = temp.getCerts()[0].getEncoded();
                     FirmadorFileUtils.saveByteArrayToDisc(file, "/tmp/certificadojudicatura.crt");
                 } catch (CertificateEncodingException ex) {
                     Logger.getLogger(FirmaDigital.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
+                
             }
-
+                
+            
             Certificado c = new Certificado(
                     Util.getCN(temp.getCerts()[0]),
                     CertificadoEcUtils.getNombreCA(temp.getCerts()[0]),
@@ -224,10 +234,10 @@ public class FirmaDigital {
                     esValido(temp.getCerts()[0], temp.getSigningTime()),
                     esRevocado(temp.getCerts()[0]),
                     datosUsuario);
-
+            
             certs.add(c);
         }
-
+        
         return certs;
     }
 
@@ -239,32 +249,30 @@ public class FirmaDigital {
 
     /**
      * Si el certificado ya caduco
-     *
      * @param cert
      * @param signingTime
-     * @return
+     * @return 
      */
     private boolean esValido(X509Certificate cert, Date signingTime) {
-        return !(signingTime.before(cert.getNotBefore()) || signingTime.after(cert.getNotAfter()));
+        return !( signingTime.before(cert.getNotBefore()) || signingTime.after(cert.getNotAfter())) ;
     }
 
     /**
-     * Verifica si el certificado ha sido revocado
-     *
+     * Verifica si el certificado ha sido revocado 
      * @param cert
      * @return
      * @throws RubricaException
      * @throws HoraServidorException
      * @throws IOException
-     * @throws CertificadoInvalidoException
+     * @throws CertificadoInvalidoException 
      */
     private Boolean esRevocado(X509Certificate cert) throws RubricaException, HoraServidorException, IOException, CertificadoInvalidoException, EntidadCertificadoraNoValidaException, ConexionValidarCRLException {
         try {
             System.out.println("Revisamos si es valido el certificado contra el servicio del API");
-
+            
             Validador validador = new Validador();
             validador.validar(cert);
-
+            
             return false;
         } catch (CRLValidationException ex) {
             Logger.getLogger(FirmaDigital.class.getName()).log(Level.SEVERE, null, ex);
