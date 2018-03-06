@@ -1,95 +1,158 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>ec.gob.firmadigital</groupId>
-	<artifactId>firmador</artifactId>
-	<version>1.1.3-SNAPSHOT</version>
+    <groupId>ec.gob.firmadigital</groupId>
+    <artifactId>firmador</artifactId>
+    <version>1.2.0-SNAPSHOT</version>
 
-	<name>firmadigital-firmador</name>
-	<description>FirmaEC Firmador</description>
-	<url>http://www.firmadigital.gob.ec</url>
-	<licenses>
-		<license>
-			<name>GNU General Public License, Version 3</name>
-			<url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
-		</license>
-	</licenses>
+    <name>firmadigital-firmador</name>
+    <description>FirmaEC Firmador - Asamblea Nacional</description>
+    <url>http://www.firmadigital.gob.ec</url>
+    <licenses>
+        <license>
+            <name>GNU General Public License, Version 3</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+        </license>
+    </licenses>
 
-	<developers>
-		<developer>
-			<name>Ricardo Arguello</name>
-			<email>ricardo.arguello@soportelibre.com</email>
-			<organization>Soporte Libre</organization>
-			<organizationUrl>http://www.soportelibre.com</organizationUrl>
-		</developer>
-		<developer>
-			<name>Juan Diego Calle</name>
-			<email>juandiego.calle@soportelibre.com</email>
-			<organization>Soporte Libre</organization>
-			<organizationUrl>http://www.soportelibre.com</organizationUrl>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <name>Ricardo Arguello</name>
+            <email>ricardo.arguello@soportelibre.com</email>
+            <organization>Soporte Libre</organization>
+            <organizationUrl>http://www.soportelibre.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Juan Diego Calle</name>
+            <email>juandiego.calle@soportelibre.com</email>
+            <organization>Soporte Libre</organization>
+            <organizationUrl>http://www.soportelibre.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Daniel López Hinojosa</name>
+            <email>daniel.lopez@asambleanacional.gob.ec</email>
+            <organization>Asamblea Nacional</organization>
+            <organizationUrl>http://www.asambleanacional.gob.ec</organizationUrl>
+        </developer>
+    </developers>
 
-	<scm>
-		<connection>scm:git:https://minka.gob.ec/mintel/ge/firmaec/firmadigital-firmador.git</connection>
-		<developerConnection>scm:git:git@minka.gob.ec:mintel/ge/firmaec/firmadigital-firmador.git</developerConnection>
-		<url>https://minka.gob.ec/mintel/ge/firmaec/firmadigital-firmador</url>
-		<tag>HEAD</tag>
-	</scm>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mainClass>ec.gob.firmadigital.firmador.Main</mainClass>
+    </properties>
 
-	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<mainClass>ec.gob.firmadigital.firmador.Main</mainClass>
-	</properties>
+    <scm>
+        <connection>scm:git:https://minka.gob.ec/mintel/ge/firmaec/firmadigital-firmador.git</connection>
+        <developerConnection>scm:git:git@minka.gob.ec:mintel/ge/firmaec/firmadigital-firmador.git</developerConnection>
+        <url>https://minka.gob.ec/mintel/ge/firmaec/firmadigital-firmador</url>
+        <tag>HEAD</tag>
+    </scm>
 
-	<dependencies>
-		<dependency>
-			<groupId>io.rubrica</groupId>
-			<artifactId>rubrica</artifactId>
-			<version>0.1.6</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>pdfbox</artifactId>
-			<version>2.0.7</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
-	<build>
-		<finalName>${project.artifactId}</finalName>
-		<plugins>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<!--version>3.1.0</version -->
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>${mainClass}</mainClass>
-						</manifest>
-					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <dependencies>
+        <dependency>
+            <groupId>io.rubrica</groupId>
+            <artifactId>rubrica</artifactId>
+            <version>0.1.8-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox-tools</artifactId>
+            <version>2.0.8</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.ralfstuckert.pdfbox-layout</groupId>
+            <artifactId>pdfbox2-layout</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>24.0-jre</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.0.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${mainClass}</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${mainClass}</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
