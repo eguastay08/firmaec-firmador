@@ -17,11 +17,23 @@
 package ec.gob.firmadigital.utils;
 
 import ec.gob.firmadigital.exceptions.DocumentoException;
-import java.awt.Desktop;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import io.rubrica.sign.cms.DatosUsuario;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.common.PDStream;
+import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.PDType3Font;
+import rst.pdfbox.layout.elements.Document;
+import rst.pdfbox.layout.text.Alignment;
+import rst.pdfbox.layout.text.Position;
+import rst.pdfbox.layout.text.TextFlow;
+
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,10 +42,13 @@ import java.util.logging.Logger;
 /**
  *
  * @author jdc
+ * @author Asamblea Nacional
  */
 public class FirmadorFileUtils {
     
     private static final Logger logger = Logger.getLogger(FirmadorFileUtils.class.getName());
+
+    private static final Integer MAX_TEXT_WIDTH=105;
     
     public static String getFileExtension(File file) {
         String name = file.getName();
@@ -63,7 +78,41 @@ public class FirmadorFileUtils {
         Path documentoPath = Paths.get(file.getAbsolutePath());
         return Files.readAllBytes(documentoPath);
     }
-    
+
+
+    public static byte[] addVisibleSign(File pdfFile, DatosUsuario datosUsuario, Point insPoint, int numPage, String optionalText
+            , Boolean noName ) throws IOException {
+        ByteArrayOutputStream byteArrayResult = new ByteArrayOutputStream();
+        PDDocument pdf= PDDocument.load(pdfFile);
+
+        PDPage page = pdf.getPage(numPage==0?numPage:numPage-1);
+        PDRectangle pageSize = page.getMediaBox();
+
+        PDPageContentStream contentStream =
+                new PDPageContentStream(pdf, page, PDPageContentStream.AppendMode.APPEND, false);
+        if(!noName) {
+            TextFlow text = new TextFlow();
+            text.setMaxWidth(MAX_TEXT_WIDTH);
+            text.addText(datosUsuario.getNombre() + " " + datosUsuario.getApellido(), 12, PDType1Font.HELVETICA_BOLD);
+            text.drawText(contentStream, new Position(insPoint.x, pageSize.getHeight() - insPoint.y), Alignment.Left, null);
+        }
+        TextFlow infoMetadata=new TextFlow();
+        infoMetadata.setMaxWidth(MAX_TEXT_WIDTH);
+        infoMetadata.addText("Firmado digitalmente por "+datosUsuario.getNombre()+" "+datosUsuario.getApellido()
+                        +" "+datosUsuario.getInstitucion()
+                        +" Serial: "+datosUsuario.getSerial()
+                        +" Fecha: "+datosUsuario.getFechaFirmaArchivo(), 7, PDType1Font.HELVETICA);
+        if (!optionalText.isEmpty())
+            infoMetadata.addText(" "+optionalText,7, PDType1Font.HELVETICA_OBLIQUE);
+        infoMetadata.drawText(contentStream, new Position(insPoint.x+(noName?0:MAX_TEXT_WIDTH),pageSize.getHeight()-insPoint.y)
+                , Alignment.Left,null);
+
+        contentStream.close();
+        pdf.save(byteArrayResult);
+        pdf.close();
+        return byteArrayResult.toByteArray();
+    }
+
     public static void saveByteArrayToDisc(byte[] archivo,String rutaNombre) throws FileNotFoundException, IOException {
         // TODO validar si hay otro archivo de momento lo sobre escribe
         FileOutputStream fos = new FileOutputStream(rutaNombre);
